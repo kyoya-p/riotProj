@@ -66,6 +66,10 @@ export const helloWorld = functions.https.onRequest((request, response) => {
 });
 ```
 
+```
+firebase deploy
+```
+URLが表示されるのでアクセスし上記が表示されることを確認。
 
 
 
