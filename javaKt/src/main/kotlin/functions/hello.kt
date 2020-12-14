@@ -12,7 +12,3 @@ class HelloWorldKt : HttpFunction {
         writer.write("Hello Kt World! ")
     }
 }
-
-fun main() {
-    println("xxx")
-}
