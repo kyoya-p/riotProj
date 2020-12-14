@@ -1,4 +1,4 @@
-Firebase Cloud Functions
+Firebase Cloud Functions ~ Typescript
 ====
 
 Setup
