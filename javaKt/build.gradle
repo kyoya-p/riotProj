@@ -1,4 +1,22 @@
+buildscript {
+    ext.kotlin_version = '1.4.10'
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+        google()
+        //maven { url "http://10.36.102.80:8080/repository/internal" }
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
+    }
+}
+
+
 apply plugin: 'java'
+apply plugin: 'kotlin'
+apply plugin: 'kotlinx-serialization'
 
 repositories {
     jcenter()
