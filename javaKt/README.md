@@ -5,7 +5,7 @@ https://cloud.google.com/functions/docs/quickstart-java
 
 Cloud SDK Setup
 ----
-https://cloud.google.com/sdk/docs
+* https://cloud.google.com/sdk/docs
 
 ```
 sudo apt install -y python3
@@ -133,3 +133,10 @@ Firebase SDK Setup
 apt install -y npm
 npm install -g firebase-tools
 ```
+
+
+Cloud Functions for firebase
+----
+* https://firebase.google.com/docs/functions/functions-and-firebase?hl=ja
+* https://firebase.google.com/docs/functions/?hl=ja
+
