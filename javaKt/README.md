@@ -120,6 +120,16 @@ gcloud functions deploy createToken --entry-point=functions.reqestToken --runtim
 https://us-central1-road-to-iot.cloudfunctions.net/createToken?id=123&pw=111
 ```
 
-~ Firebase SDK によるカスタム認証
+~ Firebase Java Admin SDK を使用してデプロイ
 ----
+https://firebase.google.com/docs/libraries?hl=ja
+https://firebase.google.com/docs/admin/setup?hl=ja
 
+* Firebase SDKを使用してCloud FinctionsにデプロイすればFirestoreクレデンシャルを自動で提供してくれる
+
+
+Firebase SDK Setup
+```
+apt install -y npm
+npm install -g firebase-tools
+```

@@ -3,19 +3,25 @@ Firebase Cloud Functions ~ Typescript
 
 Setup
 ----
+
+*   必要ならnmp更新から 
+```
+sudo apt update
+sudo apt -y upgrade
+sudo apt install -y npm   
+```
+
+
 ```
 curl -sL https://firebase.tools | bash
 firebase login
 ```
-* ブラウザを勝手に開くのでログインする。ブラウザを開けない環境ならciモードで。
+* ブラウザを勝手に開くのでログインする。ブラウザを開けない環境なら `firebase login:ci`。
   https://firebase.google.com/docs/cli?hl=ja
 
 * firebase-tools upgrade:  
 `sudo npm install -g firebase-tools`
   
-*  npm も upgradeが必要なら...  
-`sudo apt upgrade`
-   
 
 
 ```

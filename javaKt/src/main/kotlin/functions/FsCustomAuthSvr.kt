@@ -20,13 +20,17 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import java.io.BufferedWriter
 import java.io.IOException
+import java.util.*
 
 
 data class Credential(val id: String, val pw: String)
 
 class reqestToken : HttpFunction {
     @Throws(IOException::class)
-    override fun service(request: com.google.cloud.functions.HttpRequest, response: com.google.cloud.functions.HttpResponse) {
+    override fun service(
+        request: com.google.cloud.functions.HttpRequest,
+        response: com.google.cloud.functions.HttpResponse
+    ) {
         val writer: BufferedWriter = response.getWriter()
         try {
             val cr = Credential(request.queryParameters["id"]!![0]!!, request.queryParameters["pw"]!![0]!!)
@@ -37,23 +41,23 @@ class reqestToken : HttpFunction {
     }
 }
 
+val firebase = FirebaseApp.initializeApp()!!
+
 fun createCustomToken(credential: Credential): String {
-    FirebaseApp.initializeApp()
+    val db = FirestoreOptions.getDefaultInstance().service ?: return "db:"
+    val dev = db.collection("device").document(credential.id).get().get()?.data?.get("dev") as Map<String, Object>?
+        ?: return "dev:"
+    val pw = dev.get("password") as String? ?: return "pw:"
+    if (pw != credential.pw) return "pw!=:"
 
-    val db = FirestoreOptions.getDefaultInstance().service ?: return ""
-    val dev = db.collection("device").document(credential.id).get().get()?.data ?: return ""
-    val devPw = dev.get("password") as String? ?: return ""
-    if (devPw != credential.pw) return ""
-
-    val devClusterId = dev.get("cluster") as String? ?: return ""
+    val clusterId = dev.get("cluster") as String? ?: return "cluster:"
     val additionalClaims = mapOf(
-            "id" to credential.id,
-            "cluster" to devClusterId,
+        "id" to credential.id,
+        "cluster" to clusterId,
     )
 
-    val mAuth = FirebaseAuth.getInstance()
     val serviceUserId = "firebase-adminsdk-rc191@road-to-iot.iam.gserviceaccount.com"
-    val customJwtToken = mAuth.createCustomToken(serviceUserId, additionalClaims)
+    val customJwtToken = FirebaseAuth.getInstance().createCustomToken(serviceUserId, additionalClaims)
     //customJwtToken.split(".").take(2).map { println(String(Base64.getDecoder().decode(it))) }
 
     return customJwtToken
