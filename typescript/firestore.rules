@@ -1,0 +1,152 @@
+rules_version = '2';
+service cloud.firestore {
+
+  // device/{doc}のアクセス可能条件
+  function isReadableDevice(req,doc) {
+  	return 
+    	req.auth.token.id==doc.id 	//カスタム認証で自分自身(token.idとdoc.idが一致する)の場合
+    	|| req.auth.uid != null   // TODO: groupにuidが登録されている場合
+		;
+  }
+  function isAdmin() {return request.auth.uid=="95JHJgC1VnTpGZNzBNdzgsN7TWv2";}
+  
+  match /databases/{db}/documents {
+    
+    // group (userのみがアクセス)
+    match /group/{gr} { 
+      allow read: 
+        if resource.data.users[request.auth.uid]
+        // user自身が所属のgroupのみ
+      ;
+      allow delete:  if request.auth.uid != null 
+        && resource.data.users[request.auth.uid] // 自身が登録済
+        // Relation
+        //&& get(/databases/$(db)/documents/group/{gr}).data.parent //自身を親とするGがない
+        && resource.id != "world" // 無くなるとアクセスできるユーザがいなくなる
+      ;
+      allow create,update:  
+        if request.resource.data.users[request.auth.uid]
+          // 作成されるグループにuser自身が所属
+        && get(/databases/$(db)/documents/group/$(request.resource.data.parent)).data.users[request.auth.uid]
+          // 作成されるグループの親グループにuser自身が所属
+      ;
+      
+      // group/channel/broadcast
+      match /channel/{ch} {
+        allow read,write: if request.auth.uid != null 
+          && get(/databases/$(db)/documents/group/$(gr)).data.users[request.auth.uid]
+          // broadcastを発したgroupにuser自身が登録されている
+        ;
+      }
+    }
+    
+    // device
+    match /device/{dev} {
+      allow read:  if 
+        get(/databases/$(db)/documents/group/$(resource.data.dev.cluster)).data.users[request.auth.uid]
+        // 対象deviceのclusterに操作userが含まれる
+        || resource.data.dev.cluster==request.auth.token.cluster  // Device Permission
+        || resource.data.dev.cluster==request.auth.token.cluster  // Device Permission
+        // 対象deviceのclusterが操作deviceのclusterと等しい(CustomToken参照)
+				|| resource.data!=null
+			;
+			allow write:  if request.auth.uid != null // Permission
+        // Data Schema
+      	&& request.resource.data.dev.cluster is string
+      	&& request.resource.data.type is map
+      	&& request.resource.data.dev.password is string
+        && request.resource.data.dev.password.size() >=8  
+        && request.resource.data.dev.password.size() <=64 
+        // Business Logic
+        && get(/databases/$(db)/documents/group/$(request.resource.data.dev.cluster)).data.type.group.cluster!=null
+          // deviceが属するgroupはclusterである
+        && get(/databases/$(db)/documents/group/$(request.resource.data.dev.cluster)).data.users[request.auth.uid ]  
+          // deviceが属するgroupにはuser自信が登録されている
+      ;
+      allow delete: if request.auth.uid != null // Permission
+        && get(/databases/$(db)/documents/group/$(resource.data.dev.cluster))
+        .data.users[request.auth.uid ]  // dev.clusterにuidが登録されている
+      ;
+
+      // device/{dev}/logs
+      match /logs/{log} {
+        allow read: if request.auth.uid != null
+          || resource.data.cluster==get(/databases/$(db)/documents/device/$(dev)).data.cluster
+          // Device Permission
+        ;
+        allow create,update: if 
+          (request.auth.uid != null
+            || request.auth.token.cluster==get(/databases/$(db)/documents/device/$(dev)).data.cluster
+          )
+          && resource.data.dev.id==request.auth.token.id
+          // Device Permission
+        ;
+      }
+      // device/query
+      match /query/{query} {
+        allow read,write: if 
+          get(/databases/$(db)/documents/group/$(
+                 get(/databases/$(db)/documents/device/$(dev)).data.dev.cluster
+          )).data.users[request.auth.uid]
+          // user自身が、query対象deviceが属するclusterに所属する場合
+        ;
+        match /results/{results} {
+          allow read,write: if 
+            get(/databases/$(db)/documents/group/$(
+                   get(/databases/$(db)/documents/device/$(dev)).data.dev.cluster
+            )).data.users[request.auth.uid]
+            // user自身が、result対象deviceが属するclusterに所属する場合
+          ;
+        }
+      }
+
+      // device/app1
+      match /app1/{app} {
+        allow read: if request.auth.uid != null
+          || resource.data.cluster==get(/databases/$(db)/documents/device/$(dev)).data.cluster  // Device Permission
+        ;
+        allow write: if request.auth.uid != null
+          //|| request.auth.token.cluster==get(/databases/$(db)/documents/device/$(dev)).data.cluster  // Device Permission
+        ;
+      }
+    }
+    
+    // User 
+    match /user/{uid} {
+			allow read,write: if request.auth.uid != null
+      ;
+      
+      match /app1/{app} {
+      	allow read,write: if request.auth.uid != null
+        ;
+      }
+  	}
+
+    // tmp //Test 
+    match /tmp/{doc} {
+			allow read,write: if request.auth.uid != null
+      ;
+    }
+    match /tmpCount/{doc} {
+     	allow read,write: if request.auth.uid != null
+      ;
+    }
+
+    // for Collection Group
+    // device/logs collectionGroupにわたってログを収集可能とする
+    match /{path=**}/device/{dev}/logs/{log} {
+    	allow read: if request.auth.uid != null
+        && get(/databases/$(db)/documents/group/$(
+               get(/databases/$(db)/documents/device/$(dev)).data.dev.cluster
+        )).data.users[request.auth.uid] // 対象のdevice所属のgroupにuser自身が登録されされている
+      ;
+    } 
+  } 
+  
+	// 全能管理者(uidはその時の管理者のuidを指定する)
+	match /databases/{database}/documents/{document=**} {
+      allow read, write:  if isAdmin();
+      //allow read, write:  if true; // TODO: ノーガード危険
+  }
+
+}
