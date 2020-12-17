@@ -37,16 +37,7 @@ firebase deploy
 2. `helloWorld`のトリガーURLを確認し開く
 
 
-サービスアカウントに権限追加
-----
-* https://firebase.google.com/docs/auth/admin/create-custom-tokens?hl=ja
 
-サービス アカウント ID を使用する
- - Google が管理する環境でこの方法を使用すると、指定したサービス アカウントのキーを使用してトークンに署名されます。 ただし、リモート ウェブサービスを使用するため、Google Cloud Platform Console でこのサービス アカウントに追加の権限を構成しなければならない場合があります。
 
-https://console.cloud.google.com/identity/serviceaccounts?project=road-to-iot
-firebase-adminsdk-rc191@road-to-iot.iam.gserviceaccount.com
-に対して
-- アカウントが有効であることを確認
 
 
