@@ -38,6 +38,10 @@ firebase deploy
 
 
 
-
-
+Test
+----
+```
+https://us-central1-road-to-iot.cloudfunctions.net/requestToken?id=agent1&pw=1234eeee
+```
+URLはConsoleで確認
 
