@@ -1,8 +1,32 @@
-[![official JetBrains project](https://jb.gg/badges/official.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
-[![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
+UniAgent for node.js
+====
 
-# Full Stack JVM & JS App Hands-On Lab
+Environment
+----
+- Java
 
-This repository is the code corresponding to the hands-on lab [Building a Full Stack Web App with Kotlin Multiplatform](https://play.kotlinlang.org/hands-on/Full%20Stack%20Web%20App%20with%20Kotlin%20Multiplatform/).
+```
+git clone -d 1 https://github.com/kyoya-p/riotProj
+cd UniAgent_ktJs
+```
 
-**The master branch is to be used as a template. If you would like to see the completed project, check out the [final](https://github.com/kotlin-hands-on/jvm-js-fullstack/tree/final) branch.**
+Build
+----
+```
+./gradlew build
+```
+
+Run
+----
+```
+./gradlew runUniAgent
+```
+see: "runUniAgent" task in file 'build.gradle.kts'.
+
+or
+``` 
+[Linux]
+.gradle/nodejs/node-v12.18.3-linux-x64/bin/node build/js/packages/UniAgent/kotlin/UniAgent.js MetaAgent1 1234xxxx
+[Windows]
+.gradle/nodejs/node-v12.18.3-win-x64/node.exe build/js/packages/UniAgent/kotlin/UniAgent.js MetaAgent1 1234xxxx
+```
