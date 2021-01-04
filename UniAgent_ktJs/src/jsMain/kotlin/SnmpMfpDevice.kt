@@ -1,18 +1,16 @@
 package snmpMfpDevice
 
 import firebaseInterOp.App
-import firebaseInterOp.decodeFrom
+import firebaseInterOp.Firestore.*
+import firebaseInterOp.await
 import gdvm.agent.mib.GdvmDeviceInfo
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
-import netSnmp.PDU
-import netSnmp.SnmpTarget
+import netSnmp.*
 
 // device/{SnmpAgent}
 @Serializable
@@ -26,20 +24,20 @@ data class SnmpDevide(
 @Serializable
 data class SnmpDevice_Query(
     val schedule: Schedule = Schedule(1),
-    val pdl: PDU,
-    val time: Long? = null,
+    val pdu: PDU,
+    val reqTime: Long? = null,
+    val responded: Boolean,
 )
 
-// device/{SnmpDevice}/query/{SnmpDevice_Query}
+// device/{SnmpDevice}/query/{SnmpDevice_Query}/result/{SnmpDevice_Query_Result}
 @Serializable
 data class SnmpDevice_Query_Result(
     val schedule: Schedule = Schedule(1),
-    val pdl: PDU,
+    val pdu: PDU,
     val time: Long? = null,
 )
 
-
-/// ------
+/// for Agent ------
 @Serializable
 data class SnmpAgentQuery_Discovery(
     val scanAddrSpecs: List<SnmpTarget>,
@@ -68,18 +66,52 @@ data class Schedule(
     val interval: Long = 0,
 )
 
+@InternalCoroutinesApi
 @ExperimentalCoroutinesApi
 suspend fun runSnmpMfpDevice(firebase: App, deviceId: String, secret: String) {
     println("Start SNMP MFP Device ID:$deviceId    (Ctrl-C to Terminate)")
 
     val db = firebase.firestore()
-    callbackFlow {
-        db.collection("device").doc(deviceId).addSnapshotListener { docSS ->
-            val snmpMfpDevice: SnmpDevide = decodeFrom<SnmpDevide>(Json {}.encodeToString(docSS))
-            offer(snmpMfpDevice)
+    val devRef = db.collection("device").doc(deviceId)
+    val devQueryRef = devRef.collection("query")
+    devQueryRef.where("responded", "==", false).addSnapshotListener { querySS ->
+        querySS?.data?.forEach { querySs ->
+            val decoder = Json { ignoreUnknownKeys = true }
+            //val query = decoder.decodeFromString<SnmpDevice_Query>(Json {}.encodeToString(ss.data))
+            GlobalScope.launch {
+                querySnmp(devRef, querySs.reference, querySs)
+            }
         }
-        awaitClose()
-    }.collectLatest { snmpDevice ->
-        println("SNMP Target: ${snmpDevice.target}")
     }
 }
+
+private suspend inline fun <reified R> DocumentReference.body(): R =
+    Json { ignoreUnknownKeys = true }.decodeFromString<R>(Json {}.encodeToString(this@body.get().await().data))
+
+private suspend inline fun <reified R> DocumentSnapshot.body(): R =
+    Json { ignoreUnknownKeys = true }.decodeFromString<R>(Json {}.encodeToString(this@body.data))
+
+suspend fun querySnmp(devRef: DocumentReference, queryRef: DocumentReference, querySs: DocumentSnapshot) {
+    val dev: SnmpDevice = devRef.body()
+    val devQuery: SnmpDevice_Query = querySs.body()
+    val snmpSession = Snmp.createSession(dev.target.addr, dev.target.credential.v1commStr)
+
+    val callback = { error: dynamic, varbinds: List<VarBind> ->
+        println("callback")
+        when {
+            error == null -> {
+                varbinds.forEach {
+                    println("${it} ${it.value}")
+                }
+                queryRef.collection("result").doc().set(varbinds)
+            }
+            else -> println("Error: $error")
+        }
+    }
+    when (devQuery.pdu.type) {
+        GET -> snmpSession.get(devQuery.pdu.vbl.map { it.oid }.toTypedArray(), callback)
+        GETNEXT -> snmpSession.getNext(devQuery.pdu.vbl.map { it.oid }.toTypedArray(), callback)
+    }
+}
+
+

@@ -120,11 +120,10 @@ tasks.register<NodeTask>("runUniAgent") {
     script.set(file("build/js/packages/UniAgent/kotlin/UniAgent.js"))
     args.set(listOf("MetaAgent1","1234xxxx"))
 }
-/*
-task runAgent(type: NodeTask, dependsOn: build) {
-    script = file('build/js/packages/FsJsAgent/kotlin/FsJsAgent.js')
-    args = ['MetaAgent1', '1234xxxx']
-}
 
- */
+tasks.register<NodeTask>("runUniAgent_2") {
+    dependsOn(tasks.build, tasks.nodeSetup)
+    script.set(file("build/js/packages/UniAgent/kotlin/UniAgent.js"))
+    args.set(listOf("snmpDevice1","Sharp_#1"))
+}
 
