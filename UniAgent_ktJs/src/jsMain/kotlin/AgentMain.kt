@@ -14,6 +14,8 @@ import kotlinx.serialization.json.JsonObject
 import snmpMfpDevice.runSnmpMfpDevice
 import kotlin.js.Date
 
+
+
 external val process: dynamic
 val args: Array<String> get() = process.argv
 
@@ -22,8 +24,11 @@ val customTokenSvr = "https://us-central1-road-to-iot.cloudfunctions.net/request
 @InternalCoroutinesApi
 @ExperimentalCoroutinesApi
 suspend fun main(): Unit = GlobalScope.launch {
+    val ga=require("global-agent")
+    ga.bootstrap()
+
     if (args.size != 4) {
-        println("syntax: node FsJsAgent.js <agentId> <secret>")
+        println("syntax: node UniAgent.js <agentId> <secret>")
         return@launch
     }
     val deviceId = args[2]

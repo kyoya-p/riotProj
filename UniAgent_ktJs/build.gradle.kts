@@ -62,8 +62,9 @@ kotlin {
 
         val jsMain by getting {
             dependencies {
-                api(npm("firebase", "8.0.0"))
-                api(npm("net-snmp", "2.10.1"))
+                implementation(npm("firebase", "8.0.0"))
+                implementation(npm("net-snmp", "2.10.1"))
+                implementation(npm("global-agent", "2.1.12"))
             }
         }
     }
@@ -118,12 +119,20 @@ tasks.getByName<JavaExec>("run") {
 tasks.register<NodeTask>("runUniAgent") {
     dependsOn(tasks.build, tasks.nodeSetup)
     script.set(file("build/js/packages/UniAgent/kotlin/UniAgent.js"))
-    args.set(listOf("MetaAgent1","1234xxxx"))
+    args.set(listOf("MetaAgent1", "1234xxxx"))
 }
 
 tasks.register<NodeTask>("runUniAgent_2") {
     dependsOn(tasks.build, tasks.nodeSetup)
     script.set(file("build/js/packages/UniAgent/kotlin/UniAgent.js"))
-    args.set(listOf("snmpDevice1","Sharp_#1"))
+    args.set(listOf("snmpDevice1", "Sharp_#1"))
 }
 
+tasks.register<Zip>("zipPackage") {
+    dependsOn(tasks.build, tasks.nodeSetup)
+
+    destinationDirectory.set(file(".."))
+    archiveFileName.set("uniAgent.zip")
+
+    from("build/js", ".gradle/nodejs")
+}
