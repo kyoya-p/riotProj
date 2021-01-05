@@ -74,11 +74,14 @@ suspend fun runSnmpMfpDevice(firebase: App, deviceId: String, secret: String) {
     val db = firebase.firestore()
     val devRef = db.collection("device").doc(deviceId)
     val devQueryRef = devRef.collection("query")
-    devQueryRef.where("responded", "==", false).addSnapshotListener { querySS ->
-        querySS?.data?.forEach { querySs ->
+    devQueryRef.where("responded", "==", false).onSnapshot { querySS ->
+        querySS?.docs?.forEach { querySs ->
             val decoder = Json { ignoreUnknownKeys = true }
             //val query = decoder.decodeFromString<SnmpDevice_Query>(Json {}.encodeToString(ss.data))
             GlobalScope.launch {
+                val x = querySs.reference // TODO
+                println("x=${querySs.raw.reference.path}") //TODO
+                println("x=${x.raw}") //TODO
                 querySnmp(devRef, querySs.reference, querySs)
             }
         }
@@ -88,12 +91,14 @@ suspend fun runSnmpMfpDevice(firebase: App, deviceId: String, secret: String) {
 private suspend inline fun <reified R> DocumentReference.body(): R =
     Json { ignoreUnknownKeys = true }.decodeFromString<R>(Json {}.encodeToString(this@body.get().await().data))
 
-private suspend inline fun <reified R> DocumentSnapshot.body(): R =
+private inline fun <reified R> DocumentSnapshot.body(): R =
     Json { ignoreUnknownKeys = true }.decodeFromString<R>(Json {}.encodeToString(this@body.data))
 
-suspend fun querySnmp(devRef: DocumentReference, queryRef: DocumentReference, querySs: DocumentSnapshot) {
+suspend fun querySnmp(devRef: DocumentReference, queryRef: DocumentReference, querySs: QueryDocumentSnapshot) {
+    println("queryRef.path= ${queryRef.path}") //TODO
+
     val dev: SnmpDevice = devRef.body()
-    val devQuery: SnmpDevice_Query = querySs.body()
+    val devQuery: SnmpDevice_Query = querySs.data.toObject()
     val snmpSession = Snmp.createSession(dev.target.addr, dev.target.credential.v1commStr)
 
     val callback = { error: dynamic, varbinds: List<VarBind> ->

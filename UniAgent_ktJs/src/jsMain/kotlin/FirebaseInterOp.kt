@@ -79,6 +79,12 @@ class Firestore(val raw: dynamic) {
         //    ListenerRegistration(raw.onSnapshot { doc -> listener.onEvent(QuerySnapshot(doc)) })
         fun addSnapshotListener(listener: (QuerySnapshot?) -> Unit): ListenerRegistration =
             ListenerRegistration(raw.onSnapshot { doc -> listener(QuerySnapshot(doc)) })
+
+        fun onSnapshot(listener: (QuerySnapshot?) -> Unit): ListenerRegistration =
+            ListenerRegistration(raw.onSnapshot { doc ->
+                println("DOC.path= ${doc.reference.path}")//TODO
+                listener(QuerySnapshot(doc))
+            })
     }
 
     class CollectionReference(raw: dynamic) : Query(raw) {
@@ -88,7 +94,7 @@ class Firestore(val raw: dynamic) {
         fun doc() = document()
     }
 
-    class DocumentReference(raw: dynamic) : Query(raw) {
+    class DocumentReference(val raw: dynamic) {
         fun collection(id: String) = CollectionReference(raw.collection(id))
 
         fun get(): Promise<DocumentSnapshot> =
@@ -103,6 +109,8 @@ class Firestore(val raw: dynamic) {
 
         fun addSnapshotListener(listener: (DocumentSnapshot?) -> Unit): ListenerRegistration =
             ListenerRegistration(raw.onSnapshot { doc -> listener(DocumentSnapshot(doc)) })
+
+        val path: String get() = raw.path
     }
 
     fun interface EventListener<T> {
@@ -121,14 +129,25 @@ class Firestore(val raw: dynamic) {
     }
 
     class QuerySnapshot(val raw: dynamic) {
-        val data: List<DocumentSnapshot>?
+        val docs: List<QueryDocumentSnapshot>?
             get() {
-                val docs = raw.docs ?: return null
-                return (0 until raw.size).map { DocumentSnapshot(docs[it]) }
+                return Json {}.decodeFromString(JSON.stringify(raw.data() ?: return null))
             }
 
-        val id: String get() = raw.id
+        val size: Int get() = raw.size
     }
+
+    class QueryDocumentSnapshot(val raw: dynamic) {
+        val data: JsonObject?
+            get() {
+                return Json {}.decodeFromString(JSON.stringify(raw.data() ?: return null))
+            }
+        val reference: DocumentReference get() = DocumentReference(raw.reference)
+    }
+}
+
+fun <T> Firestore.QueryDocumentSnapshot.toObject{
+    return Json {}.decodeFromString<T>(JSON.stringify(raw.data() ?: return null))
 }
 
 @Suppress("UNCHECKED_CAST")
