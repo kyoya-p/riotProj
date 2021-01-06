@@ -126,6 +126,11 @@ tasks.register<Zip>("zipPackage") {
     from(".gradle/nodejs", "build/js")
 }
 
+
+val proxySettings=mapOf(
+    "" to ""
+)
+
 tasks.register<NodeTask>("runUniAgent") {
     dependsOn(tasks.build, tasks.nodeSetup)
     script.set(file("build/js/packages/UniAgent/kotlin/UniAgent.js"))
@@ -136,4 +141,5 @@ tasks.register<NodeTask>("runUniAgent_2") {
     dependsOn(tasks.build, tasks.nodeSetup)
     script.set(file("build/js/packages/UniAgent/kotlin/UniAgent.js"))
     args.set(listOf("snmpDevice1", "Sharp_#1"))
+    environment.set(proxySettings)
 }
