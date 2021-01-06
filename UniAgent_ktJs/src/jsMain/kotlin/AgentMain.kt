@@ -11,7 +11,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import snmpMfpDevice.runSnmpMfpDevice
+import snmpDevice.runSnmpDevice
 import kotlin.js.Date
 
 
@@ -88,7 +88,7 @@ suspend fun mainGenericDevice(firebase: App, deviceId: String, secret: String) =
 
         operator fun JsonElement?.get(key: String): JsonElement? = if (this is JsonObject) this[key] else null
         when {
-            type["dev"]["mfp"]["snmp"] != null -> runSnmpMfpDevice(firebase, deviceId, secret)
+            type["dev"]["mfp"]["snmp"] != null -> runSnmpDevice(firebase, deviceId, secret)
             //type["dev"]["agent"]["snmp"] != null -> runSnmpAgent(firebase, deviceId, secret)
             //type["dev"]["agent"]["stressTest"] != null -> runStressTestAgent(firebase, deviceId, secret)
             //type["dev"]["agent"]["launcher"] != null -> runLauncherAgent(firebase, deviceId, secret)

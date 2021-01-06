@@ -1,28 +1,18 @@
-package snmpMfpDevice
+package snmpDevice
 
 import firebaseInterOp.*
 import firebaseInterOp.Firestore.*
 import firebaseInterOp.await
-import gdvm.agent.mib.GdvmDeviceInfo
 import kotlinx.coroutines.*
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonArray
-import kotlinx.serialization.json.buildJsonObject
 import netSnmp.*
 import kotlin.js.json
 
-// device/{SnmpAgent}
 @Serializable
-data class SnmpDevide(
-    val dev: GdvmDeviceInfo,
-    val type: JsonObject, // {"dev":{"mfp":{"snmp":{}}}}
+data class SnmpDevice(
     val target: SnmpTarget,
+    val deviceId: String? = null, // if defined, connecet platform with this ID.
+    val password: String = "#1_Sharp",
 )
 
 // device/{SnmpDevice}/query/{SnmpDevice_Query}
@@ -58,12 +48,7 @@ data class SnmpAgentQuery_DeviceBridge(
     val time: Long? = null,
 )
 
-@Serializable
-data class SnmpDevice(
-    val target: SnmpTarget,
-    val deviceId: String? = null, // if defined, connecet platform with this ID.
-    val password: String = "#1_Sharp",
-)
+
 
 @Serializable
 data class Schedule(
@@ -73,24 +58,18 @@ data class Schedule(
 
 @InternalCoroutinesApi
 @ExperimentalCoroutinesApi
-suspend fun runSnmpMfpDevice(firebase: App, deviceId: String, secret: String) {
+suspend fun runSnmpDevice(firebase: App, deviceId: String, secret: String) {
     println("Start SNMP Device ID:$deviceId    (Ctrl-C to Terminate)")
 
     val db = firebase.firestore()
     val devRef = db.collection("device").doc(deviceId)
     val devQueryRef = devRef.collection("query")
-    devQueryRef.where("responded", "==", false).onSnapshot { querySS ->
-        querySS.docs.forEach { querySs ->
-            GlobalScope.launch { querySnmp(devRef, querySs.ref, querySs) }
+    devQueryRef.where("responded", "==", false).onSnapshot { queriesSS ->
+        queriesSS.docs.forEach { querySS ->
+            GlobalScope.launch { querySnmp(devRef, querySS.ref, querySS) }
         }
     }
 }
-
-private suspend inline fun <reified R> DocumentReference.body(): R =
-    Json { ignoreUnknownKeys = true }.decodeFromString<R>(Json {}.encodeToString(this@body.get().await().data))
-
-private inline fun <reified R> DocumentSnapshot.body(): R =
-    Json { ignoreUnknownKeys = true }.decodeFromString<R>(Json {}.encodeToString(this@body.data))
 
 suspend fun querySnmp(devRef: DocumentReference, queryRef: DocumentReference, querySs: QueryDocumentSnapshot) {
     println("Start SNMP Device Query Path:${queryRef.path}") //TODO
