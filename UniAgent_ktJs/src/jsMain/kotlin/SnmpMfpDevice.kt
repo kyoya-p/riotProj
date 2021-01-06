@@ -1,16 +1,21 @@
 package snmpMfpDevice
 
-import firebaseInterOp.App
+import firebaseInterOp.*
 import firebaseInterOp.Firestore.*
 import firebaseInterOp.await
 import gdvm.agent.mib.GdvmDeviceInfo
 import kotlinx.coroutines.*
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
 import netSnmp.*
+import kotlin.js.json
 
 // device/{SnmpAgent}
 @Serializable
@@ -69,21 +74,14 @@ data class Schedule(
 @InternalCoroutinesApi
 @ExperimentalCoroutinesApi
 suspend fun runSnmpMfpDevice(firebase: App, deviceId: String, secret: String) {
-    println("Start SNMP MFP Device ID:$deviceId    (Ctrl-C to Terminate)")
+    println("Start SNMP Device ID:$deviceId    (Ctrl-C to Terminate)")
 
     val db = firebase.firestore()
     val devRef = db.collection("device").doc(deviceId)
     val devQueryRef = devRef.collection("query")
     devQueryRef.where("responded", "==", false).onSnapshot { querySS ->
-        querySS?.docs?.forEach { querySs ->
-            val decoder = Json { ignoreUnknownKeys = true }
-            //val query = decoder.decodeFromString<SnmpDevice_Query>(Json {}.encodeToString(ss.data))
-            GlobalScope.launch {
-                val x = querySs.reference // TODO
-                println("x=${querySs.raw.reference.path}") //TODO
-                println("x=${x.raw}") //TODO
-                querySnmp(devRef, querySs.reference, querySs)
-            }
+        querySS.docs.forEach { querySs ->
+            GlobalScope.launch { querySnmp(devRef, querySs.ref, querySs) }
         }
     }
 }
@@ -95,20 +93,25 @@ private inline fun <reified R> DocumentSnapshot.body(): R =
     Json { ignoreUnknownKeys = true }.decodeFromString<R>(Json {}.encodeToString(this@body.data))
 
 suspend fun querySnmp(devRef: DocumentReference, queryRef: DocumentReference, querySs: QueryDocumentSnapshot) {
-    println("queryRef.path= ${queryRef.path}") //TODO
+    println("Start SNMP Device Query Path:${queryRef.path}") //TODO
+    val dev = devRef.get().await().dataAs<SnmpDevice>()!!
 
-    val dev: SnmpDevice = devRef.body()
-    val devQuery: SnmpDevice_Query = querySs.data.toObject()
+    val devQuery = querySs.dataAs<SnmpDevice_Query>()!!
     val snmpSession = Snmp.createSession(dev.target.addr, dev.target.credential.v1commStr)
 
     val callback = { error: dynamic, varbinds: List<VarBind> ->
-        println("callback")
-        when {
-            error == null -> {
-                varbinds.forEach {
-                    println("${it} ${it.value}")
-                }
-                queryRef.collection("result").doc().set(varbinds)
+        println("callback") //TODO
+        when (error) {
+            null -> {
+                val vbl = json("vbl" to varbinds.map {
+                    json(
+                        "oid" to it.oid,
+                        "type" to it.type,
+                        "value" to it.value.toString(),
+                    )
+                }.toTypedArray())
+                queryRef.collection("result").doc().set(vbl)
+                varbinds.forEach { println(it) } //TODO
             }
             else -> println("Error: $error")
         }

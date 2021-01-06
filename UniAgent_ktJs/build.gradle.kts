@@ -119,10 +119,11 @@ tasks.getByName<JavaExec>("run") {
 tasks.register<Zip>("zipPackage") {
     dependsOn(tasks.build, tasks.nodeSetup)
 
-    destinationDirectory.set(file(".."))
+    //destinationDirectory.set(file(".."))
     archiveFileName.set("uniAgent.zip")
 
-    from("build/js", ".gradle/nodejs")
+    //from("build/js", ".gradle/nodejs")
+    from(".gradle/nodejs", "build/js")
 }
 
 tasks.register<NodeTask>("runUniAgent") {

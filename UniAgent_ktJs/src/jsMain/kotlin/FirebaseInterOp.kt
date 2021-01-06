@@ -2,9 +2,6 @@ package firebaseInterOp
 
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.promise
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationStrategy
-import kotlinx.serialization.Serializer
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.*
 import kotlin.coroutines.resume
@@ -22,18 +19,26 @@ suspend fun <T> Promise<T>.await(): T = suspendCoroutine { cont ->
 class Firebase {
     companion object {
         fun initializeApp(apiKey: String, authDomain: String, projectId: String, name: String? = null): App {
+            val ga = require("global-agent")
+            ga.bootstrap()
+
+            // See: https://medium.com/faun/firebase-accessing-firestore-and-firebase-through-a-proxy-server-c6c6029cddb1
+            val HttpsProxyAgent = require("https-proxy-agent")
+            val agent = HttpsProxyAgent("http://admin:admin@172.29.241.32:807")
+
             val firebase = require("firebase/app")
             require("firebase/auth")
             require("firebase/firestore")
-            data class Config(val apiKey: String, val authDomain: String, val projectId: String)
-            name ?: return App(firebase.initializeApp(Config(apiKey, authDomain, projectId)))
-            return App(firebase.initializeApp(Config(apiKey, authDomain, projectId), name))
+            data class Config(
+                val apiKey: String, val authDomain: String, val projectId: String, val httpAgent: dynamic,
+            )
+            name ?: return App(firebase.initializeApp(Config(apiKey, authDomain, projectId, agent)))
+            return App(firebase.initializeApp(Config(apiKey, authDomain, projectId, agent), name))
         }
     }
 }
 
 class App(val raw: dynamic) {
-    fun app(appName: String) = App(raw.app(appName))
     fun auth() = Auth(raw.auth())
     fun auth(app: App) = Auth(raw.auth(app.raw))
     fun firestore() = Firestore(raw.firestore())
@@ -80,9 +85,8 @@ class Firestore(val raw: dynamic) {
         fun addSnapshotListener(listener: (QuerySnapshot?) -> Unit): ListenerRegistration =
             ListenerRegistration(raw.onSnapshot { doc -> listener(QuerySnapshot(doc)) })
 
-        fun onSnapshot(listener: (QuerySnapshot?) -> Unit): ListenerRegistration =
+        fun onSnapshot(listener: (QuerySnapshot) -> Unit): ListenerRegistration =
             ListenerRegistration(raw.onSnapshot { doc ->
-                println("DOC.path= ${doc.reference.path}")//TODO
                 listener(QuerySnapshot(doc))
             })
     }
@@ -103,9 +107,7 @@ class Firestore(val raw: dynamic) {
         fun get(field: String): Promise<DocumentSnapshot> =
             GlobalScope.promise { raw.get(field).then { d -> return@then DocumentSnapshot(d) } }
 
-        fun set(doc: Any): Promise<Unit> = GlobalScope.promise { raw.set(doc).then { return@then Unit } }
-        //fun addSnapshotListener(listener: EventListener<DocumentSnapshot>): ListenerRegistration =
-        //    ListenerRegistration(raw.onSnapshot { doc -> listener.onEvent(DocumentSnapshot(doc)) })
+        fun set(doc: dynamic): Promise<Unit> = GlobalScope.promise { raw.set(doc).then { return@then Unit } }
 
         fun addSnapshotListener(listener: (DocumentSnapshot?) -> Unit): ListenerRegistration =
             ListenerRegistration(raw.onSnapshot { doc -> listener(DocumentSnapshot(doc)) })
@@ -118,35 +120,48 @@ class Firestore(val raw: dynamic) {
     }
 
     class DocumentSnapshot(val raw: dynamic) {
+        val id: String get() = raw.id
+        val ref: DocumentReference get() = DocumentReference(raw.ref)
+
         val data: JsonObject?
             get() {
                 val data = raw.data() ?: return null
-                return Json {}.decodeFromString(JSON.stringify(data))
+                return Json { ignoreUnknownKeys = true }.decodeFromString(JSON.stringify(data))
             }
 
-        val id: String get() = raw.id
-        val reference: DocumentReference get() = DocumentReference(raw.reference)
+        inline fun <reified T> dataAs(): T? {
+            val data = raw.data() ?: return null
+            return Json { ignoreUnknownKeys = true }.decodeFromString<T>(JSON.stringify(data))
+        }
     }
 
     class QuerySnapshot(val raw: dynamic) {
-        val docs: List<QueryDocumentSnapshot>?
-            get() {
-                return Json {}.decodeFromString(JSON.stringify(raw.data() ?: return null))
-            }
+        val docs: List<QueryDocumentSnapshot>
+            get() = (0 until raw.size as Int).map { QueryDocumentSnapshot(raw.docs[it]) }
 
         val size: Int get() = raw.size
     }
 
     class QueryDocumentSnapshot(val raw: dynamic) {
-        val data: JsonObject?
-            get() {
-                return Json {}.decodeFromString(JSON.stringify(raw.data() ?: return null))
-            }
-        val reference: DocumentReference get() = DocumentReference(raw.reference)
+        val ref: DocumentReference get() = DocumentReference(raw.ref)
+        fun data(): JsonObject? {
+            val data = raw.data() ?: return null
+            return Json { ignoreUnknownKeys = true }.decodeFromString(JSON.stringify(data))
+        }
+
+        inline fun <reified T> dataAs(): T? {
+            val data = raw.data() ?: return null
+            return Json { ignoreUnknownKeys = true }.decodeFromString<T>(JSON.stringify(data))
+        }
     }
 }
 
-fun <T> Firestore.QueryDocumentSnapshot.toObject{
+inline fun <reified T> JsonElement.toObject(): T = Json {}.decodeFromString(JSON.stringify(this))
+inline fun <reified T> Firestore.QueryDocumentSnapshot.toObject(): T? {
+    return Json {}.decodeFromString<T>(JSON.stringify(raw.data() ?: return null))
+}
+
+inline fun <reified T> Firestore.DocumentSnapshot.toObject(): T? {
     return Json {}.decodeFromString<T>(JSON.stringify(raw.data() ?: return null))
 }
 

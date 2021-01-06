@@ -15,7 +15,6 @@ import snmpMfpDevice.runSnmpMfpDevice
 import kotlin.js.Date
 
 
-
 external val process: dynamic
 val args: Array<String> get() = process.argv
 
@@ -24,9 +23,6 @@ val customTokenSvr = "https://us-central1-road-to-iot.cloudfunctions.net/request
 @InternalCoroutinesApi
 @ExperimentalCoroutinesApi
 suspend fun main(): Unit = GlobalScope.launch {
-    val ga=require("global-agent")
-    ga.bootstrap()
-
     if (args.size != 4) {
         println("syntax: node UniAgent.js <agentId> <secret>")
         return@launch
@@ -40,6 +36,7 @@ suspend fun main(): Unit = GlobalScope.launch {
 @ExperimentalCoroutinesApi
 @InternalCoroutinesApi
 suspend fun runGenericDevice(deviceId: String, secret: String) = coroutineScope {
+
     val firebase = Firebase.initializeApp(
         apiKey = "AIzaSyDrO7W7Sb6RCpHTsY3GaP-zODRP_HtY4nI",
         authDomain = "road-to-iot.firebaseapp.com",
