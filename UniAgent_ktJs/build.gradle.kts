@@ -137,6 +137,7 @@ tasks.register<NodeTask>("runUniAgent") {
 
 tasks.register<NodeTask>("runUniAgent_2") {
     val PROXY = "http://proxyjp5.sharp.co.jp:3080"
+
     //val PROXY = "http://admin:admin@172.29.241.32:807"
     val proxySettings = mapOf(
             "GLOBAL_AGENT_HTTP_PROXY=" to PROXY,
