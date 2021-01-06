@@ -127,9 +127,7 @@ tasks.register<Zip>("zipPackage") {
 }
 
 
-val proxySettings=mapOf(
-    "" to ""
-)
+
 
 tasks.register<NodeTask>("runUniAgent") {
     dependsOn(tasks.build, tasks.nodeSetup)
@@ -138,8 +136,17 @@ tasks.register<NodeTask>("runUniAgent") {
 }
 
 tasks.register<NodeTask>("runUniAgent_2") {
+    val PROXY = "http://proxyjp5.sharp.co.jp:3080"
+    //val PROXY = "http://admin:admin@172.29.241.32:807"
+    val proxySettings = mapOf(
+            "GLOBAL_AGENT_HTTP_PROXY=" to PROXY,
+            "GLOBAL_AGENT_HTTPS_PROXY=" to PROXY,
+            "http_proxy==" to PROXY,
+            "https_proxy==" to PROXY
+            )
+
     dependsOn(tasks.build, tasks.nodeSetup)
     script.set(file("build/js/packages/UniAgent/kotlin/UniAgent.js"))
     args.set(listOf("snmpDevice1", "Sharp_#1"))
-    environment.set(proxySettings)
+    environment.putAll(proxySettings)
 }
