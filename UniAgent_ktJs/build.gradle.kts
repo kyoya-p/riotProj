@@ -127,8 +127,6 @@ tasks.register<Zip>("zipPackage") {
 }
 
 
-
-
 tasks.register<NodeTask>("runUniAgent") {
     dependsOn(tasks.build, tasks.nodeSetup)
     script.set(file("build/js/packages/UniAgent/kotlin/UniAgent.js"))
