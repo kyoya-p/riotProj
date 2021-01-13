@@ -1,19 +1,18 @@
 rules_version = '2';
+
+function isAdmin() {return request.auth.uid=="95JHJgC1VnTpGZNzBNdzgsN7TWv2";}
+
+// device/{doc}のアクセス可能条件
+function isReadableDevice(req,doc) {
+return req.auth.token.id==doc.id 	//カスタム認証で自分自身(token.idとdoc.idが一致する)の場合
+    || req.auth.uid != null   // TODO: groupにuidが登録されている場合
+    ;
+}
+
 service cloud.firestore {
-
-  // device/{doc}のアクセス可能条件
-  function isReadableDevice(req,doc) {
-  	return
-    	req.auth.token.id==doc.id 	//カスタム認証で自分自身(token.idとdoc.idが一致する)の場合
-    	|| req.auth.uid != null   // TODO: groupにuidが登録されている場合
-		;
-  }
-
-  function isAdmin() {return request.auth.uid=="95JHJgC1VnTpGZNzBNdzgsN7TWv2";}
-
   match /databases/{db}/documents {
  	function userPermissions() {
-       return get(/databases/$(db)/documents/user/$(request.auth.uid)).data.permissions
+       return get(/databases/$(db)/documents/user/$(request.auth.uid)).data.permissions;
     }
     // group (userのみがアクセス)
     match /group/{gr} {

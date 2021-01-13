@@ -14,3 +14,7 @@ firebase init firestore
 - firestore.rules
 
 
+Ruleのdeploy
+```
+firebase deploy --only firestore:rules
+```
