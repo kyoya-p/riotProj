@@ -3,17 +3,26 @@ package snmpDevice
 import firebaseInterOp.*
 import firebaseInterOp.Firestore.*
 import firebaseInterOp.await
+import gdvm.agent.mib.GdvmDeviceInfo
+import gdvm.agent.mib.GdvmTime
 import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
 import netSnmp.*
+import kotlin.js.Date
 import kotlin.js.json
 
 @Serializable
-data class SnmpDevice(
-    val target: SnmpTarget,
-    val deviceId: String? = null, // if defined, connecet platform with this ID.
-    val password: String = "#1_Sharp",
+data class GdvmSnmpDevice(
+    val id: String, // same as document.id
+    val time: GdvmTime = Date().getUTCMilliseconds() as Long,
+    val type: List<String> = listOf("dev", "dev.mfp", "dev.snmp"),
+
+    val dev: GdvmDeviceInfo,
+    val snmp: SnmpTarget,
+    val tags: List<String> = listOf(),
 )
+
+
 
 // device/{SnmpDevice}/query/{SnmpDevice_Query}
 @Serializable
@@ -44,11 +53,9 @@ data class SnmpAgentQuery_Discovery(
 // device/{SnmpAgent}/query/{SnmpAgentQuery_DeviceBridge}
 @Serializable
 data class SnmpAgentQuery_DeviceBridge(
-    val targets: List<SnmpDevice>,
+    val targets: List<GdvmSnmpDevice>,
     val time: Long? = null,
 )
-
-
 
 @Serializable
 data class Schedule(
@@ -73,10 +80,10 @@ suspend fun runSnmpDevice(firebase: App, deviceId: String, secret: String) {
 
 suspend fun querySnmp(devRef: DocumentReference, queryRef: DocumentReference, querySs: QueryDocumentSnapshot) {
     println("Start SNMP Device Query Path:${queryRef.path}") //TODO
-    val dev = devRef.get().await().dataAs<SnmpDevice>()!!
+    val dev = devRef.get().await().dataAs<GdvmSnmpDevice>()!!
 
     val devQuery = querySs.dataAs<SnmpDevice_Query>()!!
-    val snmpSession = Snmp.createSession(dev.target.addr, dev.target.credential.v1commStr)
+    val snmpSession = Snmp.createSession(dev.snmp.addr, dev.snmp.credential.v1commStr)
 
     val callback = { error: dynamic, varbinds: List<VarBind> ->
         println("callback") //TODO

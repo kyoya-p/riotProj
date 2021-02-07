@@ -8,12 +8,16 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonObject
 
+typealias GdvmTime=Long
+typealias GdvmObjectType=List<String>
+
 // /device/{GdvmGenericDevice}
 @Serializable
-data class GdvmGenericDevice(
+data class GdvmGenericDevice( // this is abstract definition for GDVM Object
+    val id: String, // same as document.id
+    val type: GdvmObjectType = listOf("dev"),
+    val time: GdvmTime, // create/update time in msec from epoch
     val dev: GdvmDeviceInfo,
-    val type: JsonObject, //"type:{dev:{}}"
-    val time: Int, // create/update time in msec from epoch
 )
 
 // /device/{GdvmGenericDevice}/query/{GdvmDeviceQuery}
@@ -29,6 +33,7 @@ data class GdvmDeviceQueryResult(
     // アプリケーション定義
     val time: Int, // create/update time in msec from epoch
 )
+
 
 // /device/{GdvmGenericDevice}/log/{GdvmGenericLog}
 @Serializable
@@ -50,8 +55,7 @@ data class GdvmGenericGroup(
 @Serializable
 data class GdvmDeviceInfo(
     val cluster: String,
-    //val name: String = "anonymous",
-    val password: String = "",
+    val password: String = "Sharp_#1",
 ) {
     companion object
 }

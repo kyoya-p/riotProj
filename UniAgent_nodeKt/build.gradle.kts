@@ -133,7 +133,7 @@ tasks.register<NodeTask>("runUniAgent") {
     args.set(listOf("MetaAgent1", "1234xxxx"))
 }
 
-tasks.register<NodeTask>("runUniAgent_2") {
+tasks.register<NodeTask>("runUniAgent_agent") {
     val PROXY = "http://proxyjp5.sharp.co.jp:3080"
 
     //val PROXY = "http://admin:admin@172.29.241.32:807"
