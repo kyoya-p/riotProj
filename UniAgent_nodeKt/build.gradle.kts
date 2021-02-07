@@ -25,7 +25,9 @@ repositories {
     mavenCentral()
     jcenter()
     maven("https://kotlin.bintray.com/kotlin-js-wrappers/") // react, styled, ...
+    maven("https://kotlin.bintray.com/kotlinx/")
 }
+
 
 kotlin {
     jvm {
@@ -65,6 +67,7 @@ kotlin {
                 implementation(npm("firebase", "8.2.6")) // https://www.npmjs.com/package/firebase
                 implementation(npm("net-snmp", "2.10.1"))
                 implementation(npm("global-agent", "2.1.12"))
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.1.1")
             }
         }
     }
@@ -144,11 +147,11 @@ tasks.register<NodeTask>("runUniAgent_agent") {
 
     //val PROXY = "http://admin:admin@172.29.241.32:807"
     val proxySettings = mapOf(
-            "GLOBAL_AGENT_HTTP_PROXY=" to PROXY,
-            "GLOBAL_AGENT_HTTPS_PROXY=" to PROXY,
-            "http_proxy==" to PROXY,
-            "https_proxy==" to PROXY
-            )
+        "GLOBAL_AGENT_HTTP_PROXY=" to PROXY,
+        "GLOBAL_AGENT_HTTPS_PROXY=" to PROXY,
+        "http_proxy==" to PROXY,
+        "https_proxy==" to PROXY
+    )
 
     dependsOn(tasks.build, tasks.nodeSetup)
     script.set(file("build/js/packages/UniAgent/kotlin/UniAgent.js"))

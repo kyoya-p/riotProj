@@ -6,6 +6,9 @@ import firebaseInterOp.await
 import gdvm.agent.mib.GdvmDeviceInfo
 import gdvm.agent.mib.GdvmTime
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.serialization.Serializable
 import netSnmp.*
 import kotlin.js.Date
@@ -21,7 +24,6 @@ data class GdvmSnmpDevice(
     val snmp: SnmpTarget,
     val tags: List<String> = listOf(),
 )
-
 
 
 // device/{SnmpDevice}/query/{SnmpDevice_Query}
@@ -71,10 +73,17 @@ suspend fun runSnmpDevice(firebase: App, deviceId: String, secret: String) {
     val db = firebase.firestore()
     val devRef = db.collection("device").doc(deviceId)
     val devQueryRef = devRef.collection("query")
-    devQueryRef.where("responded", "==", false).onSnapshot { queriesSS ->
+    val now = Date
+    callbackFlow {
+        devQueryRef.where("time", ">", now).onSnapshot { //TODO orderBy
+            offer(it)
+        }
+        awaitClose { }
+    }.collectLatest { queriesSS ->
         queriesSS.docs.forEach { querySS ->
             GlobalScope.launch { querySnmp(devRef, querySS.ref, querySS) }
         }
+        //TODO update last wuery executed
     }
     println("Terminated SNMP Device ID:$deviceId    (Ctrl-C to Terminate)")
 
