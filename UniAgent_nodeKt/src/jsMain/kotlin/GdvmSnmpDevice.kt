@@ -76,6 +76,8 @@ suspend fun runSnmpDevice(firebase: App, deviceId: String, secret: String) {
             GlobalScope.launch { querySnmp(devRef, querySS.ref, querySS) }
         }
     }
+    println("Terminated SNMP Device ID:$deviceId    (Ctrl-C to Terminate)")
+
 }
 
 suspend fun querySnmp(devRef: DocumentReference, queryRef: DocumentReference, querySs: QueryDocumentSnapshot) {

@@ -2,7 +2,7 @@ import com.github.gradle.node.task.NodeTask
 
 val kotlinVersion = "1.4.0"
 val serializationVersion = "1.0.0-RC"
-val ktorVersion = "1.4.0"
+val ktorVersion = "1.5.1"
 
 plugins {
     kotlin("multiplatform") version "1.4.0"
@@ -51,18 +51,18 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-serialization:$ktorVersion")
-                implementation("io.ktor:ktor-server-core:$ktorVersion")
+                implementation("io.ktor:ktor-serialization:$ktorVersion") // https://mvnrepository.com/artifact/io.ktor/ktor-client-serialization
+                implementation("io.ktor:ktor-server-core:$ktorVersion") // https://mvnrepository.com/artifact/io.ktor/ktor-server-core
                 implementation("io.ktor:ktor-server-netty:$ktorVersion")
-                implementation("ch.qos.logback:logback-classic:1.2.3")
                 implementation("io.ktor:ktor-websockets:$ktorVersion")
+                implementation("ch.qos.logback:logback-classic:1.2.3")
                 implementation("org.litote.kmongo:kmongo-coroutine-serialization:4.1.1")
             }
         }
 
         val jsMain by getting {
             dependencies {
-                implementation(npm("firebase", "8.2.1"))
+                implementation(npm("firebase", "8.2.6")) // https://www.npmjs.com/package/firebase
                 implementation(npm("net-snmp", "2.10.1"))
                 implementation(npm("global-agent", "2.1.12"))
             }
@@ -131,6 +131,12 @@ tasks.register<NodeTask>("runUniAgent") {
     dependsOn(tasks.build, tasks.nodeSetup)
     script.set(file("build/js/packages/UniAgent/kotlin/UniAgent.js"))
     args.set(listOf("MetaAgent1", "1234xxxx"))
+}
+
+tasks.register<NodeTask>("run_0_SnmpDevice") {
+    dependsOn(tasks.build, tasks.nodeSetup)
+    script.set(file("build/js/packages/UniAgent/kotlin/UniAgent.js"))
+    args.set(listOf("0_SnmpDevice", "1234xxxx"))
 }
 
 tasks.register<NodeTask>("runUniAgent_agent") {
