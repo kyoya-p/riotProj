@@ -5,10 +5,12 @@ import firebaseInterOp.Firestore.*
 import firebaseInterOp.await
 import gdvm.agent.mib.GdvmDeviceInfo
 import gdvm.agent.mib.GdvmTime
+import io.ktor.http.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import netSnmp.*
 import kotlin.js.Date
@@ -31,16 +33,16 @@ data class GdvmSnmpDevice(
 data class SnmpDevice_Query(
     val schedule: Schedule = Schedule(1),
     val pdu: PDU,
-    val reqTime: Long? = null,
-    val responded: Boolean,
+    val time: Long = Clock.System.now().toEpochMilliseconds(),
+    val result: String = "", //document reference to response. "" is no response.
 )
 
 // device/{SnmpDevice}/query/{SnmpDevice_Query}/result/{SnmpDevice_Query_Result}
 @Serializable
 data class SnmpDevice_Query_Result(
-    val schedule: Schedule = Schedule(1),
-    val pdu: PDU,
-    val time: Long? = null,
+    val vbl: List<VB>,
+    val time: Long = Clock.System.now().toEpochMilliseconds(),
+    val tags: List<String> = listOf()
 )
 
 /// for Agent ------
@@ -73,9 +75,8 @@ suspend fun runSnmpDevice(firebase: App, deviceId: String, secret: String) {
     val db = firebase.firestore()
     val devRef = db.collection("device").doc(deviceId)
     val devQueryRef = devRef.collection("query")
-    val now = Date
     callbackFlow {
-        devQueryRef.where("time", ">", now).onSnapshot { //TODO orderBy
+        devQueryRef.where("result", "==", "").onSnapshot { //TODO orderBy
             offer(it)
         }
         awaitClose { }
@@ -83,7 +84,7 @@ suspend fun runSnmpDevice(firebase: App, deviceId: String, secret: String) {
         queriesSS.docs.forEach { querySS ->
             GlobalScope.launch { querySnmp(devRef, querySS.ref, querySS) }
         }
-        //TODO update last wuery executed
+        //TODO update query executed
     }
     println("Terminated SNMP Device ID:$deviceId    (Ctrl-C to Terminate)")
 
@@ -92,8 +93,9 @@ suspend fun runSnmpDevice(firebase: App, deviceId: String, secret: String) {
 suspend fun querySnmp(devRef: DocumentReference, queryRef: DocumentReference, querySs: QueryDocumentSnapshot) {
     println("Start SNMP Device Query Path:${queryRef.path}") //TODO
     val dev = devRef.get().await().dataAs<GdvmSnmpDevice>()!!
-
+    println(dev) //TODO
     val devQuery = querySs.dataAs<SnmpDevice_Query>()!!
+    println(devQuery) //TODO
     val snmpSession = Snmp.createSession(dev.snmp.addr, dev.snmp.credential.v1commStr)
 
     val callback = { error: dynamic, varbinds: List<VarBind> ->
@@ -104,18 +106,23 @@ suspend fun querySnmp(devRef: DocumentReference, queryRef: DocumentReference, qu
                     json(
                         "oid" to it.oid,
                         "type" to it.type,
-                        "value" to it.value.toString(),
+                        "value" to it.value,
                     )
                 }.toTypedArray())
                 queryRef.collection("result").doc().set(vbl)
                 varbinds.forEach { println(it) } //TODO
+                //devRef.collection("logs").doc().set(SnmpDevice_Query_Result(varbinds.map {
+                //    VB(oid=it.oid)
+                //}))
             }
             else -> println("Error: $error")
         }
     }
+    val oids = devQuery.pdu.vbl.map { it.oid }.toTypedArray()
+    println("xxx") //TODO
     when (devQuery.pdu.type) {
-        GET -> snmpSession.get(devQuery.pdu.vbl.map { it.oid }.toTypedArray(), callback)
-        GETNEXT -> snmpSession.getNext(devQuery.pdu.vbl.map { it.oid }.toTypedArray(), callback)
+        GET -> snmpSession.get(oids, callback)
+        GETNEXT -> snmpSession.getNext(oids, callback)
     }
 }
 

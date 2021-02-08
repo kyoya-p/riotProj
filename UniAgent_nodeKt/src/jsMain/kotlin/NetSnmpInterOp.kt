@@ -1,6 +1,7 @@
 package netSnmp
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 
 /*
  https://github.com/markabrahams/node-net-snmp
@@ -60,7 +61,7 @@ val IPADDRESS get() = ASN_APPLICATION or 0x00
 data class VB(
     val oid: String,
     val stx: Int = NULL,
-    val value: String = "",
+    val value: JsonElement?=null,
 )
 
 
@@ -75,18 +76,22 @@ class Snmp {
     }
 }
 
-data class VarBind(val oid: String, val type: Int, val value: Any) {
+data class VarBind(val oid: String, val type: Int, val value: String) {
     companion object {
-        fun from(vb: dynamic) = VarBind(vb.oid, vb.type, vb.value)
+        fun from(vb: dynamic) = VarBind(vb.oid, vb.type, vb.value )
     }
 }
 
 class Session(private val session: dynamic) {
     fun getNext(oids: Array<String>, callback: (error: dynamic, varbinds: List<VarBind>) -> Any?) =
         session.getNext(oids, { error, varbinds ->
+            println("yyy") //TODO
             when {
                 error != null -> callback(error, listOf())
-                else -> callback(null, (0 until varbinds.length).map { VarBind.from(varbinds[it]) })
+                else -> {
+                    println("zzz ${varbinds.length}")
+                    callback(null, (0 until varbinds.length).map { VarBind.from(varbinds[it]) })
+                }
             }
         })
 
