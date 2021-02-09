@@ -1,7 +1,7 @@
 package netSnmp
 
+import firebaseInterOp.require
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonElement
 
 /*
  https://github.com/markabrahams/node-net-snmp
@@ -54,18 +54,48 @@ data class PDU(
 val ASN_UNIVERSAL get() = 0x00
 val ASN_APPLICATION get() = 0x40
 val NULL get() = ASN_UNIVERSAL or 0x05
-val OCTETSTRING get() = ASN_UNIVERSAL or 0x04
+val COUNTER get() = ASN_UNIVERSAL or 0x01
+val COUNTER32 get() = ASN_UNIVERSAL or 0x02
+val COUNTER64 get() = ASN_UNIVERSAL or 0x03
+val DISPLAYSTRING get() = ASN_UNIVERSAL or 0x04
+
+val GAUGE get() = ASN_UNIVERSAL or 0x05
+val INTEGET get() = ASN_UNIVERSAL or 0x06
+val INTEGET32 get() = ASN_UNIVERSAL or 0x07
+val OCTETSTRING get() = ASN_UNIVERSAL or 0x08
+
 val IPADDRESS get() = ASN_APPLICATION or 0x00
 
 @Serializable
 data class VB(
     val oid: String,
     val stx: Int = NULL,
-    val value: JsonElement?=null,
-)
+    val value: String? = null,
+) {
+    companion object
+}
 
 
-external fun require(module: String): dynamic
+fun variableToString(stx: Int, v: Any?): String? {
+    println("stx=$stx")
+    println("v=$v")
+    return when (stx) {
+        2 -> (v as Int).toString()
+        4 -> v as String
+        5 -> null
+//        6 ->
+//        64 -> IpAddress(v.uncaped().toList().toByteArray())
+//        65 -> Counter32(v.toLong())
+        //       66 -> Gauge32(v.toLong())
+        //       67 -> TimeTicks(v.toLong())
+        //       68 -> Opaque(v.toByteArray())
+        //       70 -> Counter64(v.toLong())
+        //       128 -> Null(128)
+        //       129 -> Null(129)
+        //       130 -> Null(130)
+        else -> throw IllegalArgumentException("Unsupported variable syntax: ${stx}")
+    }
+}
 
 class Snmp {
     companion object {
@@ -76,22 +106,25 @@ class Snmp {
     }
 }
 
-data class VarBind(val oid: String, val type: Int, val value: String) {
-    companion object {
-        fun from(vb: dynamic) = VarBind(vb.oid, vb.type, vb.value )
-    }
-}
+data class VarBind(val oid: String, val type: Int, val value: Any)
 
 class Session(private val session: dynamic) {
+    fun convVB(vb: dynamic): VarBind {
+        println("vb=${vb}")
+        println("vb.oid=${vb.oid}")
+        println("vb.type=${vb.type as Int}")
+        val res = VarBind(oid = vb.oid, type = vb.type, value = vb.value)
+        println("vbres=${res}")
+        return res
+    }
+
+    fun convVBL(vbl: dynamic) = (0 until vbl.length).map { convVB(vbl[it]) }
+
     fun getNext(oids: Array<String>, callback: (error: dynamic, varbinds: List<VarBind>) -> Any?) =
         session.getNext(oids, { error, varbinds ->
-            println("yyy") //TODO
             when {
                 error != null -> callback(error, listOf())
-                else -> {
-                    println("zzz ${varbinds.length}")
-                    callback(null, (0 until varbinds.length).map { VarBind.from(varbinds[it]) })
-                }
+                else -> callback(null, convVBL(varbinds))
             }
         })
 
@@ -99,7 +132,7 @@ class Session(private val session: dynamic) {
         session.get(oids, { error, varbinds ->
             when {
                 error != null -> callback(error, listOf())
-                else -> callback(null, (0 until varbinds.length).map { VarBind.from(varbinds[it]) })
+                else -> callback(null, convVBL(varbinds))
             }
         })
 }

@@ -99,27 +99,26 @@ suspend fun querySnmp(devRef: DocumentReference, queryRef: DocumentReference, qu
     val snmpSession = Snmp.createSession(dev.snmp.addr, dev.snmp.credential.v1commStr)
 
     val callback = { error: dynamic, varbinds: List<VarBind> ->
-        println("callback") //TODO
         when (error) {
             null -> {
                 val vbl = json("vbl" to varbinds.map {
                     json(
                         "oid" to it.oid,
                         "type" to it.type,
-                        "value" to it.value,
+                        "value" to variableToString(it.type,it.value),
                     )
+
                 }.toTypedArray())
                 queryRef.collection("result").doc().set(vbl)
                 varbinds.forEach { println(it) } //TODO
-                //devRef.collection("logs").doc().set(SnmpDevice_Query_Result(varbinds.map {
-                //    VB(oid=it.oid)
-                //}))
+                devRef.collection("logs").doc().set(SnmpDevice_Query_Result(varbinds.map {
+                    VB(oid=it.oid)
+                }))
             }
             else -> println("Error: $error")
         }
     }
     val oids = devQuery.pdu.vbl.map { it.oid }.toTypedArray()
-    println("xxx") //TODO
     when (devQuery.pdu.type) {
         GET -> snmpSession.get(oids, callback)
         GETNEXT -> snmpSession.getNext(oids, callback)
