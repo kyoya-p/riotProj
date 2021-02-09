@@ -76,9 +76,10 @@ data class VB(
 }
 
 
-fun variableToString(stx: Int, v: Any?): String? {
+fun variableToString(stx: Int, v: dynamic): String? {
     println("stx=$stx")
     println("v=$v")
+    println("v=${v.constructor.name}")
     return when (stx) {
         2 -> (v as Int).toString()
         4 -> v as String
