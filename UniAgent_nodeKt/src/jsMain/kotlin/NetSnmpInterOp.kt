@@ -75,15 +75,14 @@ data class VB(
     companion object
 }
 
-
-fun variableToString(stx: Int, v: dynamic): String? {
+fun variableToEncodedString(stx: Int, v: dynamic): String {
     println("stx=$stx")
-    println("v=$v")
-    println("v=${v.constructor.name}")
+    println("vVal=$v")
+    println("vName=${v.constructor.name}")
     return when (stx) {
-        2 -> (v as Int).toString()
-        4 -> v as String
-        5 -> null
+        2 -> (v as Int).toString().also { println("int=$it") }
+        4 -> ByteArray(v.length) { v[it] }.joinToString().also { println("str=$it") }
+        5 -> ""
 //        6 ->
 //        64 -> IpAddress(v.uncaped().toList().toByteArray())
 //        65 -> Counter32(v.toLong())

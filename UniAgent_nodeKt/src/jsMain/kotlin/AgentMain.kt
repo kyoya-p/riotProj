@@ -1,5 +1,3 @@
-package launcherAgent
-
 import firebaseInterOp.*
 import firebaseInterOp.Firestore.*
 import io.ktor.client.*
