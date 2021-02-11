@@ -5,16 +5,16 @@ import firebaseInterOp.Firestore.*
 import firebaseInterOp.await
 import gdvm.agent.mib.GdvmDeviceInfo
 import gdvm.agent.mib.GdvmTime
-import io.ktor.http.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
-import netSnmp.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.encodeToJsonElement
+import snmp.*
 import kotlin.js.Date
-import kotlin.js.json
 
 @Serializable
 data class GdvmSnmpDevice(
@@ -24,7 +24,7 @@ data class GdvmSnmpDevice(
 
     val dev: GdvmDeviceInfo,
     val snmp: SnmpTarget,
-    val tags: List<String> = listOf(),
+    val tags: List<String> = listOf("type:dev", "type:dev.mfp", "type:dev.snmp"),
 )
 
 
@@ -39,26 +39,19 @@ data class SnmpDevice_Query(
 
 // device/{SnmpDevice}/query/{SnmpDevice_Query}/result/{SnmpDevice_Query_Result}
 @Serializable
-data class SnmpDevice_Query_Result(
-    val vbl: List<VB>,
-    val time: Long = Clock.System.now().toEpochMilliseconds(),
-    val tags: List<String> = listOf()
+data class SnmpDevice_Log_VB(
+    val id: String, // same as document.id
+    val type: List<String> = listOf("log", "log.dev", "log.dev.snmp", "log.dev.snmp.varbind"),
+    val vb: Log_VB,
+    val time: GdvmTime = Date().getUTCMilliseconds() as Long,
+    val tags: List<String> = listOf("log", "log.dev", "log.dev.snmp", "log.dev.snmp.varbind"),
 )
 
-/// for Agent ------
 @Serializable
-data class SnmpAgentQuery_Discovery(
-    val scanAddrSpecs: List<SnmpTarget>,
-    val autoRegistration: Boolean,
-    val schedule: Schedule = Schedule(1),
-    val time: Long? = null,
-)
-
-// device/{SnmpAgent}/query/{SnmpAgentQuery_DeviceBridge}
-@Serializable
-data class SnmpAgentQuery_DeviceBridge(
-    val targets: List<GdvmSnmpDevice>,
-    val time: Long? = null,
+data class Log_VB(
+    val oid: String,
+    //val num: Long? = null,
+    //val str: String? = null,
 )
 
 @Serializable
@@ -70,7 +63,7 @@ data class Schedule(
 @InternalCoroutinesApi
 @ExperimentalCoroutinesApi
 suspend fun runSnmpDevice(firebase: App, deviceId: String, secret: String) {
-    println("Start SNMP Device ID:$deviceId    (Ctrl-C to Terminate)")
+    println("Start SNMP Device ID:$deviceId  (Ctrl-C to Terminate)")
 
     val db = firebase.firestore()
     val devRef = db.collection("device").doc(deviceId)
@@ -91,38 +84,58 @@ suspend fun runSnmpDevice(firebase: App, deviceId: String, secret: String) {
 }
 
 suspend fun querySnmp(devRef: DocumentReference, queryRef: DocumentReference, querySs: QueryDocumentSnapshot) {
-    println("Start SNMP Device Query Path:${queryRef.path}") //TODO
+    println("Start SNMP Device Query Path: ${queryRef.path}") //TODO
     val dev = devRef.get().await().dataAs<GdvmSnmpDevice>()!!
-    println(dev) //TODO
+    //println(dev) //TODO
     val devQuery = querySs.dataAs<SnmpDevice_Query>()!!
-    println(devQuery) //TODO
-    val snmpSession = Snmp.createSession(dev.snmp.addr, dev.snmp.credential.v1commStr)
+    //println(devQuery) //TODO
+    val snmpSession = SnmpSession.create(dev.snmp)
 
-    val callback = { error: dynamic, varbinds: List<VarBind> ->
-        when (error) {
-            null -> {
-                val vbl = json("vbl" to varbinds.map {
-                    json(
-                        "oid" to it.oid,
-                        "type" to it.type,
-                        "value" to variableToString(it.type,it.value),
-                    )
-
-                }.toTypedArray())
-                queryRef.collection("result").doc().set(vbl)
-                varbinds.forEach { println(it) } //TODO
-                devRef.collection("logs").doc().set(SnmpDevice_Query_Result(varbinds.map {
-                    VB(oid=it.oid)
-                }))
+    callbackFlow {
+        snmpSession.send(devQuery.pdu) { pdu ->
+            when (pdu) {
+                null -> close()
+                else -> offer(pdu)
             }
-            else -> println("Error: $error")
         }
-    }
-    val oids = devQuery.pdu.vbl.map { it.oid }.toTypedArray()
-    when (devQuery.pdu.type) {
-        GET -> snmpSession.get(oids, callback)
-        GETNEXT -> snmpSession.getNext(oids, callback)
+        awaitClose {}
+    }.collectLatest { pdu ->
+
+        println(pdu)//TODO
+        val time = Clock.System.now().toEpochMilliseconds()
+        pdu.vbl.forEach {
+            println("Log=${it.toLog()}")//TODO
+            devRef.collection("status").document("oid").set(Json.encodeToJsonElement(mapOf("a" to 111)))
+            //devRef.collection("status").document("oid").set(it.toLog())
+        }
+
     }
 }
 
 
+fun VarBind.toLog(): Log_VB {
+    fun Variable.toInt() = this.buff.fold(0) { a, e -> (a shl 8) + e.toInt() }
+    fun Variable.toLong() = this.buff.fold(0L) { a, e -> (a shl 8) + e.toInt() }
+
+    val v = this.value
+    return when (this.value.syntax) {
+        Variable.INTEGER32,
+        Variable.IPADDRESS,
+        Variable.COUNTER32 -> Log_VB(oid = this.oid)//num = v.toInt().toLong())
+
+        Variable.OID,
+        Variable.GAUGE32,
+        Variable.TIMETICKS,
+        Variable.COUNTER64 -> Log_VB(oid = this.oid)//num = v.toLong())
+
+        Variable.BITSTRING,
+        Variable.OCTETSTRING,
+        Variable.OPAQUE -> Log_VB(oid = this.oid)//str = v.buff.toString())
+
+        Variable.NOSUCHOBJECT,
+        Variable.NOSUCHINSTANCE,
+        Variable.ENDOFMIBVIEW -> Log_VB(oid = this.oid)// str = "")
+
+        else -> throw Exception("Unknown Type of Variable: $v")
+    }
+}
