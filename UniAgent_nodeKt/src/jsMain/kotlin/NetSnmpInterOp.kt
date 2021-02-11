@@ -41,29 +41,29 @@ actual class SnmpSession(val raw: dynamic) {
     }
 }
 
-fun convVB(vb: dynamic): VarBind {
-    //println("vb=${vb}")
-    //println("vb.oid=${vb.oid}")
-    //println("vb.type=${vb.type as Int}")
-    val res = VarBind(oid = vb.oid, Variable(syntax = (vb.type as Number).toByte(), buff = vb.value))
-    //println("vbres=${res}")
-    return res
-}
-
-//fun convVBL(vbl: dynamic) = if (vbl != null) List(vbl.length) { convVB(vbl[it]) } else listOf()
 fun convVBL(vbl: dynamic) =
     if (vbl != null) List(vbl.length) { VarBind.from(vbl[it]) } else listOf()
 
 fun VarBind.Companion.from(varbind: dynamic) = VarBind(varbind.oid, Variable.from(varbind))
 
+external fun parseInt(x: Any): Int
+
 fun Variable.Companion.from(varbind: dynamic): Variable {
     val stx: Byte = varbind.type
     val v: dynamic = varbind.value
-    fun Int.toByteArray() = ByteArray(4) { i -> ((this shr i * 8) and 0xff).toByte() }
-    fun Long.toByteArray() = ByteArray(8) { i -> ((this shr i * 8) and 0xff).toByte() }
+    fun Int.toByteArray() = ByteArray(4) { i -> ((this ushr (i * 8)) and 0xff).toByte() }
+    fun Long.toByteArray() = ByteArray(8) { i -> ((this ushr (i * 8)) and 0xff).toByte() }
 
+    val buff = when (v.constructor.name) {
+        "Number" -> (v as Int).toByteArray()
+        "Buffer" -> ByteArray(v.length) { v[it] }
+        else -> throw IllegalArgumentException("Unsupported variable type: ${v.constructor.name} ${stx} ${v}")
+    }
+    println("buff=${buff.joinToString()}")
+
+    /*
     val value = when (stx) {
-        Variable.INTEGER32 -> (v as Int).toByteArray()
+        Variable.INTEGER32 -> ByteArray(v.length) { v[it] }
         Variable.BITSTRING -> ByteArray(v.length) { v[it] }
         Variable.OCTETSTRING -> ByteArray(v.length) { v[it] }
         Variable.OID -> (v as Long).toByteArray()
@@ -78,6 +78,6 @@ fun Variable.Companion.from(varbind: dynamic): Variable {
         Variable.ENDOFMIBVIEW -> ByteArray(0)
         else -> throw IllegalArgumentException("Unsupported variable syntax: ${stx} ${v}")
     }
-    return Variable(stx, value)
+     */
+    return Variable(stx, buff)
 }
-

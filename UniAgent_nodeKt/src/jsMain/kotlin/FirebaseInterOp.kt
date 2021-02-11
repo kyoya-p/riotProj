@@ -3,6 +3,7 @@ package firebaseInterOp
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.promise
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -107,7 +108,16 @@ class Firestore(val raw: dynamic) {
         fun get(field: String): Promise<DocumentSnapshot> =
             GlobalScope.promise { raw.get(field).then { d -> return@then DocumentSnapshot(d) } }
 
-        fun set(doc: dynamic): Promise<Unit> = GlobalScope.promise { raw.set(doc).then { return@then Unit } }
+        /*inline fun set(doc: String): Promise<Unit> =
+            //GlobalScope.promise { raw.set(js("Object").assign(js("{}"),doc)).then { return@then Unit } }
+            GlobalScope.promise { raw.set(js("JSON").parse(doc)).then { return@then Unit } }
+*/
+        inline suspend fun <reified T> set(doc: T): Promise<Unit> {
+            //GlobalScope.promise { raw.set(js("Object").assign(js("{}"),doc)).then { return@then Unit } }
+            val str = Json.encodeToString(doc)
+            val jsObj = js("JSON").parse(str)
+            return GlobalScope.promise { raw.set(jsObj).then { return@then Unit } }
+        }
 
         fun addSnapshotListener(listener: (DocumentSnapshot?) -> Unit): ListenerRegistration =
             ListenerRegistration(raw.onSnapshot { doc -> listener(DocumentSnapshot(doc)) })

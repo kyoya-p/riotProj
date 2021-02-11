@@ -82,9 +82,10 @@ val sysObjectID get() = "1.3.6.1.2.1.1.2"
 val sysName get() = "1.3.6.1.2.1.1.5"
 val sysLocation get() = "1.3.6.1.2.1.1.6"
 
-val hrDeviceStatus get() = "1.3.6.1.4.1.11.2.3.9.4.23.3.2.1.5"
+val hrDeviceStatus get() = "1.3.6.1.2.1.25.3.2.1.5"
 val hrDeviceDescr get() = "1.3.6.1.2.1.25.3.2.1.3"
 val hrPrinterStatus get() = "1.3.6.1.2.1.25.3.5.1.1"
 val hrPrinterDetectedErrorState get() = "1.3.6.1.2.1.25.3.5.1.2"
 val prtGeneralSerialNumber get() = "1.3.6.1.2.1.43.5.1.1.17"
 
+val prtMarkerLifeCount get() = "1.3.6.1.2.1.43.10.2.1.4"

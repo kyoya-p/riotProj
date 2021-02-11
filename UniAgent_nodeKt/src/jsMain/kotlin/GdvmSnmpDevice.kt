@@ -5,26 +5,26 @@ import firebaseInterOp.Firestore.*
 import firebaseInterOp.await
 import gdvm.agent.mib.GdvmDeviceInfo
 import gdvm.agent.mib.GdvmTime
+import io.ktor.utils.io.core.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.encodeToJsonElement
 import snmp.*
-import kotlin.js.Date
 
 @Serializable
 data class GdvmSnmpDevice(
     val id: String, // same as document.id
-    val time: GdvmTime = Date().getUTCMilliseconds() as Long,
-    val type: List<String> = listOf("dev", "dev.mfp", "dev.snmp"),
+    val time: GdvmTime = Clock.System.now().toEpochMilliseconds(),
+    val type: List<String> = mutableListOf("dev", "dev.mfp", "dev.snmp"),
 
     val dev: GdvmDeviceInfo,
     val snmp: SnmpTarget,
-    val tags: List<String> = listOf("type:dev", "type:dev.mfp", "type:dev.snmp"),
+    val tags: List<String> = mutableListOf("type:dev", "type:dev.mfp", "type:dev.snmp"),
 )
 
 
@@ -33,7 +33,7 @@ data class GdvmSnmpDevice(
 data class SnmpDevice_Query(
     val schedule: Schedule = Schedule(1),
     val pdu: PDU,
-    val time: Long = Clock.System.now().toEpochMilliseconds(),
+    val time: GdvmTime = Clock.System.now().toEpochMilliseconds(),
     val result: String = "", //document reference to response. "" is no response.
 )
 
@@ -41,17 +41,19 @@ data class SnmpDevice_Query(
 @Serializable
 data class SnmpDevice_Log_VB(
     val id: String, // same as document.id
-    val type: List<String> = listOf("log", "log.dev", "log.dev.snmp", "log.dev.snmp.varbind"),
+    //val type: List<String> = mutableListOf("log", "log.dev", "log.dev.snmp", "log.dev.snmp.varbind"),
     val vb: Log_VB,
-    val time: GdvmTime = Date().getUTCMilliseconds() as Long,
-    val tags: List<String> = listOf("log", "log.dev", "log.dev.snmp", "log.dev.snmp.varbind"),
+    val time: GdvmTime = Clock.System.now().toEpochMilliseconds(),
+    //val tags: List<String> = mutableListOf("log", "log.dev", "log.dev.snmp", "log.dev.snmp.varbind"),
 )
 
 @Serializable
 data class Log_VB(
     val oid: String,
-    //val num: Long? = null,
-    //val str: String? = null,
+    val sOid: String,
+    val stx: Byte,
+    val num: Long? = null,
+    val str: String? = null,
 )
 
 @Serializable
@@ -102,39 +104,65 @@ suspend fun querySnmp(devRef: DocumentReference, queryRef: DocumentReference, qu
     }.collectLatest { pdu ->
 
         println(pdu)//TODO
-        val time = Clock.System.now().toEpochMilliseconds()
-        pdu.vbl.forEach {
-            println("Log=${it.toLog()}")//TODO
-            devRef.collection("status").document("oid").set(Json.encodeToJsonElement(mapOf("a" to 111)))
-            //devRef.collection("status").document("oid").set(it.toLog())
+        val now = Clock.System.now().toEpochMilliseconds()
+        pdu.vbl.forEach { vb ->
+            val log = SnmpDevice_Log_VB(id = vb.oid, vb = vb.toLog(), time = now)
+            devRef.collection("status").document(vb.oid).set(log)
+            devRef.collection("logs").document().set(log)
         }
 
     }
 }
 
 
-fun VarBind.toLog(): Log_VB {
-    fun Variable.toInt() = this.buff.fold(0) { a, e -> (a shl 8) + e.toInt() }
-    fun Variable.toLong() = this.buff.fold(0L) { a, e -> (a shl 8) + e.toInt() }
+@ExperimentalUnsignedTypes
+fun ByteArray.toLong() = reversed().fold(0L) { a, e -> (a shl 8) or e.toUByte().toLong() }
 
-    val v = this.value
+@ExperimentalUnsignedTypes
+fun VarBind.toLog(): Log_VB {
+    fun Iterable<Byte>.toSortableBase64() = (this + listOf(0, 0)).toList().windowed(3, 3, false) {
+        it.fold(0) { a, e -> (a shl 8) or e.toUByte().toInt() }
+    }.flatMap {
+        (3 downTo 0).map { i -> (it shr (i * 6)) and 0x3f }.map {
+            "+0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz"[it]
+        }
+    }.joinToString("")
+
+    fun Int.toByteArray() = ByteArray(4) { (this shr (it * 8)).toByte() }
+    fun String.toSortableOid() = split(".").flatMap { it.toInt().toByteArray().toList()}.toSortableBase64()
+        
+    println("soid=${oid.toSortableOid()}") //TODO
+
+    val v = value
     return when (this.value.syntax) {
         Variable.INTEGER32,
         Variable.IPADDRESS,
-        Variable.COUNTER32 -> Log_VB(oid = this.oid)//num = v.toInt().toLong())
+        Variable.COUNTER32 -> Log_VB(
+            oid = oid, sOid = oid.toSortableOid(), num = v.buff.toLong(), stx = this.value.syntax
+        )
 
         Variable.OID,
         Variable.GAUGE32,
         Variable.TIMETICKS,
-        Variable.COUNTER64 -> Log_VB(oid = this.oid)//num = v.toLong())
+        Variable.COUNTER64 -> Log_VB(
+            oid = oid,
+            sOid = oid.toSortableOid(),
+            num = v.buff.toLong(),
+            stx = this.value.syntax
+        )
 
         Variable.BITSTRING,
         Variable.OCTETSTRING,
-        Variable.OPAQUE -> Log_VB(oid = this.oid)//str = v.buff.toString())
+        Variable.OPAQUE -> Log_VB(
+            oid = oid,
+            sOid = oid.toSortableOid(),
+            str = v.buff.decodeToString(),
+            stx = this.value.syntax
+        )
 
         Variable.NOSUCHOBJECT,
         Variable.NOSUCHINSTANCE,
-        Variable.ENDOFMIBVIEW -> Log_VB(oid = this.oid)// str = "")
+        Variable.ENDOFMIBVIEW -> Log_VB(oid = oid, sOid = oid.toSortableOid(), str = "", stx = this.value.syntax)
 
         else -> throw Exception("Unknown Type of Variable: $v")
     }
