@@ -5,6 +5,19 @@ admin.initializeApp({serviceAccountId: 'firebase-adminsdk-rc191@road-to-iot.iam.
 var firestore = admin.firestore()
 
 exports.requestToken = functions.https.onRequest((request, response) => {
+
+    //res.set('Access-Control-Allow-Origin', 'https://road-to-iot.firebaseio.com');
+    response.set('Access-Control-Allow-Origin', 'http://localhost:8080');
+    response.set('Access-Control-Allow-Credentials', 'true');
+    if (request.method === 'OPTIONS') {
+        // Send response to OPTIONS requests
+        // https://cloud.google.com/functions/docs/samples/functions-http-cors-auth?hl=ja#functions_http_cors_auth-nodejs
+        response.set('Access-Control-Allow-Methods', 'GET');
+        response.set('Access-Control-Allow-Headers', 'Authorization');
+        response.set('Access-Control-Max-Age', '3600');
+        response.status(204).send('');
+    }
+
     var id=request.query.id; if(id==null) response.send("1");
     var pw=request.query.pw; if(pw==null) response.send("2");
     firestore.collection('device').doc(id).get().then(doc=>{
