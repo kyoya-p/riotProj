@@ -6,8 +6,9 @@ var firestore = admin.firestore()
 
 exports.requestToken = functions.https.onRequest((request, response) => {
 
-    //res.set('Access-Control-Allow-Origin', 'https://road-to-iot.firebaseio.com');
-    response.set('Access-Control-Allow-Origin', 'http://localhost:8080');
+    //response.set('Access-Control-Allow-Origin', 'https://road-to-iot.firebaseio.com');
+    //response.set('Access-Control-Allow-Origin', 'http://localhost:8080');
+    response.set('Access-Control-Allow-Origin', '*');
     response.set('Access-Control-Allow-Credentials', 'true');
     if (request.method === 'OPTIONS') {
         // Send response to OPTIONS requests
