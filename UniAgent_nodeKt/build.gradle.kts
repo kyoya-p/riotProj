@@ -30,9 +30,7 @@ repositories {
 
 
 kotlin {
-    jvm {
-        withJava()
-    }
+    //jvm { withJava() }
     js {
         nodejs {}
     }
@@ -52,7 +50,7 @@ kotlin {
             }
         }
 
-        val jvmMain by getting {
+/*        val jvmMain by getting {
             dependencies {
                 implementation("io.ktor:ktor-serialization:$ktorVersion") // https://mvnrepository.com/artifact/io.ktor/ktor-client-serialization
                 implementation("io.ktor:ktor-server-core:$ktorVersion") // https://mvnrepository.com/artifact/io.ktor/ktor-server-core
@@ -62,6 +60,8 @@ kotlin {
                 implementation("org.litote.kmongo:kmongo-coroutine-serialization:4.1.1")
             }
         }
+
+ */
 
         val jsMain by getting {
             dependencies {
@@ -150,8 +150,8 @@ tasks.register<NodeTask>("runUniAgent_agent") {
     val proxySettings = mapOf(
         "GLOBAL_AGENT_HTTP_PROXY=" to PROXY,
         "GLOBAL_AGENT_HTTPS_PROXY=" to PROXY,
-        "http_proxy==" to PROXY,
-        "https_proxy==" to PROXY
+        "http_proxy=" to PROXY,
+        "https_proxy=" to PROXY
     )
 
     dependsOn(tasks.build, tasks.nodeSetup)
