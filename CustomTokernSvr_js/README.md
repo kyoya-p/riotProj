@@ -35,7 +35,7 @@ firebase deploy
 
 1. `https://console.cloud.google.com/functions` を開く
 2. `helloWorld`のトリガーURLを確認し開く
-
+3. FirebaseのサービスアカウントをFunctions実行アカウントに設定
 
 
 Test
@@ -45,3 +45,7 @@ https://us-central1-road-to-iot.cloudfunctions.net/requestToken?id=agent1&pw=123
 ```
 URLはConsoleで確認
 
+Development
+----
+- CORS対応 
+  https://cloud.google.com/functions/docs/samples/functions-http-cors-auth?hl=ja#functions_http_cors_auth-nodejs
