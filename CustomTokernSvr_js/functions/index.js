@@ -24,10 +24,11 @@ exports.requestToken = functions.https.onRequest((request, response) => {
     firestore.collection('device').doc(id).get().then(doc=>{
         if(doc==null) response.send("3");
         if(doc.data()==null) response.send("4");
-        if(doc.data().dev==null) response.send("5");
+        if(doc.data().dev==null) response.send("5.0");
+        if(doc.data().cluster==null) response.send("5.1");
         if(doc.data().dev.password==null) response.send("6");
         if(pw!=doc.data().dev.password) response.send("7");
-        var additionalClaims={id: id, cluster: doc.data().dev.cluster};
+        var additionalClaims={id: id, cluster: doc.data().cluster};
         admin.auth().createCustomToken(id,additionalClaims)
             .then(customToken => {
                 response.send(customToken);
