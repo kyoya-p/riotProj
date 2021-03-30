@@ -23,16 +23,21 @@ actual class TcpSocket {
         return raw != 0.toULong()
     }
 
-    actual fun connecta() {
-        val clientAddr = inet_addr("10.36.102.191")
+    actual fun connect(addr: String, port: Int): Int {
+        if (raw == 0.convert()) return -1
+        val clientAddr = inet_addr(addr)
         val socketAddr = memScoped {
             alloc<sockaddr_in>().apply {
                 sin_family = AF_INET.convert()
-                sin_port = htons(10008.convert())
+                sin_port = htons(port.convert())
                 sin_addr.S_un.S_addr = clientAddr
             }
         }
-        //connect(raw, socketAddr.ptr.reinterpret(), socketAddr.)
+        return connect(raw, socketAddr.ptr.reinterpret(), sockaddr_in.size.convert())
+    }
+
+    actual fun write(buf: ByteArray): Int {
+        return write(raw.convert(), buf.toCValues(), buf.size.convert())
     }
 }
 

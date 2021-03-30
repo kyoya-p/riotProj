@@ -1,10 +1,10 @@
-
 expect fun winDialog_SAMPLE()
 expect fun readFile_SAMPLE()
 
 expect class TcpSocket() {
     fun isOk(): Boolean
-    fun connecta()
+    fun connect(addr: String, port: Int): Int
+    fun write(buf: ByteArray): Int
 }
 
 fun main() {
@@ -12,5 +12,6 @@ fun main() {
     //readFile_SAMPLE()
 
     val sock = TcpSocket()
-    sock.connecta()
+    sock.connect("127.0.0.1", 8080)
+    sock.write("ABCD".encodeToByteArray())
 }

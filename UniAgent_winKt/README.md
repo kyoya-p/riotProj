@@ -8,3 +8,8 @@ gradlew build
 Build&Run
 ----
 gradlew runReleaseExecutableMingwX64
+
+
+Reference
+----
+- Kotlin/Native https://runebook.dev/ja/docs/kotlin/-index-#Reference
