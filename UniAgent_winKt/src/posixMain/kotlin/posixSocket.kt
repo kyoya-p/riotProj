@@ -27,9 +27,12 @@ actual class TcpSocket {
         val socketAddr = memScoped {
             println("con.3")//TODO
             alloc<sockaddr_in>().apply {
-                sin_family = AF_INET.convert()
-                sin_port = htons(port.convert())
+                println("con.3.1")//TODO
+                sin_family = AF_INET.toShort()
+                sin_port = htons(port.toUShort())
                 sin_addr.S_un.S_addr = clientAddr
+                println("con.3.2")//TODO
+
             }
         }
         println("con.5")//TODO
@@ -41,6 +44,9 @@ actual class TcpSocket {
 
     actual fun write(buf: ByteArray): Int {
         return write(raw.convert(), buf.toCValues(), buf.size.convert())
+    }
+    actual fun read(buf:ByteArray):Int {
+        return read(raw.convert(), buf.toCValues(), buf.size.convert())
     }
 }
 

@@ -13,3 +13,4 @@ gradlew runReleaseExecutableMingwX64
 Reference
 ----
 - Kotlin/Native https://runebook.dev/ja/docs/kotlin/-index-#Reference
+- Winsock: https://www.geekpage.jp/programming/winsock/
