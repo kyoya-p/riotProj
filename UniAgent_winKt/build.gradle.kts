@@ -1,6 +1,6 @@
 plugins {
     //application
-    kotlin("multiplatform") version "1.4.32" // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-maven-plugin
+    kotlin("multiplatform") version "1.5.0-M2" // https://plugins.gradle.org/plugin/org.jetbrains.kotlin.multiplatform
 }
 
 group = "org.example"

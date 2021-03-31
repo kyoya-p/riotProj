@@ -7,8 +7,8 @@ actual class TcpSocket {
     val raw = socket(AF_INET, SOCK_STREAM, 0)
 
     actual companion object {
-        actual fun initialize() {
-            var data = memScoped { alloc<WSADATA>() }
+        actual fun initialize() = memScoped {
+            val data = alloc<WSADATA>()
             val err_startup = WSAStartup(0x0202, data.ptr)
             println("WSAStartup:$err_startup")
         }
@@ -25,14 +25,13 @@ actual class TcpSocket {
         val clientAddr = inet_addr(addr)
         println("con.2")//TODO
         val socketAddr = memScoped {
-            println("con.3")//TODO
+            println("con.4")//TODO
             alloc<SOCKADDR_INET>().apply {
-                println("con.3.1")//TODO
+                println("con.4.1")//TODO
                 Ipv4.sin_family = platform.posix.AF_INET.toShort()
                 Ipv4.sin_port = htons(port.toUShort())
                 Ipv4.sin_addr.S_un.S_addr = clientAddr
-                println("con.3.2")//TODO
-
+                println("con.4.2")//TODO
             }
         }
         println("con.5")//TODO
@@ -51,8 +50,13 @@ actual class TcpSocket {
     }
 
     actual fun recv(buf: ByteArray): Int {
-        memScoped { allocArray<CVariable>(2048) }
-        return recv(raw.convert(), buf.toCValues(), buf.size.convert(), 0)
+        println("recv()") //TODO
+        // memScoped { val buf0 = allocArray<ByteVar>(2048) }
+        val r = recv(raw.convert(), buf.toCValues(), buf.size.convert(), 0)
+        for (i in 0..r.convert()) {
+            println("[$i]:${buf[i]}")
+        }
+        return r
     }
 }
 
