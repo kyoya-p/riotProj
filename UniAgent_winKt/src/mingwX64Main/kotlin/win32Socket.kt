@@ -52,7 +52,7 @@ actual class TcpSocket {
 
     actual fun recv(buf: ByteArray): Int {
         memScoped { allocArray<CVariable>(2048) }
-        return recv(raw.convert(), buf., buf.size.convert(), 0)
+        return recv(raw.convert(), buf.toCValues(), buf.size.convert(), 0)
     }
 }
 

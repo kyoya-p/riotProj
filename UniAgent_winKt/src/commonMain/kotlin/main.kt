@@ -24,7 +24,7 @@ fun main() {
         println("Error: connect() ")
     }
     println("4")//TODO
-    val buf = ByteArray(2048)
+    var buf = ByteArray(2048)
 
     val len = sock.recv(buf)
     println("len=$len") //TODO
