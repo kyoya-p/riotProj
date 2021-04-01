@@ -19,21 +19,19 @@ actual class TcpSocket {
         return raw != 0.toULong()
     }
 
-    actual fun connect(addr: String, port: Int): Int {
+    actual fun connect(addr: String, port: Int): Int = memScoped {
         if (raw == 0.toULong()) return -1
         println("con.1")//TODO
         val clientAddr = inet_addr(addr)
         println("con.2")//TODO
-        val socketAddr = memScoped {
+        val socketAddr = alloc<SOCKADDR_INET>().apply {
+            println("con.3")//TODO
+            Ipv4.sin_family = platform.posix.AF_INET.toShort()
+            Ipv4.sin_port = htons(port.toUShort())
+            Ipv4.sin_addr.S_un.S_addr = clientAddr
             println("con.4")//TODO
-            alloc<SOCKADDR_INET>().apply {
-                println("con.4.1")//TODO
-                Ipv4.sin_family = platform.posix.AF_INET.toShort()
-                Ipv4.sin_port = htons(port.toUShort())
-                Ipv4.sin_addr.S_un.S_addr = clientAddr
-                println("con.4.2")//TODO
-            }
         }
+
         println("con.5")//TODO
         val r = connect(raw, socketAddr.ptr.reinterpret(), SOCKADDR_INET.size.convert())
         println("con.6")//TODO
@@ -49,13 +47,11 @@ actual class TcpSocket {
         return send(raw.convert(), buf, buf.length, 0)
     }
 
-    actual fun recv(buf: ByteArray): Int {
+    actual fun recv(buf: ByteArray): Int = memScoped {
         println("recv()") //TODO
-        // memScoped { val buf0 = allocArray<ByteVar>(2048) }
-        val r = recv(raw.convert(), buf.toCValues(), buf.size.convert(), 0)
-        for (i in 0..r.convert()) {
-            println("[$i]:${buf[i]}")
-        }
+        val cbuf = allocArray<ByteVar>(buf.size)
+        val r = recv(raw.convert(), cbuf, buf.size.convert(), 0)
+        for (i in 0..r.convert()) buf[i] = cbuf[i]
         return r
     }
 }
