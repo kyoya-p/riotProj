@@ -1,25 +1,25 @@
 import kotlinx.cinterop.*
+import platform.posix.SOCKET
 import platform.posix.WSADATA
 import platform.windows.*
 import platform.windows.SOCKADDR_INET
 
-actual class TcpSocket {
-    private val raw = socket(AF_INET, SOCK_STREAM, 0)
+@ExperimentalUnsignedTypes
+actual class TcpSocket(private val raw: SOCKET) {
+
+    actual constructor() : this(socket(AF_INET, SOCK_STREAM, 0))
+
+    init {
+        require(raw != 0.toULong()) { "Exception: Create socket" }
+    }
 
     actual companion object {
-        @ExperimentalUnsignedTypes
         actual fun initialize(): Unit = memScoped {
             val data = alloc<WSADATA>()
             WSAStartup(0x0202.toUShort(), data.ptr)
         }
     }
 
-    @ExperimentalUnsignedTypes
-    actual fun isOk(): Boolean {
-        return raw != 0.toULong()
-    }
-
-    @ExperimentalUnsignedTypes
     actual fun connect(adr: String, port: Int): Int = memScoped {
         if (raw == 0.toULong()) return -1
         println("con.1")//TODO

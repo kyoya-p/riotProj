@@ -1,19 +1,15 @@
 fun main() {
     TcpSocket.initialize()
-    println("1")//TODO
     val sock = TcpSocket()
-    println("2")//TODO
-    if (!sock.isOk()) throw Exception("Error: socket()")
     println("3")//TODO
-    if (sock.connect("10.36.102.191", 10008) != 0) {
-        println("Error: connect() ")
-    }
+    check(sock.connect("10.36.102.191", 10008) != 0) { "Error: connect()" }
+
     println("4")//TODO
-    var buf = ByteArray(2048)
+    var buf = ByteArray(16)
     val len = sock.recv(buf)
     println("len=$len") //TODO
-    buf.forEach { println("$it:") }//TODO
-    if (!buf.decodeToString(0,len).startsWith("login:", ignoreCase = true)) return
+    buf.forEachIndexed { i, e -> println("$i:$e") }//TODO
+    if (!buf.decodeToString(0, len).startsWith("login:", ignoreCase = true)) return
     sock.send("\u000d\u000a")
     sock.recv(buf)
     if (!buf.decodeToString().startsWith("password:", ignoreCase = true)) return
