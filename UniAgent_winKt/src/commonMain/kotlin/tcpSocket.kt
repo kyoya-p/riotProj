@@ -1,7 +1,7 @@
 expect class TcpSocket() {
     fun isOk(): Boolean
     fun close()
-    fun connect(addr: String, port: Int): Int
+    fun connect(adr: String, port: Int): Int
     fun send(buf: String): Int
     fun recv(buf: ByteArray): Int
 
