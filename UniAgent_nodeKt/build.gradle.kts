@@ -8,7 +8,7 @@ plugins {
     kotlin("multiplatform") version "1.4.0"
     application //to run JVM part
     kotlin("plugin.serialization") version "1.4.30"
-    id("com.github.node-gradle.node") version "3.0.0-rc5"
+    id("com.github.node-gradle.node") version "3.0.0-rc5" //https://plugins.gradle.org/plugin/com.github.node-gradle.node
 }
 
 group = "org.example"
