@@ -52,13 +52,19 @@ suspend fun runStressDevice(fbApp: FirebaseApp, dev: GenericDevice) {
             val st = Clock.System.now().toEpochMilliseconds()
             (0 until query.schedule.limit).map {
                 val j = GlobalScope.launch {
-                    val t1 = Clock.System.now().toEpochMilliseconds() - st
+                    val t1 = Clock.System.now().toEpochMilliseconds()
                     db.runTransaction {
-                        val t2 = Clock.System.now().toEpochMilliseconds() - st
+                        val t2 = Clock.System.now().toEpochMilliseconds()
                         val cName = "logs_${rand.nextInt(100)}"
                         val cDocRef = devDocRef.collection("counter").document(cName)
-                        val c = cDocRef.get().dataOrDefault(Count(count = 0, devId = dev.id)).count + 1
-                        cDocRef.set(Count.serializer(), Count(devId = dev.id, count = c))
+                        launch {
+                            val c = cDocRef.get().dataOrDefault(Count(count = 0, devId = dev.id)).count + 1
+                            cDocRef.set(Count.serializer(), Count(devId = dev.id, count = c))
+                            cList[cName] = c
+                            val sum = cList.map { it.value }.sum()
+                            val t3 = Clock.System.now().toEpochMilliseconds()
+                            println("$cName=${cList[cName]} sum=$sum : t1:${t1 - st} t2-t1:${t2 - t1} t3-t2:${t3 - t2}") //TODO
+                        }
                         devDocRef.collection("logs").add(
                             DevLog.serializer(), DevLog(
                                 devId = dev.id,
@@ -66,16 +72,12 @@ suspend fun runStressDevice(fbApp: FirebaseApp, dev: GenericDevice) {
                                 time = Clock.System.now().toEpochMilliseconds().toInt(),
                             )
                         )
-                        cList[cName] = c
-                        val sum = cList.map { it.value }.sum()
-                        val t3 = Clock.System.now().toEpochMilliseconds() - st
-                        println("$cName=${cList[cName]} sum=$sum : t1:$t1 t2-t1:${t2 - t1} t3-t1:${t3 - t1}") //TODO
                     }
                 }
                 delay(query.schedule.interval)
                 j
             }.toList().forEach { it.join() }
-            val sum = devDocRef.collection("counter").get().documents.map { it.data<Count>().count }.sum()
+            val sum = devDocRef.collection("counter").get().documents.sumOf { it.data<Count>().count }
             println("Sum: $sum")
             println("End Query: ${(Clock.System.now().toEpochMilliseconds() - st) / 1000.0} :${query.id}")
         }
@@ -83,21 +85,7 @@ suspend fun runStressDevice(fbApp: FirebaseApp, dev: GenericDevice) {
 
 inline fun <reified T> DocumentSnapshot.dataOrDefault(d: T) = if (exists) data() else d
 
-suspend fun logging(db: FirebaseFirestore, devDocRef: DocumentReference, dev: GenericDevice) {
-    db.runTransaction {
-        val cName = "logs_${rand.nextInt(10)}"
-        val cDocRef = devDocRef.collection("counter").document(cName)
-        val c = cDocRef.get().dataOrDefault(Count(count = 0, devId = dev.id)).count + 1
-        cDocRef.set(Count.serializer(), Count(devId = dev.id, count = c))
-        devDocRef.collection("logs").add(
-            DevLog.serializer(), DevLog(
-                devId = dev.id,
-                cluster = dev.cluster,
-                time = Clock.System.now().toEpochMilliseconds().toInt(),
-            )
-        )
-    }
-}
+
 
 
 
