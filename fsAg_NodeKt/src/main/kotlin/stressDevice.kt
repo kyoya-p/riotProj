@@ -14,7 +14,7 @@ data class DevStressQuery(
     val id: String,
     val cluster: String,
     val devId: String,
-    val time: Int = 0, // time
+    val time: Long = 0, // time
     val schedule: Schedule = Schedule(),
     val result: Int? = null, // time
 )
@@ -69,7 +69,7 @@ suspend fun runStressDevice(fbApp: FirebaseApp, dev: GenericDevice) {
                             DevLog.serializer(), DevLog(
                                 devId = dev.id,
                                 cluster = dev.cluster,
-                                time = Clock.System.now().toEpochMilliseconds().toInt(),
+                                time = (t1 / 1000).toInt()
                             )
                         )
                     }
