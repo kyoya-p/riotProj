@@ -1,17 +1,48 @@
 import com.google.cloud.firestore.FirestoreOptions
-import gdvm.device.DeviceAgentMfpMib_Query
+import gdvm.device.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import mibtool.snmp4jWrapper.*
+import org.snmp4j.Snmp
+import org.snmp4j.transport.DefaultUdpTransportMapping
+import java.net.InetAddress
 
 
-// GOOGLE_APPLICATION_CREDENTIALS=/path/to/road-to-iot-8efd3bfb2ccd.json
+// GOOGLE_APPLICATION_CREDENTIALS=//pathto/road-to-iot-8efd3bfb2ccd.json
 val db = FirestoreOptions.getDefaultInstance().getService()
+val snmp = Snmp(DefaultUdpTransportMapping().apply { listen() })
 
 @ExperimentalCoroutinesApi
 suspend fun main() {
-    db.collection("device").document("stressAgent1").collection("query")
-        .whereEqualTo("cluster","AgentStressTest").limit(3)
-        .snapshotsAs<DeviceAgentMfpMib_Query>().collect { query ->
-            println("d=${query}") //TODO
+    runAgent("stressAgent1", "1234eeee")
+}
+
+@ExperimentalCoroutinesApi
+suspend fun runAgent(deviceId: String, secret: String) = coroutineScope {
+    println("Start deviceId: ")
+    db.collection("device").document(deviceId).collection("query")
+        .whereEqualTo("cluster", "AgentStressTest").limit(3)
+        .snapshotsAs<DeviceAgentMfpMib_Query>().collect { queries ->
+            queries.forEach { query -> scheduleFlow(query.schedule).collectLatest { launch { runAgentQuery(query) } } }
         }
+
+}
+
+@ExperimentalCoroutinesApi
+suspend fun scheduleFlow(schedule: Schedule) = channelFlow {
+    //val start = Date().time
+    repeat(schedule.limit) { i ->
+        offer(i)
+        //val next = (Date().time / schedule.interval + 1) * schedule.interval
+        delay(schedule.interval)
+    }
+}
+
+suspend fun runAgentQuery(query: DeviceAgentMfpMib_Query) {
+    query.scanAddrSpecs.asFlow().discoveryDeviceMap(snmp).collect { res ->
+
+    }
 }
