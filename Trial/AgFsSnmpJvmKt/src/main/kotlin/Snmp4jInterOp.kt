@@ -165,7 +165,8 @@ suspend fun Snmp.broadcastFlow(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) 
 // 指定の条件でSNMP検索し、検索結果を流す
 // depends: SNMP4J
 @ExperimentalCoroutinesApi
-suspend fun Flow<SnmpTarget>.discoveryDeviceMap(snmp: Snmp) = flatMapConcat {
+suspend fun Flow<SnmpTarget>.discoveryDeviceMap(snmp: Snmp) = flatMapConcat { target ->
+    println("Target: ${target}");//TODO
     callbackFlow {
         val sampleOids = listOf(hrDeviceDescr, prtGeneralSerialNumber).map { VB(it) }
         val pdu = PDU(GETNEXT, sampleOids)

@@ -8,7 +8,6 @@ import kotlinx.coroutines.launch
 import mibtool.snmp4jWrapper.*
 import org.snmp4j.Snmp
 import org.snmp4j.transport.DefaultUdpTransportMapping
-import java.net.InetAddress
 
 
 // GOOGLE_APPLICATION_CREDENTIALS=//pathto/road-to-iot-8efd3bfb2ccd.json
@@ -25,7 +24,8 @@ suspend fun runAgent(deviceId: String, secret: String) = coroutineScope {
     println("Start deviceId: ")
     db.collection("device").document(deviceId).collection("query")
         .whereEqualTo("cluster", "AgentStressTest").limit(3)
-        .snapshotsAs<DeviceAgentMfpMib_Query>().collect { queries ->
+        .snapshotsAs<DeviceAgentMfpMib_Query>().collectLatest { queries ->
+            println("Updated query:")// TODO
             queries.forEach { query -> scheduleFlow(query.schedule).collectLatest { launch { runAgentQuery(query) } } }
         }
 
@@ -42,7 +42,10 @@ suspend fun scheduleFlow(schedule: Schedule) = channelFlow {
 }
 
 suspend fun runAgentQuery(query: DeviceAgentMfpMib_Query) {
+    println("Start Agent ${query}")//TODO
     query.scanAddrSpecs.asFlow().discoveryDeviceMap(snmp).collect { res ->
-
+        println("Res: ${res.peerAddress}")// TODO
     }
+    println("Terminate Agent ${query}")//TODO
+
 }
