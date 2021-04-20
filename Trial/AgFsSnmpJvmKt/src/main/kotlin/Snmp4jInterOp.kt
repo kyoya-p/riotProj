@@ -17,6 +17,22 @@ import java.math.BigInteger
 import java.net.InetAddress
 import kotlin.random.Random
 
+val GET: Int get() = -96
+val GETNEXT: Int get() = -95
+val RESPONSE: Int get() = -94
+val SET: Int get() = -93
+
+val sysDescr get() = ".1.3.6.1.2.1.1.1"
+val sysObjectID get() = ".1.3.6.1.2.1.1.2"
+val sysName get() = ".1.3.6.1.2.1.1.5"
+val sysLocation get() = ".1.3.6.1.2.1.1.6"
+
+val hrDeviceStatus get() = ".1.3.6.1.4.1.11.2.3.9.4.2.3.3.2.1.5"
+val hrDeviceDescr get() = ".1.3.6.1.2.1.25.3.2.1.3"
+val hrPrinterStatus get() = ".1.3.6.1.2.1.25.3.5.1.1"
+val hrPrinterDetectedErrorState get() = ".1.3.6.1.2.1.25.3.5.1.2"
+val prtGeneralSerialNumber get() = ".1.3.6.1.2.1.43.5.1.1.17"
+
 fun SnmpTarget.Companion.from(t: CommunityTarget<UdpAddress>) = SnmpTarget(
     addr = t.address.inetAddress.hostAddress,
     port = t.address.port,
