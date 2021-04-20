@@ -42,10 +42,14 @@ data class DeviceAgentMfpMib(
 // device/{}/query/{query}
 @Serializable
 data class DeviceAgentMfpMib_Query(
+    val time: Long,
+    val id: String,
+    val devId: String,
+    val cluster: String,
+    
     val scanAddrSpecs: List<SnmpTarget> = listOf(),
     val autoRegistration: Boolean = false,
     val schedule: Schedule = Schedule(1),
-    val time: Long,
 )
 
 @Serializable

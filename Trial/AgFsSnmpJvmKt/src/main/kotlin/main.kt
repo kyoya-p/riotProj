@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import mibtool.snmp4jWrapper.*
 import org.snmp4j.Snmp
+import org.snmp4j.event.ResponseEvent
+import org.snmp4j.smi.UdpAddress
 import org.snmp4j.transport.DefaultUdpTransportMapping
 
 
@@ -21,31 +23,44 @@ suspend fun main() {
 
 @ExperimentalCoroutinesApi
 suspend fun runAgent(deviceId: String, secret: String) = coroutineScope {
+    val dev = db.document("device/$deviceId").get().get().data?.toJsonObject()?.toObject<DeviceAgentMfpMib>()!!
     println("Start deviceId: ")
-    db.collection("device").document(deviceId).collection("query")
+    db.collection("device/$deviceId/query")
         .whereEqualTo("cluster", "AgentStressTest").limit(3)
         .snapshotsAs<DeviceAgentMfpMib_Query>().collectLatest { queries ->
             println("Updated query:")// TODO
-            queries.forEach { query -> scheduleFlow(query.schedule).collectLatest { launch { runAgentQuery(query) } } }
+            queries.forEach { query ->
+                scheduleFlow(query.schedule).collectLatest {
+                    launch {
+                        runAgentQuery(dev, query)
+                    }
+                }
+            }
         }
-
 }
 
 @ExperimentalCoroutinesApi
 suspend fun scheduleFlow(schedule: Schedule) = channelFlow {
-    //val start = Date().time
     repeat(schedule.limit) { i ->
         offer(i)
-        //val next = (Date().time / schedule.interval + 1) * schedule.interval
-        delay(schedule.interval)
+        delay(schedule.interval) //TODO 不正確 要対応
     }
 }
 
-suspend fun runAgentQuery(query: DeviceAgentMfpMib_Query) {
-    println("Start Agent ${query}")//TODO
-    query.scanAddrSpecs.asFlow().discoveryDeviceMap(snmp).collect { res ->
+@ExperimentalCoroutinesApi
+suspend fun runAgentQuery(dev: DeviceAgentMfpMib, query: DeviceAgentMfpMib_Query) {
+    println("Start Query: device/${query.devId}/${query.id}")//TODO
+    val reqOids = listOf(hrDeviceDescr, prtGeneralSerialNumber)
+    query.scanAddrSpecs.asFlow().discoveryDeviceMap(snmp, reqOids).collect { res ->
         println("Res: ${res.peerAddress}")// TODO
+        if (query.autoRegistration) {
+            createDevice(dev, query, res)
+        }
     }
-    println("Terminate Agent ${query}")//TODO
+    println("Terminate Query: device/${query.devId}/${query.id}")//TODO
+}
 
+fun createDevice(dev: DeviceAgentMfpMib, query: DeviceAgentMfpMib_Query, res: ResponseEvent<UdpAddress>) {
+    val devId = res.response
+    db.document("device/$devId").set(json{})
 }
