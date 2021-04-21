@@ -145,14 +145,14 @@ suspend fun Snmp.sendFlow(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) = cal
 
 @ExperimentalCoroutinesApi
 fun Snmp.scanFlow(pdu: org.snmp4j.PDU, startTarget: Target<UdpAddress>, endAddr: InetAddress) = channelFlow {
-    scanIpRange(startTarget.address.inetAddress, endAddr).map { addr ->
-        val launch = launch {
+    scanIpRange(startTarget.address.inetAddress, endAddr).forEach { addr ->
+        //val launch = launch {
             sendFlow(pdu.apply { requestID = getGlobalRequestID() }, SnmpTarget(addr.hostAddress).toSnmp4j()).collect {
                 offer(it)
             }
-        }
-        launch
-    }.toList().forEach { it.join() }
+        //}
+        //launch
+    }//.toList().forEach { it.join() }
     //close()
     //awaitClose()
 }
