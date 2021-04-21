@@ -31,31 +31,30 @@ data class DeviceMfpMib_QueryStatusUpdate(
 )
 
 @ExperimentalCoroutinesApi
-suspend fun runMfpSnmp(devMfpId: String, secret: String, address: String) = coroutineScope {
-    try {
+suspend fun runMfpSnmp(devMfpId: String, secret: String, address: String) {
+    runCatching {
+        println("${Date()}      ----- Start runMfpSnmp($devMfpId)")
         val dev = db.document("device/$devMfpId").get().get().data?.toJsonObject()?.toObject<DeviceMfpSnmp>()!!
-        println("Start deviceId: $devMfpId")
         db.collection("device/$devMfpId/query")
             .whereEqualTo("cluster", "AgentStressTest").limit(3)
             .snapshotsAs<DeviceMfpMib_QueryStatusUpdate>().collectLatest { queries ->
-                queries.forEachIndexed { i, query ->
-                    launch {
-                        scheduleFlow(query.schedule).collect {
-                            launch { runMfpSnmpQuery(dev, query, address) }
-                        }
-                    }
+                queries.forEach { query ->
+                    //launch { runMfpSnmpQuery(dev, query, address) }
+                    runMfpSnmpQuery(dev, query, address)
                 }
             }
-    } finally {
-        println("Terminated deviceId: $devMfpId")//TODO
-    }
+    }.onFailure { ex -> println("${Date()} Canceled runMfpSnmp($devMfpId)  Exception: $ex") }
 }
 
 suspend fun runMfpSnmpQuery(dev: DeviceMfpSnmp, query: DeviceMfpMib_QueryStatusUpdate, address: String) {
-    println("Updated query: $query")//TODO
-    val reqVBL = listOf(hrDeviceStatus, hrPrinterStatus, hrPrinterDetectedErrorState).map { VB(oid = it) }
-    val target = SnmpTarget(address, 161).toSnmp4j()
-    snmp.sendFlow(pdu = PDU(GETNEXT, reqVBL).toSnmp4j(), target = target).collect {
-        println("${it.response?.variableBindings}") //TODO
-    }
+    runCatching {
+        println("${Date()} Start Device Query: device/${dev.id}/query/${query.id}")
+        scheduleFlow(query.schedule).collectLatest {
+            val reqVBL = listOf(hrDeviceStatus, hrPrinterStatus, hrPrinterDetectedErrorState).map { VB(oid = it) }
+            val target = SnmpTarget(address, 161).toSnmp4j()
+            snmp.sendFlow(pdu = PDU(GETNEXT, reqVBL).toSnmp4j(), target = target).collect {
+                println("${Date()} ${it.response?.variableBindings}") //TODO
+            }
+        }
+    }.onFailure { ex -> println("${Date()} Terminate runMfpSnmpQuery(): ${query.id}  Exception: $ex") }
 }

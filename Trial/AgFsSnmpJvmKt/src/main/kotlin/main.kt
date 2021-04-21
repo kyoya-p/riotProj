@@ -1,5 +1,7 @@
 import com.google.cloud.firestore.FirestoreOptions
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.coroutineScope
 import org.snmp4j.Snmp
 import org.snmp4j.transport.DefaultUdpTransportMapping
 

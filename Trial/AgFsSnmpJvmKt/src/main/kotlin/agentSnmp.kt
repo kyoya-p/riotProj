@@ -1,9 +1,6 @@
 import gdvm.device.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -30,6 +27,8 @@ data class DeviceAgentMfpMib_QueryDiscovery(
     val scanAddrSpecs: List<SnmpTarget> = listOf(),
     val autoRegistration: Boolean = false,
     val schedule: Schedule = Schedule(1),
+
+    val debug_dummyInstances: Int = 1
 )
 
 @Serializable
@@ -47,21 +46,17 @@ data class DeviceAgentMfpMib_ResultDiscovery(
 )
 
 @ExperimentalCoroutinesApi
-suspend fun runAgent(devAgentId: String, secret: String) = coroutineScope {
-    val dev = db.document("device/$devAgentId").get().get().data?.toJsonObject()?.toObject<DeviceAgentMfpMib>()!!
-    println("Start deviceId: $devAgentId")
-    db.collection("device/$devAgentId/query")
-        .whereEqualTo("cluster", "AgentStressTest").limit(3)
-        .snapshotsAs<DeviceAgentMfpMib_QueryDiscovery>().collectLatest { queries ->
-            queries.forEachIndexed { i, query ->
-                println("Updated query $i: $query")//TODO
-                launch {
-                    scheduleFlow(query.schedule).collect {
-                        launch { runAgentQuery(dev, query) }
-                    }
-                }
+suspend fun runAgent(devAgentId: String, secret: String) {
+    runCatching {
+        println("${Date()} ----- Start runAgent($devAgentId)")
+        val dev = db.document("device/$devAgentId").get().get().data?.toJsonObject()?.toObject<DeviceAgentMfpMib>()!!
+        db.collection("device/$devAgentId/query")
+            .whereEqualTo("cluster", "AgentStressTest").limit(3)
+            .snapshotsAs<DeviceAgentMfpMib_QueryDiscovery>().collectLatest { queries ->
+                //queries.forEach { query -> launch { runAgentQuery(dev, query) } }
+                queries.forEach { query -> runAgentQuery(dev, query) }
             }
-        }
+    }.onFailure { ex -> println("${Date()} Canceled runAgent($devAgentId)  Exception: $ex") }
 }
 
 @ExperimentalCoroutinesApi
@@ -74,21 +69,27 @@ suspend fun scheduleFlow(schedule: Schedule) = channelFlow {
 
 @ExperimentalCoroutinesApi
 suspend fun runAgentQuery(devAg: DeviceAgentMfpMib, query: DeviceAgentMfpMib_QueryDiscovery) {
-    println("Start Query: device/${query.devId}/${query.id}")//TODO
-    val reqOids = listOf(hrDeviceDescr, prtGeneralSerialNumber)
-    val res = query.scanAddrSpecs.asFlow().discoveryDeviceMap(snmp, reqOids).map { res ->
-        println("Res: ${res.peerAddress}")// TODO
-        val model = res.response.variableBindings[0].variable.toString()
-        val sn = res.response.variableBindings[1].variable.toString()
-        val devId = "type=dev.mfp.snmp:model=$model:sn=$sn"
-        if (query.autoRegistration) {
-            createDevice(devId, devAg)
-            runMfpSnmp(devId, secretDefault, res.peerAddress.inetAddress.toString())
+    runCatching {
+        println("${Date()} Start runAgentQuery(${query.id}")
+        val reqOids = listOf(hrDeviceDescr, prtGeneralSerialNumber)
+        scheduleFlow(query.schedule).collectLatest {
+            val res = query.scanAddrSpecs.asFlow().discoveryDeviceMap(snmp, reqOids).map { res ->
+                val model = res.response.variableBindings[0].variable.toString()
+                val sn = res.response.variableBindings[1].variable.toString()
+                val devId = "type=dev.mfp.snmp:model=$model:sn=$sn"
+                if (query.autoRegistration) {
+                    createDevice(devId, devAg)
+                    repeat(query.debug_dummyInstances) {
+                         runMfpSnmp(devId, secretDefault, res.peerAddress.inetAddress.hostAddress)
+                    }
+                }
+                devId
+            }.toList()
+            sendReport(devAg, query.id, res)
         }
-        devId
-    }.toList()
-    sendReport(devAg, query.id, res)
-    println("Terminate Query: device/${query.devId}/${query.id}")//TODO
+    }
+        .onFailure { ex -> println("${Date()} Canceled runAgentQuery(${query.id})  Exception: $ex") }
+        .onSuccess { println("${Date()} Terminate runAgentQuery(${query.id})") }
 }
 
 fun sendReport(devAg: DeviceAgentMfpMib, queryId: String, result: List<String>) {
@@ -106,7 +107,7 @@ fun createDevice(devId: String, devAg: DeviceAgentMfpMib) {
             id = "statusUpdate",
             cluster = devAg.cluster,
             devId = devAg.id,
-            schedule = Schedule(limit = 10, interval = 10 * 1000),
+            schedule = Schedule(limit = 3, interval = 1 * 1000),
         )
     db.document("device/$devId/query/${mfpInitialQuery.id}").set(mfpInitialQuery)
 }

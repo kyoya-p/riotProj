@@ -130,7 +130,6 @@ suspend fun getGlobalRequestID(): Integer32 {
 @ExperimentalCoroutinesApi
 suspend fun Snmp.sendFlow(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) = callbackFlow<ResponseEvent<UdpAddress>> {
     pdu.requestID = getGlobalRequestID()
-    println("Target: ${target.address}")
     send(pdu, target, target, object : ResponseListener {
         override fun <A : Address?> onResponse(event: ResponseEvent<A>) {
             val resPdu = event.response
@@ -141,7 +140,7 @@ suspend fun Snmp.sendFlow(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) = cal
             }
         }
     })
-    awaitClose()
+    //awaitClose()
 }
 
 @ExperimentalCoroutinesApi
@@ -154,8 +153,8 @@ fun Snmp.scanFlow(pdu: org.snmp4j.PDU, startTarget: Target<UdpAddress>, endAddr:
         }
         launch
     }.toList().forEach { it.join() }
-    close()
-    awaitClose()
+    //close()
+    //awaitClose()
 }
 
 
@@ -173,8 +172,8 @@ suspend fun Snmp.broadcastFlow(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) 
                 }
             }
         }
-        close()
-        awaitClose()
+        //close()
+        //awaitClose()
     }
 
 
@@ -182,7 +181,6 @@ suspend fun Snmp.broadcastFlow(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) 
 // depends: SNMP4J
 @ExperimentalCoroutinesApi
 suspend fun Flow<SnmpTarget>.discoveryDeviceMap(snmp: Snmp, oids: List<String>) = flatMapConcat { target ->
-    println("Target: ${target}");//TODO
     callbackFlow {
         val sampleOids = oids.map { VB(it) }
         val pdu = PDU(GETNEXT, sampleOids)
@@ -201,5 +199,4 @@ suspend fun Flow<SnmpTarget>.discoveryDeviceMap(snmp: Snmp, oids: List<String>) 
             }
         }
     }
-
 }
