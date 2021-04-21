@@ -21,7 +21,7 @@ Run
 
 ``` 
 [Linux]
-.gradle/nodejs/node-v12.18.3-linux-x64/bin/node build/js/packages/fsAg_NodeKt/kotlin/fsAg_NodeKt.js deviceId 1234xxxx
+node build/js/packages/fsAg_NodeKt/kotlin/fsAg_NodeKt.js deviceId 1234xxxx
 [Windows]
-.gradle/nodejs/node-v12.18.3-win-x64/node.exe build/js/packages/fsAg_NodeKt/kotlin/fsAg_NodeKt.js deviceId 1234xxxx
+node.exe RMM deviceId 1234xxxx
 ```
