@@ -1,10 +1,9 @@
 package mibtool.snmp4jWrapper
 
 import gdvm.device.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import org.snmp4j.CommunityTarget
 import org.snmp4j.Snmp
@@ -15,6 +14,8 @@ import org.snmp4j.mp.SnmpConstants.*
 import org.snmp4j.smi.*
 import java.math.BigInteger
 import java.net.InetAddress
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlin.random.Random
 
 val GET: Int get() = -96
@@ -73,6 +74,15 @@ fun BigInteger.toInetAddr() =
     (ByteArray(16) + toByteArray()).takeLast(if (toByteArray().size <= 4) 4 else 16).toByteArray().let {
         InetAddress.getByAddress(it)!!
     }
+
+fun scanIpRangeFlow(start: InetAddress, end: InetAddress) = flow {
+    var i = start.toBigInt()
+    val end = end.toBigInt()
+    while (i <= end) {
+        emit(i.toInetAddr())
+        i += BigInteger.ONE
+    }
+}
 
 fun scanIpRange(start: InetAddress, end: InetAddress) =
     generateSequence(start.toBigInt()) { it + BigInteger.ONE }.takeWhile { it <= end.toBigInt() }
@@ -142,27 +152,54 @@ suspend fun Snmp.sendFlow(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) = cal
     })
     awaitClose()
 }
-@ExperimentalCoroutinesApi
- fun Snmp.send(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) = async {
-    pdu.requestID = getGlobalRequestID()
-    send(pdu, target, target) {
-            val resPdu = event.response
-            if (resPdu == null) {
-                close()
-            } else {
-                offer(event as ResponseEvent<UdpAddress>) // テンプレート型のコールバックはどう扱えば?
+
+suspend fun Snmp.request0(pdu: org.snmp4j.PDU, target: Target<UdpAddress>): ResponseEvent<UdpAddress>? =
+    suspendCoroutine { continuation ->
+        send(pdu, target, null, object : ResponseListener {
+            override fun <A : Address?> onResponse(event: ResponseEvent<A>?) {
+                continuation.resume(event as ResponseEvent<UdpAddress>)
             }
-        }
-    })
+        })
+        return@suspendCoroutine
+    }
+
+fun Snmp.request(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) = GlobalScope.async {
+    suspendCoroutine<ResponseEvent<UdpAddress>?> { continuation ->
+        send(pdu, target, null, object : ResponseListener {
+            override fun <A : Address?> onResponse(event: ResponseEvent<A>?) {
+                continuation.resume(event as ResponseEvent<UdpAddress>?)
+            }
+        })
+        return@suspendCoroutine
+    }
 }
 
+fun Snmp.walkFlow(initPdu: org.snmp4j.PDU, target: Target<UdpAddress>, limit: Int = 10000) = flow {
+    var pdu = initPdu
+    var rid = initPdu.requestID.value
+    repeat(limit) { // limiter
+        val res = request(
+            pdu.apply { type = initPdu.type; requestID = Integer32(rid++) },
+            target,
+        ).await()
+        when {
+            res == null || res.response == null || res.response.errorStatus != 0 -> return@flow
+            else -> {
+                pdu = res.response
+                emit(pdu)
+            }
+        }
+    }
+}
+
+
 @ExperimentalCoroutinesApi
-fun Snmp.scanFlow(pdu: org.snmp4j.PDU, startTarget: Target<UdpAddress>, endAddr: InetAddress) = channelFlow {
+fun Snmp.scanFlow0(pdu: org.snmp4j.PDU, startTarget: Target<UdpAddress>, endAddr: InetAddress) = channelFlow {
     scanIpRange(startTarget.address.inetAddress, endAddr).forEach { addr ->
         //val launch = launch {
-            sendFlow(pdu.apply { requestID = getGlobalRequestID() }, SnmpTarget(addr.hostAddress).toSnmp4j()).collect {
-                offer(it)
-            }
+        sendFlow(pdu.apply { requestID = getGlobalRequestID() }, SnmpTarget(addr.hostAddress).toSnmp4j()).collect {
+            offer(it)
+        }
         //}
         //launch
     }//.toList().forEach { it.join() }
@@ -170,9 +207,49 @@ fun Snmp.scanFlow(pdu: org.snmp4j.PDU, startTarget: Target<UdpAddress>, endAddr:
     //awaitClose()
 }
 
+@ExperimentalCoroutinesApi
+fun Snmp.scanFlow(pdu: org.snmp4j.PDU, startTarget: Target<UdpAddress>, endAddr: InetAddress) = flow {
+    scanIpRangeFlow(startTarget.address.inetAddress, endAddr).collect { addr ->
+        val r = request(pdu.apply { requestID = getGlobalRequestID() }, SnmpTarget(addr.hostAddress).toSnmp4j()).await()
+        emit(r)
+    }
+}
+
 
 @ExperimentalCoroutinesApi
-suspend fun Snmp.broadcastFlow(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) =
+suspend fun Snmp.broadcastFlow0(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) =
+    callbackFlow<ResponseEvent<UdpAddress>> {
+        val retries = target.retries
+        target.retries = 0 //TODO
+        val detected = mutableSetOf<UdpAddress>()
+        repeat(retries + 1) {
+            sendFlow(pdu, target).collect {
+                if (!detected.contains(it.peerAddress)) {
+                    detected.add(it.peerAddress)
+                    offer(it)
+                }
+            }
+        }
+        close()
+        awaitClose()
+    }
+
+@ExperimentalCoroutinesApi
+fun Snmp.broadcast(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) =
+    GlobalScope.async {
+        val res = suspendCoroutine<ResponseEvent<UdpAddress>?> { continuation ->
+            send(pdu, target, null, object : ResponseListener {
+                override fun <A : Address?> onResponse(event: ResponseEvent<A>?) {
+                    if (event == null || event.response == null)
+                    //continuation.resume()
+                        continuation.resume(event as ResponseEvent<UdpAddress>)
+                }
+            })
+        }
+        return@async res
+    }
+
+suspend fun Snmp.broadcastFlow1(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) =
     callbackFlow<ResponseEvent<UdpAddress>> {
         val retries = target.retries
         target.retries = 0 //TODO
@@ -199,13 +276,11 @@ suspend fun Flow<SnmpTarget>.discoveryDeviceMap(snmp: Snmp, oids: List<String>) 
         val pdu = PDU(GETNEXT, sampleOids)
 
         if (target.isBroadcast) {
-            println("S1") //TODO
-            snmp.broadcastFlow(pdu.toSnmp4j(), target.toSnmp4j()).collect {
+            snmp.broadcastFlow0(pdu.toSnmp4j(), target.toSnmp4j()).collect {
                 offer(it)
             }
-            println("S2") //TODO
         } else {
-            snmp.scanFlow(
+            snmp.scanFlow0(
                 pdu.toSnmp4j(),
                 target.toSnmp4j(),
                 InetAddress.getByName(target.addrRangeEnd ?: target.addr)
@@ -215,3 +290,4 @@ suspend fun Flow<SnmpTarget>.discoveryDeviceMap(snmp: Snmp, oids: List<String>) 
         }
     }
 }
+

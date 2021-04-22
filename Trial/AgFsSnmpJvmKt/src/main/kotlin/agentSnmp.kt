@@ -48,7 +48,7 @@ data class DeviceAgentMfpMib_ResultDiscovery(
 @ExperimentalCoroutinesApi
 suspend fun runAgent(devAgentId: String, secret: String) {
     runCatching {
-        println("${Date()} ----- Start runAgent($devAgentId)")
+        println("\n${Date()} ----- Start runAgent($devAgentId)")
         val dev = db.document("device/$devAgentId").get().get().data?.toJsonObject()?.toObject<DeviceAgentMfpMib>()!!
         db.collection("device/$devAgentId/query")
                 .whereEqualTo("cluster", "AgentStressTest").limit(3)
@@ -74,9 +74,7 @@ suspend fun runAgentQuery(devAg: DeviceAgentMfpMib, query: DeviceAgentMfpMib_Que
         println(query) //TODO
         val reqOids = listOf(hrDeviceDescr, prtGeneralSerialNumber)
         scheduleFlow(query.schedule).collectLatest {
-            println("L1") //TODO
             val res = query.scanAddrSpecs.asFlow().discoveryDeviceMap(snmp, reqOids).map { res ->
-                println("L") //TODO
                 val model = res.response.variableBindings[0].variable.toString()
                 val sn = res.response.variableBindings[1].variable.toString()
                 val devId = "type=dev.mfp.snmp:model=$model:sn=$sn"

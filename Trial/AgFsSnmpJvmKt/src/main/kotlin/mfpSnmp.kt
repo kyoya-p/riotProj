@@ -33,7 +33,7 @@ data class DeviceMfpMib_QueryStatusUpdate(
 @ExperimentalCoroutinesApi
 suspend fun runMfpSnmp(devMfpId: String, secret: String, address: String) {
     runCatching {
-        println("${Date()}      ----- Start runMfpSnmp($devMfpId)")
+        println("\n${Date()}      ----- Start runMfpSnmp($devMfpId)")
         val dev = db.document("device/$devMfpId").get().get().data?.toJsonObject()?.toObject<DeviceMfpSnmp>()!!
         db.collection("device/$devMfpId/query")
             .whereEqualTo("cluster", "AgentStressTest").limit(3)
@@ -53,7 +53,7 @@ suspend fun runMfpSnmpQuery(dev: DeviceMfpSnmp, query: DeviceMfpMib_QueryStatusU
             val reqVBL = listOf(hrDeviceStatus, hrPrinterStatus, hrPrinterDetectedErrorState).map { VB(oid = it) }
             val target = SnmpTarget(address, 161).toSnmp4j()
             snmp.sendFlow(pdu = PDU(GETNEXT, reqVBL).toSnmp4j(), target = target).collect {
-                println("${Date()} ${it.response?.variableBindings}") //TODO
+                println("${Date()} Report: ${it.response?.variableBindings}") //TODO
             }
         }
     }.onFailure { ex -> println("${Date()} Terminate runMfpSnmpQuery(): ${query.id}  Exception: $ex") }
