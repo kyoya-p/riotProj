@@ -140,7 +140,20 @@ suspend fun Snmp.sendFlow(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) = cal
             }
         }
     })
-    //awaitClose()
+    awaitClose()
+}
+@ExperimentalCoroutinesApi
+ fun Snmp.send(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) = async {
+    pdu.requestID = getGlobalRequestID()
+    send(pdu, target, target) {
+            val resPdu = event.response
+            if (resPdu == null) {
+                close()
+            } else {
+                offer(event as ResponseEvent<UdpAddress>) // テンプレート型のコールバックはどう扱えば?
+            }
+        }
+    })
 }
 
 @ExperimentalCoroutinesApi
@@ -162,7 +175,7 @@ fun Snmp.scanFlow(pdu: org.snmp4j.PDU, startTarget: Target<UdpAddress>, endAddr:
 suspend fun Snmp.broadcastFlow(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) =
     callbackFlow<ResponseEvent<UdpAddress>> {
         val retries = target.retries
-        target.retries = 0
+        target.retries = 0 //TODO
         val detected = mutableSetOf<UdpAddress>()
         repeat(retries + 1) {
             sendFlow(pdu, target).collect {
@@ -172,8 +185,8 @@ suspend fun Snmp.broadcastFlow(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) 
                 }
             }
         }
-        //close()
-        //awaitClose()
+        close()
+        awaitClose()
     }
 
 
@@ -186,9 +199,11 @@ suspend fun Flow<SnmpTarget>.discoveryDeviceMap(snmp: Snmp, oids: List<String>) 
         val pdu = PDU(GETNEXT, sampleOids)
 
         if (target.isBroadcast) {
+            println("S1") //TODO
             snmp.broadcastFlow(pdu.toSnmp4j(), target.toSnmp4j()).collect {
                 offer(it)
             }
+            println("S2") //TODO
         } else {
             snmp.scanFlow(
                 pdu.toSnmp4j(),
