@@ -1,13 +1,10 @@
 import gdvm.device.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import mibtool.snmp4jWrapper.*
-import org.snmp4j.smi.UdpAddress
 import java.util.*
 
 
@@ -35,20 +32,27 @@ data class DeviceMfpMib_QueryStatusUpdate(
         val schedule: Schedule = Schedule(1),
 )
 
+var mfpQueryCount = 0; //TODO
+
 @ExperimentalCoroutinesApi
 suspend fun runMfpSnmp(devMfpId: String, secret: String, address: String) {
     runCatching {
-        println("\n${Date()}      ----- Start runMfpSnmp[$address]($devMfpId)")
+        println("${Date()}      ----- Start runMfpSnmp[$address]($devMfpId)")
         val dev = db.document("device/$devMfpId").get().get().data?.toJsonObject()?.toObject<DeviceMfpSnmp>()!!
         db.collection("device/$devMfpId/query")
                 .whereEqualTo("cluster", "AgentStressTest").limit(3)
                 .snapshotsAs<DeviceMfpMib_QueryStatusUpdate>().collectLatest { queries ->
-                    queries.forEach { query -> runMfpSnmpQuery(dev, query, address) }
+                    queries.forEach { query ->
+                        runMfpSnmpQuery(dev, query, address)
+                    }
                 }
-    }.onFailure { ex -> println("${Date()} Canceled runMfpSnmp($devMfpId)  Exception: $ex") }
+    }.onFailure { ex -> println("${Date()} Canceled runMfpSnmp($devMfpId)  Exception:") }
+
 }
 
 suspend fun runMfpSnmpQuery(dev: DeviceMfpSnmp, query: DeviceMfpMib_QueryStatusUpdate, address: String) {
+    val c = mfpQueryCount++
+    println(" --- S$c")
     runCatching {
         //println("${Date()} Start Device Query: device/${dev.id}/query/${query.id}")
         scheduleFlow(query.schedule).collectLatest {
@@ -58,5 +62,11 @@ suspend fun runMfpSnmpQuery(dev: DeviceMfpSnmp, query: DeviceMfpMib_QueryStatusU
                 println("${Date()} Report: ${it.peerAddress?.inetAddress?.hostAddress} ${it.response?.variableBindings}") //TODO
             }
         }
-    }//.onFailure { ex -> println("${Date()} Terminate runMfpSnmpQuery(): ${query.id}  Exception: $ex") }
+    }.onFailure { ex ->
+        //println("${Date()} Terminate runMfpSnmpQuery(): ${query.id}  Exception: $ex")
+        println("     C$c")
+        mfpQueryCount--
+    }
+    println("     E$c")
+    mfpQueryCount--
 }
