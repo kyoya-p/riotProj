@@ -29,13 +29,17 @@ inline fun <reified T : Any> DocumentReference.snapshotAs() = callbackFlow<T> {
 
 @ExperimentalCoroutinesApi
 inline fun <reified T : Any> Query.snapshotsAs() = callbackFlow<List<T>> {
+    //runCatching {
     val listener = addSnapshotListener { value, error ->
         if (error != null) {
             println("Error: ${error.message}")
         } else if (value != null) {
             offer(value.documents.map { it.data.toJsonObject().toObject() })
         }
+
     }
+    listener
+    //}.onFailure {  }.onSuccess { close() }
     awaitClose { listener.remove() }
 }
 
