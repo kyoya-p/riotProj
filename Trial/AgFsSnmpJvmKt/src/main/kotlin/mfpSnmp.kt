@@ -62,7 +62,11 @@ suspend fun runMfpSnmpQuery(dev: DeviceMfpSnmp, query: DeviceMfpMib_QueryStatusU
                 println("${Date()} Report: ${it.peerAddress?.inetAddress?.hostAddress} ${it.response?.variableBindings}") //TODO
             }
         }
-    }//.onFailure { ex -> println("${Date()} Terminate runMfpSnmpQuery(): ${query.id}  Exception: $ex") }
+    }.onFailure { ex ->
+        //println("${Date()} Terminate runMfpSnmpQuery(): ${query.id}  Exception: $ex")
+        println("     C$c")
+        mfpQueryCount--
+    }
     println("     E$c")
-    mfpQueryCount++
+    mfpQueryCount--
 }
