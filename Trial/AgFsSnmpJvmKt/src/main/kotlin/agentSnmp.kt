@@ -102,7 +102,7 @@ fun sendReport(devAg: DeviceAgentMfpMib, queryId: String, result: List<String>) 
 }
 
 fun createDevice(devId: String, devAg: DeviceAgentMfpMib) {
-    val mfp = DeviceAgentMfpMib(id = devId, cluster = devAg.cluster, dev = DeviceDev(password = secretDefault))
+    val mfp = DeviceMfpSnmp(id = devId, cluster = devAg.cluster, dev = DeviceDev(password = secretDefault),)
     db.document("device/$devId").set(mfp)
     val mfpInitialQuery =
             DeviceMfpMib_QueryStatusUpdate(
