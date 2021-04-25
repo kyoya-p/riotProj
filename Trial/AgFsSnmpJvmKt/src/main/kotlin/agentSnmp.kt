@@ -92,7 +92,7 @@ suspend fun runAgentQuery(devAg: DeviceAgentMfpMib, query: DeviceAgentMfpMib_Que
                 (0 until query.debugDummyInstances).map { DiscoveryResult("${res.devId}:no=$it", res.ip) }
             }
         }
-        //sendReport(devAg, query.id, discoveryResListDummy.map { it.devId })
+        sendReport(devAg, query.id, discoveryResListDummy.map { it.devId })
 
         /* if (query.autoRegistration) {
              createDevice(devId, devAg)
