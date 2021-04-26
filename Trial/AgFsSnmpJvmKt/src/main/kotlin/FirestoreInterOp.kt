@@ -4,19 +4,35 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 
 import kotlinx.serialization.json.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 
+// callbackをcoroutineに変換
 @ExperimentalCoroutinesApi
-fun DocumentReference.snapshot() = callbackFlow {
-    val listener = addSnapshotListener { value, _ -> if (value != null) offer(value) }
-    awaitClose { listener.remove() }
+suspend inline fun <reified T> DocumentReference.dataAs(): T? {
+    val listener: ListenerRegistration
+    //println("C1")//TODO
+    val r = suspendCoroutine<T?> { continuation ->
+        //println("C2")//TODO
+        listener = addSnapshotListener { v, e ->
+            //println("C3")//TODO
+            when {
+                v != null -> continuation.resume(v.data?.toJsonObject()?.toObject<T>())
+                e is Throwable -> continuation.resumeWithException(e)
+                else -> continuation.resume(null) // resumeWithException(Exception("No Document"))
+            }
+            //println("C4")//TODO
+        }
+    }
+    //println("C5")//TODO
+
+    // resume()後に呼び出されるコールバックはないものか runCatching{}.onSuccess{}みたいな
+    listener.remove()
+    return r
 }
 
-@ExperimentalCoroutinesApi
-fun Query.snapshots() = callbackFlow {
-    val listener = addSnapshotListener { value, _ -> if (value != null) offer(value) }
-    awaitClose { listener.remove() }
-}
 
 @ExperimentalCoroutinesApi
 inline fun <reified T : Any> DocumentReference.snapshotAs() = callbackFlow<T> {

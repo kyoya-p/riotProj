@@ -220,7 +220,6 @@ fun Snmp.scanFlow(pdu: org.snmp4j.PDU, startTarget: Target<UdpAddress>, endAddr:
 suspend fun Snmp.broadcastFlow0(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) =
     callbackFlow<ResponseEvent<UdpAddress>> {
         val retries = target.retries
-        target.retries = 0 //TODO
         val detected = mutableSetOf<UdpAddress>()
         repeat(retries + 1) {
             sendFlow(pdu, target).collect {
@@ -252,7 +251,6 @@ fun Snmp.broadcast(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) =
 suspend fun Snmp.broadcastFlow1(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) =
     callbackFlow<ResponseEvent<UdpAddress>> {
         val retries = target.retries
-        target.retries = 0 //TODO
         val detected = mutableSetOf<UdpAddress>()
         repeat(retries + 1) {
             sendFlow(pdu, target).collect {

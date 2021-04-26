@@ -10,39 +10,39 @@ import java.util.*
 
 @Serializable
 data class DeviceAgentMfpMib(
-    val time: Long = Date().time,
-    val id: String,
-    val cluster: String,
-    val dev: DeviceDev,
+        val time: Long = Date().time,
+        val id: String,
+        val cluster: String,
+        val dev: DeviceDev,
 )
 
 // device/{}/query/{query}
 @Serializable
 data class DeviceAgentMfpMib_QueryDiscovery(
-    val time: Long,
-    val id: String,
-    val devId: String,
-    val cluster: String,
+        val time: Long,
+        val id: String,
+        val devId: String,
+        val cluster: String,
 
-    val scanAddrSpecs: List<SnmpTarget> = listOf(),
-    val autoRegistration: Boolean = false,
-    val schedule: Schedule = Schedule(1),
+        val scanAddrSpecs: List<SnmpTarget> = listOf(),
+        val autoRegistration: Boolean = false,
+        val schedule: Schedule = Schedule(1),
 
-    val debugDummyInstances: Int = 1
+        val debugDummyInstances: Int = 1
 )
 
 @Serializable
 data class DeviceAgentMfpMib_ResultDiscovery(
-    val time: Long = Date().time,
-    val devId: String,
-    val cluster: String,
-    val type: List<String> = listOf("log", "log.dev", "log.dev.agent", "log.dev.agent.mfp", "log.dev.agent.mfp.snmp"),
-    val attr: Map<String, JsonElement> = mapOf(
-        "log" to JsonObject(mapOf("dev" to JsonObject(mapOf()))),
-        "dev" to JsonObject(mapOf())
-    ),
+        val time: Long = Date().time,
+        val devId: String,
+        val cluster: String,
+        val type: List<String> = listOf("log", "log.dev", "log.dev.agent", "log.dev.agent.mfp", "log.dev.agent.mfp.snmp"),
+        val attr: Map<String, JsonElement> = mapOf(
+                "log" to JsonObject(mapOf("dev" to JsonObject(mapOf()))),
+                "dev" to JsonObject(mapOf())
+        ),
 
-    val detected: List<String>,
+        val detected: List<String>,
 )
 
 @ExperimentalCoroutinesApi
@@ -51,11 +51,11 @@ suspend fun runAgent(devAgentId: String, secret: String) {
         println("${Date()} ----- Start runAgent($devAgentId)")
         val dev = db.document("device/$devAgentId").get().get().data?.toJsonObject()?.toObject<DeviceAgentMfpMib>()!!
         db.collection("device/$devAgentId/query")
-            .whereEqualTo("cluster", "AgentStressTest").limit(3)
-            .snapshotsAs<DeviceAgentMfpMib_QueryDiscovery>().collectLatest { queries ->
-                //queries.forEach { query -> launch { runAgentQuery(dev, query) } }
-                queries.forEach { query -> runAgentQuery(dev, query) }
-            }
+                .whereEqualTo("cluster", "AgentStressTest").limit(3)
+                .snapshotsAs<DeviceAgentMfpMib_QueryDiscovery>().collectLatest { queries ->
+                    //queries.forEach { query -> launch { runAgentQuery(dev, query) } }
+                    queries.forEach { query -> runAgentQuery(dev, query) }
+                }
     }.onFailure { ex -> println("${Date()} Canceled runAgent($devAgentId)  Exception:") }
 }
 
@@ -94,42 +94,35 @@ suspend fun runAgentQuery(devAg: DeviceAgentMfpMib, query: DeviceAgentMfpMib_Que
         }
         sendReport(devAg, query.id, discoveryResListDummy.map { it.devId })
 
-        /* if (query.autoRegistration) {
-             createDevice(devId, devAg)
-             repeat(query.debugDummyInstances) {
-                 launch {
-                     println("r1:$it")
-                     runCatching {
-                         runMfpSnmp(devId, secretDefault, res.peerAddress.inetAddress.hostAddress)
-                     }.onFailure { it.printStackTrace() }
-                     println("r2:$it")
-                 }
-             }
-         }
-
-         */
+        if (query.autoRegistration) discoveryResListDummy.forEach { dev ->
+            launch {
+                createDevice(dev.devId, devAg)
+                runCatching {
+                    runMfpSnmp(dev.devId, secretDefault, dev.ip)
+                }.onFailure { it.printStackTrace() }
+            }
+        }
     }
 }
 
 
 fun sendReport(devAg: DeviceAgentMfpMib, queryId: String, result: List<String>) {
     val discoveryResult =
-        DeviceAgentMfpMib_ResultDiscovery(devId = devAg.id, cluster = devAg.cluster, detected = result)
+            DeviceAgentMfpMib_ResultDiscovery(devId = devAg.id, cluster = devAg.cluster, detected = result)
     db.collection("device/${devAg.id}/logs").document().set(discoveryResult)
     db.document("device/${devAg.id}/state/$queryId").set(discoveryResult)
-    println(result) //TODO
 }
 
 fun createDevice(devId: String, devAg: DeviceAgentMfpMib) {
     val mfp = DeviceMfpSnmp(id = devId, cluster = devAg.cluster, dev = DeviceDev(password = secretDefault))
     db.document("device/$devId").set(mfp)
     val mfpInitialQuery =
-        DeviceMfpMib_QueryStatusUpdate(
-            id = "statusUpdate",
-            cluster = devAg.cluster,
-            devId = devAg.id,
-            schedule = Schedule(limit = 1, interval = 1 * 1000),
-        )
+            DeviceMfpMib_QueryStatusUpdate(
+                    id = "statusUpdate",
+                    cluster = devAg.cluster,
+                    devId = devAg.id,
+                    schedule = Schedule(limit = 1, interval = 1 * 1000),
+            )
     db.document("device/$devId/query/${mfpInitialQuery.id}").set(mfpInitialQuery)
 }
 
