@@ -83,3 +83,5 @@ fun List<Any>.toJsonArray(): JsonArray = buildJsonArray {
 }
 
 inline fun <reified T> JsonObject.toObject(): T = Json { ignoreUnknownKeys = true }.decodeFromJsonElement(this)
+
+
