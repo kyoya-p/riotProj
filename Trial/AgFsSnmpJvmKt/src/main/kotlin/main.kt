@@ -26,24 +26,15 @@ val snmp = Snmp(DefaultUdpTransportMapping().apply { listen() })
 val secretDefault = "Sharp_#1"
 
 @ExperimentalCoroutinesApi
-suspend fun main() {
-    runAgent("stressAgent1", "1234eeee")
-}
-
-@ExperimentalCoroutinesApi
-suspend fun mainX() {
-    val t0 = Date().time
-    println("L0 ${Date().time - t0}")
-    val r = snmp.walkFlow(
-        PDU(PDU.GETNEXT, listOf(VariableBinding(OID("1.3")))), CommunityTarget(
-            //UdpAddress(InetAddress.getByName("10.36.102.245"), 161),
-            UdpAddress(InetAddress.getByName("192.168.3.8"), 161),
-            OctetString("public"),
+suspend fun main(args: Array<String>) {
+    if (args.size != 2) {
+        println(
+            """
+            syntax: java -jar AgFsSnmpJvmKt.jar <agentId> <secret>
+        """.trimIndent()
         )
-    )
-
-    println("L1 ${Date().time - t0}")
-    val s = r.toList().size
-    println(s)
-    println("L2 ${Date().time - t0}")
+        return
+    }
+    runAgent(args[0], args[1])
 }
+
