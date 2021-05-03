@@ -2,7 +2,10 @@ plugins {
     application
     kotlin("jvm") version "1.4.32"
     kotlin("plugin.serialization") version "1.4.32"
+
+    id("com.github.johnrengelman.shadow") version "6.1.0" //https://plugins.gradle.org/plugin/com.github.johnrengelman.shadow
 }
+
 
 val serializationVersion = "1.1.0" // https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-serialization
 
@@ -21,6 +24,9 @@ dependencies {
     implementation("org.snmp4j:snmp4j:3.4.4") // https://mvnrepository.com/artifact/org.snmp4j/snmp4j
 }
 
+application {
+    mainClassName = "MainKt"
+}
 
 
 
