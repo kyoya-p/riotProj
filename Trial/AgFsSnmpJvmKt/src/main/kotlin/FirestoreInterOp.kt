@@ -9,24 +9,41 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 
+inline fun <reified T> DocumentSnapshot.dataAs(): T? = data?.toJsonObject()?.toObject<T>()
+
 // callbackをcoroutineに変換
 @ExperimentalCoroutinesApi
 suspend inline fun <reified T> DocumentReference.dataAs(): T? {
     val listener: ListenerRegistration
-    //println("C1")//TODO
     val r = suspendCoroutine<T?> { continuation ->
-        //println("C2")//TODO
         listener = addSnapshotListener { v, e ->
-            //println("C3")//TODO
             when {
-                v != null -> continuation.resume(v.data?.toJsonObject()?.toObject<T>())
+                v != null -> continuation.resume(v.dataAs<T>())
                 e is Throwable -> continuation.resumeWithException(e)
                 else -> continuation.resume(null) // resumeWithException(Exception("No Document"))
             }
-            //println("C4")//TODO
         }
     }
-    //println("C5")//TODO
+
+    // resume()後に呼び出されるコールバックはないものか runCatching{}.onSuccess{}みたいな
+    listener.remove()
+    return r
+}
+
+inline fun <reified T> QuerySnapshot.dataAs(): List<T> = documents.mapNotNull { it?.dataAs<T>() }
+
+@ExperimentalCoroutinesApi
+suspend inline fun <reified T> Query.dataAs(): List<T>? {
+    val listener: ListenerRegistration
+    val r = suspendCoroutine<List<T>?> { continuation ->
+        listener = addSnapshotListener { v, e ->
+            when {
+                v != null -> continuation.resume(v.dataAs())
+                e is Throwable -> continuation.resumeWithException(e)
+                else -> continuation.resume(null)
+            }
+        }
+    }
 
     // resume()後に呼び出されるコールバックはないものか runCatching{}.onSuccess{}みたいな
     listener.remove()

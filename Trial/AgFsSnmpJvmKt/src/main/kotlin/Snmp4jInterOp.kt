@@ -96,6 +96,14 @@ fun VariableBinding.toVB() = VB(
     value = toValueString(),
 )
 
+fun VB.Companion.from(vb: VariableBinding): VB {
+    return VB(
+        oid = vb.oid.toOidString(),
+        stx = vb.syntax,
+        value = vb.toValueString(), //TODO
+    )
+}
+
 fun OID.toOidString() = value.joinToString(".")
 fun String.uncaped() = generateSequence(0 to 0.toByte()) { (i, c) ->
     when {
@@ -153,20 +161,11 @@ suspend fun Snmp.sendFlow(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) = cal
     awaitClose()
 }
 
-suspend fun Snmp.request0(pdu: org.snmp4j.PDU, target: Target<UdpAddress>): ResponseEvent<UdpAddress>? =
-    suspendCoroutine { continuation ->
-        send(pdu, target, null, object : ResponseListener {
-            override fun <A : Address?> onResponse(event: ResponseEvent<A>?) {
-                continuation.resume(event as ResponseEvent<UdpAddress>)
-            }
-        })
-        return@suspendCoroutine
-    }
-
 fun Snmp.request(pdu: org.snmp4j.PDU, target: Target<UdpAddress>) = GlobalScope.async {
     suspendCoroutine<ResponseEvent<UdpAddress>?> { continuation ->
         send(pdu, target, null, object : ResponseListener {
             override fun <A : Address?> onResponse(event: ResponseEvent<A>?) {
+                println("Snmp.request($event)")//TODO
                 continuation.resume(event as ResponseEvent<UdpAddress>?)
             }
         })

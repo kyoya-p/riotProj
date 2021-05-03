@@ -7,6 +7,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import mibtool.snmp4jWrapper.GETNEXT
+import org.snmp4j.smi.VariableBinding
 import java.util.*
 
 
@@ -67,6 +68,8 @@ data class VB(
     val stx: Int = NULL,
     val value: String = "",
 )
+
+
 
 @Serializable
 data class Schedule(
