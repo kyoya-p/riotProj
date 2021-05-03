@@ -1,6 +1,6 @@
 #
 # docker build -t gdvmagent .
-# docker run -e PW=<forCredFile> -e DEVICE=<deviceId> -e SECRET=<secretStringOfDevice> --network host gdvmagent
+# docker run -e PW=<forCredFile> -e DEVICE=<deviceId> -e SECRET=<secretWordOfDevice> --network host gdvmagent
 #
 
 FROM adoptopenjdk/openjdk11:jdk-11.0.11_9-ubuntu-slim
