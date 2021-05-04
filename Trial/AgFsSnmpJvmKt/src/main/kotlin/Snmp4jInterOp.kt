@@ -12,11 +12,15 @@ import org.snmp4j.event.ResponseEvent
 import org.snmp4j.event.ResponseListener
 import org.snmp4j.mp.SnmpConstants.*
 import org.snmp4j.smi.*
+import org.snmp4j.transport.DefaultUdpTransportMapping
 import java.math.BigInteger
 import java.net.InetAddress
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.random.Random
+
+val snmp = Snmp(DefaultUdpTransportMapping().apply { listen() })
+
 
 val GET: Int get() = -96
 val GETNEXT: Int get() = -95

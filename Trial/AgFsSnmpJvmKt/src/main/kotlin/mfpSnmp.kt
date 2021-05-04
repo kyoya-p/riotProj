@@ -6,7 +6,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import mibtool.snmp4jWrapper.*
-import org.snmp4j.smi.OID
 import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -91,7 +90,6 @@ suspend fun runMfpSnmp_StressTester(devMfpId: String, secret: String, address: S
     ) {
         val counterInfo = Counter(count = 0, devId = dev.id, cluster = dev.cluster)
         repeat(query.schedule.limit) { qn ->
-            delay(query.schedule.interval)
             setWithShardCounter(db.collection("device/${dev.id}/counter"), dev.id, 1, counterInfo) {
                 val log = DeviceMfpMib_QueryStatusUpdate_Result(
                     devId = dev.id,
@@ -101,6 +99,7 @@ suspend fun runMfpSnmp_StressTester(devMfpId: String, secret: String, address: S
                 db.collection("device/${dev.id}/logs").document().set(log)
             }
             println("${Date()} [$qn] Report[${dev.id}]") //TODO
+            delay(query.schedule.interval)
         }
     }
 

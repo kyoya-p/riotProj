@@ -8,7 +8,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-
+val db = FirestoreOptions.getDefaultInstance().getService()
 inline fun <reified T> DocumentSnapshot.dataAs(): T? = data?.toJsonObject()?.toObject<T>()
 
 // callbackをcoroutineに変換

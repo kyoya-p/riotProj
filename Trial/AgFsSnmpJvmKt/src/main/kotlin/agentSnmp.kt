@@ -29,7 +29,7 @@ data class DeviceAgentMfpMib_QueryDiscovery(
     val schedule: Schedule = Schedule(1),
     val mfpInitialQueryTemplate: DeviceMfpMib_QueryStatusUpdate? = null,
 
-    val debugDummyInstances: Int? = null
+    val dummyDeviceInstances: Int? = null
 )
 
 @Serializable
@@ -79,14 +79,18 @@ suspend fun runAgentQuery(devAg: DeviceAgentMfpMib, query: DeviceAgentMfpMib_Que
     val reqOids = listOf(hrDeviceDescr, prtGeneralSerialNumber)
     scheduleFlow(query.schedule).collectLatest { i ->
         println("${Date()} ----- Start runAgentQuery(${devAg.id}/${query.id}:$i )")
-        val discoveryResList = query.scanAddrSpecs.asFlow().discoveryDeviceMap(snmp, reqOids).map { res ->
-            val (model, sn) = res.response.variableBindings.map { it.variable.toString() }
-            val devId = "type=dev.mfp.snmp:model=$model:sn=$sn"
-            DiscoveryResult(devId, res.peerAddress.inetAddress.hostAddress)
-        }.toList().distinctBy { it.devId }.flatMap { res ->
-            when (query.debugDummyInstances) {
-                null, 0 -> listOf(res)
-                else -> (0 until query.debugDummyInstances).map { res.copy(devId = "${res.devId}:no=$it") }
+        val discoveryResList = if (query.dummyDeviceInstances == null || query.dummyDeviceInstances == 0) {
+            query.scanAddrSpecs.asFlow().discoveryDeviceMap(snmp, reqOids).map { res ->
+                val (model, sn) = res.response.variableBindings.map { it.variable.toString() }
+                val devId = "type=dev.mfp.snmp:model=$model:sn=$sn"
+                DiscoveryResult(devId, res.peerAddress.inetAddress.hostAddress)
+            }.toList().distinctBy { it.devId }
+        } else {
+            (0 until query.dummyDeviceInstances).map {
+                DiscoveryResult(
+                    devId = "type=dev.mfp.dmy:${devAg.id}:no=$it",
+                    ip = "127.0.0.1"
+                )
             }
         }
 
@@ -94,22 +98,19 @@ suspend fun runAgentQuery(devAg: DeviceAgentMfpMib, query: DeviceAgentMfpMib_Que
 
         if (query.autoRegistration) discoveryResList.forEach { dev ->
             delay(100) //TODO
-            val x = dev.devId
             launch {
                 createDevice(dev.devId, devAg)
                 createDeviceQuery(dev.devId, devAg, query)
-                delay(100) //TODO
-                launch {
-                    runCatching {
-                        //runMfpSnmp(dev.devId, secretDefault, dev.ip)
-                        runMfpSnmp_StressTester(dev.devId, secretDefault, dev.ip) //TODO
-                    }.onFailure { it.printStackTrace() }
-                }
+                runCatching {
+                    when (query.dummyDeviceInstances) {
+                        null, 0 -> runMfpSnmp(dev.devId, secretDefault, dev.ip)
+                        else -> runMfpSnmp_StressTester(dev.devId, secretDefault, dev.ip)
+                    }
+                }.onFailure { it.printStackTrace() }
             }
         }
     }
 }
-
 
 fun sendReport(devAg: DeviceAgentMfpMib, queryId: String, result: List<String>) {
     val discoveryResult =
@@ -125,6 +126,7 @@ fun createDevice(devId: String, devAg: DeviceAgentMfpMib) {
             cluster = devAg.cluster,
             dev = DeviceDev(password = secretDefault),
             createdBy = devAg.id,
+            type = listOf("dev", "dev.mfp", "dev.mfp.dmy")
         )
     db.document("device/$devId").set(mfp)
 }
