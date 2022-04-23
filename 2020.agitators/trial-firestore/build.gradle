@@ -1,0 +1,49 @@
+buildscript {
+    ext.kotlin_version = '1.4.10'
+    repositories {
+        jcenter()
+        google()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+
+//        classpath 'com.android.tools.build:gradle:3.5.3'
+        classpath 'com.google.gms:google-services:3.2.1'  // Google Services plugin
+    }
+}
+
+apply plugin: 'application'
+
+
+compileJava.options.encoding = "UTF-8"
+sourceSets.main.java.srcDirs = ['src']
+sourceSets.test.java.srcDirs = ['test']
+sourceSets.main.resources.srcDirs = ['src']
+
+repositories {
+    jcenter()
+    google()
+}
+
+dependencies {
+    //compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    // for Firebase
+    //compile group: 'com.google.cloud', name: 'google-cloud-firestore', version: '2.0.0'
+}
+
+task flutterBuildTask(type: Exec) {
+    workingDir "$projectDir"
+    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+        commandLine 'cmd.exe', '/c', 'flutter', 'build', 'web'
+    } else {
+        commandLine 'sh', '-c', 'flutter', 'build', 'web'
+    }
+}
+
+mainClassName = 'AgentKt'
+jar {
+    manifest {attributes 'Main-Class': mainClassName}
+    from configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+}
+
