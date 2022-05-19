@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Console',
       theme: ThemeData(
-        primarySwatch: Colors.lightGreen,
+        primarySwatch: Colors.deepPurple,
       ),
       home: const MyHomePage(title: 'Console'),
     );
@@ -24,7 +24,7 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text("Test Console")),
+        appBar: AppBar(title: const Text("Test Console ")),
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.send),
           onPressed: () => {},

@@ -1,3 +1,22 @@
+# 環境
+- OS: Windows 10
+- Flutter: 3
+ 
+# デバッグ実行
+
+> flutter run
+ 
+ or 
+
+ VSCodeでF5(デバッグ実行)
+
+# 開発環境
+
+- VSCode
+  - Flutter plugin
+
+---
+
 # console_ft
 
 A new Flutter project.
