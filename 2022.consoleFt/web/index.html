@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -27,11 +28,12 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
   <title>console_ft</title>
   <link rel="manifest" href="manifest.json">
 </head>
+
 <body>
   <!-- This script installs service_worker.js to provide PWA functionality to
        application. For more information, see:
@@ -100,5 +102,23 @@
       loadMainDartJs();
     }
   </script>
+  <script>
+    import { initializeApp } from "firebase/app";
+    //import { getAnalytics } from "firebase/analytics";
+    const firebaseConfig = {
+      apiKey: "AIzaSyDrO7W7Sb6RCpHTsY3GaP-zODRP_HtY4nI",
+      authDomain: "road-to-iot.firebaseapp.com",
+      databaseURL: "https://road-to-iot.firebaseio.com",
+      projectId: "road-to-iot",
+      storageBucket: "road-to-iot.appspot.com",
+      messagingSenderId: "307495712434",
+      appId: "1:307495712434:web:acc483c0c300549ff33bab",
+      measurementId: "G-1F2ZQXB15M"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    //const analytics = getAnalytics(app);  </script>
 </body>
+
 </html>

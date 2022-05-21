@@ -15,6 +15,16 @@
 - VSCode
   - Flutter plugin
 
+# プロジェクト作成履歴
+
+- Firebase/Firestore プロジェクト作成(略)
+- [Flutter アプリに Firebase を追加する](https://firebase.google.com/docs/flutter/setup)
+  - firebase login
+  - flutterfire configure --out lib/firebase_options.dart --project road-to-iot
+
+# 参考
+- [【Flutter】iOS/Android/WebでFirebase Firestoreを使えるようにする](https://qiita.com/yoshikoba/items/1cfcda5b9f33555a113a)
+
 ---
 
 # console_ft
@@ -33,3 +43,4 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter, view our
 [online documentation](https://flutter.dev/docs), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
