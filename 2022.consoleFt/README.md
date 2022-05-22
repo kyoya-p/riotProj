@@ -1,6 +1,6 @@
 # 環境
-- OS: Windows 10
-- Flutter: 3
+- OS: Windows 10/11
+- Flutter: 3.0
  
 # デバッグ実行
 
