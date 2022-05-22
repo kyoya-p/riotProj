@@ -37,13 +37,42 @@ class MyHomePage extends StatelessWidget {
         ),
         body: Column(
           children: [
-            TextField(decoration: InputDecoration(label: Text("Agent Id"))),
-            TextField(decoration: InputDecoration(label: Text("Discovery IP"))),
-            textViewer(db.doc("device/Agent1")),
-            Expanded(child: TextField(minLines: 5, maxLines: null)),
+            const TextField(
+                decoration: InputDecoration(label: Text("Agent Id"))),
+            //const TextField(
+            //    decoration: InputDecoration(label: Text("Discovery IP"))),
+            //textViewer(db.doc("device/Agent1")),
+            //const Expanded(child: TextField(minLines: 5, maxLines: null)),
+            //const Expanded(child: discoveryField(db.doc("device/Agent1"))),
+            discoveryField(db.doc("device/Agent1")),
           ],
         ));
   }
+}
+
+class Discovery {
+  String ip = "";
+  List<String> items = [];
+}
+
+Widget discoveryField(DocumentReference docRef) {
+  return StreamBuilder<DocumentSnapshot>(
+      stream: docRef.snapshots(),
+      builder: (context, snapshot) {
+        //var docDisc = snapshot.data!.data() as Discovery;
+        var ipSpec = TextEditingController();
+
+        return Column(
+          children: [
+            const TextField(
+                //controller: ipSpec,
+                decoration: InputDecoration(label: Text("Discovery IP")
+                    //hintText: "IP or IP1,IP2,...IP3 or StartIP-EndIP",
+                    )),
+            const Expanded(child: TextField(minLines: 5, maxLines: null)),
+          ],
+        );
+      });
 }
 
 Widget textViewer<T>(DocumentReference<T> docRef) {
