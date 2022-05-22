@@ -4,17 +4,22 @@
  
 # デバッグ実行
 
-> flutter run
+flutter doctor
+flutter pub get
+flutter run -d chrome
  
- or 
+or
 
- VSCodeでF5(デバッグ実行)
+VSCodeでF5(デバッグ実行)
 
-# 開発環境
+# 開発環境設定
 
+- Flutter SDK - Install
 - VSCode
-  - Flutter plugin
-
+  - Flutter plugin - Install
+  - Dart plugin > 拡張機能の設定 > Flutter SDK path/ Dart SDK path - setup 
+  - 実行 > 構成の追加 > Flutter:launch
+  
 # プロジェクト作成履歴
 
 - Firebase/Firestore プロジェクト作成(略)

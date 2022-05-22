@@ -44,7 +44,7 @@ class MyHomePage extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(title: const Text("Test Console ")),
         floatingActionButton: FloatingActionButton(
-          child: const Icon(Icons.send),
+          child: const Icon(Icons.search),
           onPressed: () => {},
         ),
         body: Column(
