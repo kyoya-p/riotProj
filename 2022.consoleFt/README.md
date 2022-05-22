@@ -26,6 +26,9 @@ VSCodeでF5(デバッグ実行)
 - [Flutter アプリに Firebase を追加する](https://firebase.google.com/docs/flutter/setup)
   - firebase login
   - flutterfire configure --out lib/firebase_options.dart --project road-to-iot
+  - main.dart に追記
+    - `import 'firebase_options.dart'; `
+    - `await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);`
 
 # 参考
 - [【Flutter】iOS/Android/WebでFirebase Firestoreを使えるようにする](https://qiita.com/yoshikoba/items/1cfcda5b9f33555a113a)
