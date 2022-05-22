@@ -1,15 +1,14 @@
 # 環境
-- OS: Windows 10
-- Flutter: 3
+- OS: Windows 10/11
+- Flutter: 3.0
  
 # デバッグ実行
-
+```
 flutter doctor
 flutter pub get
 flutter run -d chrome
- 
+```
 or
-
 VSCodeでF5(デバッグ実行)
 
 # 開発環境設定
