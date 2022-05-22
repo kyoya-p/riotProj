@@ -22,7 +22,7 @@ VSCodeでF5(デバッグ実行)
   
 # プロジェクト作成履歴
 
-- Firebase/Firestore プロジェクト作成(略)
+- Firebase/Firestore プロジェクト(例:`road-to-iot`)作成(略)
 - [Flutter アプリに Firebase を追加する](https://firebase.google.com/docs/flutter/setup)
   - firebase login
   - flutterfire configure --out lib/firebase_options.dart --project road-to-iot
