@@ -62,16 +62,17 @@ Widget discoveryField(DocumentReference docRef) {
         //var docDisc = snapshot.data!.data() as Discovery;
         var ipSpec = TextEditingController();
 
-        return Column(
-          children: [
-            const TextField(
+        return Expanded(child: Column(
+          children: const [
+            TextField(
                 //controller: ipSpec,
                 decoration: InputDecoration(label: Text("Discovery IP")
                     //hintText: "IP or IP1,IP2,...IP3 or StartIP-EndIP",
                     )),
-            const Expanded(child: TextField(minLines: 5, maxLines: null)),
+//            Expanded(child: TextField(minLines: 5, maxLines: null)),
+            TextField(minLines: 5, maxLines: null),
           ],
-        );
+        ));
       });
 }
 
