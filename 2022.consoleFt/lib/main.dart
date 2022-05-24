@@ -40,42 +40,49 @@ class MyHomePage extends StatelessWidget {
             const TextField(
                 decoration: InputDecoration(label: Text("Agent Id"))),
             discoveryField(db.collection("device").doc("Agent1")),
+            // discResultField(db
+            //     .collection("device")
+            //     .doc("Agent1")
+            //     .collection("discResult")
+            //     .doc("devices")),
+            discResultField(db.collection("device/Agent1/discovery")),
           ],
         ));
   }
 }
 
-Widget discoveryField(DocumentReference docRef) {
+Widget discoveryField(DocumentReference docRefAg) {
   return StreamBuilder<DocumentSnapshot>(
-      stream: docRef.snapshots(),
+      stream: docRefAg.snapshots(),
       builder: (context, snapshot) {
         var docAg = snapshot.data!.data()! as Map<String, dynamic>;
         var ipSpec = TextEditingController(text: docAg["ipSpec"] as String?);
 
-        return Expanded(
-            child: Column(
-          children: [
-            TextField(
-              controller: ipSpec,
-              decoration: const InputDecoration(
-                label: Text("Discovery IP"),
-                hintText: "Ex: 1.2.3.1-1.2.3.254",
-              ),
-              onSubmitted: (ip) {
-                docAg["ipSpec"] = ip;
-                docRef.set(docAg);
-              },
-            ),
-            const Expanded(child: TextField(minLines: 5, maxLines: null)),
-          ],
-        ));
+        return TextField(
+          controller: ipSpec,
+          decoration: const InputDecoration(
+            label: Text("Discovery IP"),
+            hintText: "Ex: 1.2.3.1-1.2.3.254",
+          ),
+          onSubmitted: (ip) {
+            docAg["ipSpec"] = ip;
+            docRefAg.set(docAg);
+          },
+        );
       });
 }
 
-Widget textViewer<T>(DocumentReference<T> docRef) {
-  return StreamBuilder<DocumentSnapshot>(
-      stream: docRef.snapshots(),
+Widget discResultField(Query docRefResult) {
+  return StreamBuilder<QuerySnapshot>(
+      stream: docRefResult.snapshots(),
       builder: (context, snapshot) {
-        return Text(snapshot.data!.id);
+        var docDevs =
+            snapshot.data?.docs.map((e) => e.data() as Map<String, dynamic>);
+        if (docDevs == null) return loadingIcon();
+        if (docDevs.length == 0) return noItems();
+        return Text(docDevs.first["ip"]);
       });
 }
+
+Widget loadingIcon() => const Center(child: CircularProgressIndicator());
+Widget noItems() => const Center(child: Text("No items"));
