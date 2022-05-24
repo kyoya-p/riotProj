@@ -44,7 +44,7 @@ class MyHomePage extends StatelessWidget {
             //textViewer(db.doc("device/Agent1")),
             //const Expanded(child: TextField(minLines: 5, maxLines: null)),
             //const Expanded(child: discoveryField(db.doc("device/Agent1"))),
-            discoveryField(db.doc("device/Agent1")),
+            discoveryField(db.collection("device").doc("Agent1")),
           ],
         ));
   }
@@ -59,18 +59,22 @@ Widget discoveryField(DocumentReference docRef) {
   return StreamBuilder<DocumentSnapshot>(
       stream: docRef.snapshots(),
       builder: (context, snapshot) {
-        //var docDisc = snapshot.data!.data() as Discovery;
+        var docDisc = snapshot.data!.data()!;
         var ipSpec = TextEditingController();
 
-        return Expanded(child: Column(
-          children: const [
+        return Expanded(
+            child: Column(
+          children:  [
             TextField(
-                //controller: ipSpec,
-                decoration: InputDecoration(label: Text("Discovery IP")
-                    //hintText: "IP or IP1,IP2,...IP3 or StartIP-EndIP",
-                    )),
+                controller: ipSpec,
+                decoration: const InputDecoration(
+                  label: Text("Discovery IP"),
+//              hintText: "IP or IP1,IP2,...IP3 or StartIP-EndIP",
+                )),
 //            Expanded(child: TextField(minLines: 5, maxLines: null)),
-            TextField(minLines: 5, maxLines: null),
+//            TextField(minLines: 5, maxLines: null),
+            //    TextField(),
+            Expanded(child: TextField(minLines: null, maxLines: null)),
           ],
         ));
       });
