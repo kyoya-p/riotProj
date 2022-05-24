@@ -39,42 +39,34 @@ class MyHomePage extends StatelessWidget {
           children: [
             const TextField(
                 decoration: InputDecoration(label: Text("Agent Id"))),
-            //const TextField(
-            //    decoration: InputDecoration(label: Text("Discovery IP"))),
-            //textViewer(db.doc("device/Agent1")),
-            //const Expanded(child: TextField(minLines: 5, maxLines: null)),
-            //const Expanded(child: discoveryField(db.doc("device/Agent1"))),
             discoveryField(db.collection("device").doc("Agent1")),
           ],
         ));
   }
 }
 
-class Discovery {
-  String ip = "";
-  List<String> items = [];
-}
-
 Widget discoveryField(DocumentReference docRef) {
   return StreamBuilder<DocumentSnapshot>(
       stream: docRef.snapshots(),
       builder: (context, snapshot) {
-        var docDisc = snapshot.data!.data()!;
-        var ipSpec = TextEditingController();
+        var docAg = snapshot.data!.data()! as Map<String, dynamic>;
+        var ipSpec = TextEditingController(text: docAg["ipSpec"] as String?);
 
         return Expanded(
             child: Column(
-          children:  [
+          children: [
             TextField(
-                controller: ipSpec,
-                decoration: const InputDecoration(
-                  label: Text("Discovery IP"),
-//              hintText: "IP or IP1,IP2,...IP3 or StartIP-EndIP",
-                )),
-//            Expanded(child: TextField(minLines: 5, maxLines: null)),
-//            TextField(minLines: 5, maxLines: null),
-            //    TextField(),
-            Expanded(child: TextField(minLines: null, maxLines: null)),
+              controller: ipSpec,
+              decoration: const InputDecoration(
+                label: Text("Discovery IP"),
+                hintText: "Ex: 1.2.3.1-1.2.3.254",
+              ),
+              onSubmitted: (ip) {
+                docAg["ipSpec"] = ip;
+                docRef.set(docAg);
+              },
+            ),
+            const Expanded(child: TextField(minLines: 5, maxLines: null)),
           ],
         ));
       });
