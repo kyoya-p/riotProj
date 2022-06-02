@@ -15,7 +15,8 @@ VSCodeでF5(デバッグ実行)
 
 - Flutter SDK - Install
 - VSCode
-  - Flutter plugin - Install
+  - Plugin > Remode Development Plugin(Remote WSL Plugin) - install
+  - Plugin > Flutter plugin - Install
   - Dart plugin > 拡張機能の設定 > Flutter SDK path/ Dart SDK path - setup 
   - 実行 > 構成の追加 > Flutter:launch
   

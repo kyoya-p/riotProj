@@ -79,10 +79,10 @@ Widget discResultField(Query docRefResult) {
         var docDevs =
             snapshot.data?.docs.map((e) => e.data() as Map<String, dynamic>);
         if (docDevs == null) return loadingIcon();
-        if (docDevs.length == 0) return noItems();
+        if (docDevs.isEmpty) return noItem();
         return Text(docDevs.first["ip"]);
       });
 }
 
 Widget loadingIcon() => const Center(child: CircularProgressIndicator());
-Widget noItems() => const Center(child: Text("No items"));
+Widget noItem() => const Center(child: Text("No item"));
