@@ -14,9 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Console',
-      theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
-      ),
+      theme: ThemeData(primarySwatch: Colors.deepPurple),
       home: const MyHomePage(title: 'Console'),
     );
   }
@@ -40,11 +38,6 @@ class MyHomePage extends StatelessWidget {
             const TextField(
                 decoration: InputDecoration(label: Text("Agent Id"))),
             discoveryField(db.collection("device").doc("Agent1")),
-            // discResultField(db
-            //     .collection("device")
-            //     .doc("Agent1")
-            //     .collection("discResult")
-            //     .doc("devices")),
             discResultField(db.collection("device/Agent1/discovery")),
           ],
         ));
@@ -64,7 +57,9 @@ Widget discoveryField(DocumentReference docRefAg) {
             label: Text("Discovery IP"),
             hintText: "Ex: 1.2.3.1-1.2.3.254",
           ),
-          onSubmitted: (ip) {
+          onSubmitted: (ip) async {
+            final ress = await docRefAg.collection("discovery").get();
+            ress.docs.forEach((d)=> d.reference.delete());
             docAg["ipSpec"] = ip;
             docRefAg.set(docAg);
           },
@@ -76,13 +71,27 @@ Widget discResultField(Query docRefResult) {
   return StreamBuilder<QuerySnapshot>(
       stream: docRefResult.snapshots(),
       builder: (context, snapshot) {
-        var docDevs =
+        final docDevs =
             snapshot.data?.docs.map((e) => e.data() as Map<String, dynamic>);
         if (docDevs == null) return loadingIcon();
         if (docDevs.isEmpty) return noItem();
-        return Text(docDevs.first["ip"]);
+        return Column(children: docDevs.map((e) => Text(e["ip"])).toList());
       });
 }
 
+class SnmpDiscResult {
+  String ip = "";
+}
+class MIB{
+
+}
+
+
 Widget loadingIcon() => const Center(child: CircularProgressIndicator());
 Widget noItem() => const Center(child: Text("No item"));
+
+
+// Sample OID
+const hrDeviceDescr="1.3.6.1.2.1.25.3.2.1.3";
+const hrDeviceStatus="1.3.6.1.2.1.25.3.2.1.5";
+const hrDeviceErrors="1.3.6.1.2.1.25.3.2.1.6";

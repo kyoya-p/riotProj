@@ -2,6 +2,22 @@
 - OS: Windows 10/11
 - Flutter: 3.0
  
+# 開発環境設定
+
+- [Flutter SDK - Install](https://docs.flutter.dev/get-started/install)
+  - snapdの場合: `sudo snap install flutter --classic`
+  - gitの場合: 
+    ```
+    git clone --depth 1 https://github.com/flutter/flutter.git
+    export PATH="$PATH:`pwd`/flutter/bin"
+    ```
+- VSCode
+  - Plugin > Remode Development Plugin(Remote WSL Plugin) - install
+  - Plugin > Flutter plugin - Install
+  - Dart plugin > 拡張機能の設定 > Flutter SDK path/ Dart SDK path - setup 
+  - 実行 > 構成の追加 > Flutter:launch
+  
+  
 # デバッグ実行
 ```
 flutter doctor
@@ -11,15 +27,6 @@ flutter run -d chrome
 or
 VSCodeでF5(デバッグ実行)
 
-# 開発環境設定
-
-- Flutter SDK - Install
-- VSCode
-  - Plugin > Remode Development Plugin(Remote WSL Plugin) - install
-  - Plugin > Flutter plugin - Install
-  - Dart plugin > 拡張機能の設定 > Flutter SDK path/ Dart SDK path - setup 
-  - 実行 > 構成の追加 > Flutter:launch
-  
 # プロジェクト作成履歴
 
 - Firebase/Firestore プロジェクト(例:`road-to-iot`)作成(略)
