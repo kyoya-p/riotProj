@@ -4,8 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'firebase_options.dart';
 
+DocumentReference<Map<String, dynamic>>? docRefAppTmpData;
+
 Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  var db = FirebaseFirestore.instance;
+  docRefAppTmpData = db.collection("tmp").doc();
+  docRefAppTmpData?.set({"ag": "Agent1"});
   runApp(MyApp());
 }
 
@@ -27,20 +32,25 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var db = FirebaseFirestore.instance;
-    return Scaffold(
-        appBar: AppBar(title: const Text("Console")),
-        floatingActionButton: FloatingActionButton(
-          child: const Icon(Icons.search),
-          onPressed: () => {},
-        ),
-        body: Column(
-          children: [
-            const TextField(
-                decoration: InputDecoration(label: Text("Agent Id"))),
-            discoveryField(db.collection("device").doc("Agent1")),
-            discResultField(db.collection("device/Agent1/discovery")),
-          ],
-        ));
+    return StreamBuilder<DocumentSnapshot>(
+      stream: docRefAppTmpData?.snapshots(),
+      builder: (context, snapshot) {
+        return Scaffold(
+            appBar: AppBar(title: const Text("Console")),
+            floatingActionButton: FloatingActionButton(
+              child: const Icon(Icons.search),
+              onPressed: () => {},
+            ),
+            body: Column(
+              children: [
+                const TextField(
+                    decoration: InputDecoration(label: Text("Agent Id"))),
+                discoveryField(db.collection("device").doc("Agent1")),
+                discResultField(db.collection("device/Agent1/discovery")),
+              ],
+            ));
+      },
+    );
   }
 }
 
@@ -59,7 +69,7 @@ Widget discoveryField(DocumentReference docRefAg) {
           ),
           onSubmitted: (ip) async {
             final ress = await docRefAg.collection("discovery").get();
-            ress.docs.forEach((d)=> d.reference.delete());
+            ress.docs.forEach((d) => d.reference.delete());
             docAg["ipSpec"] = ip;
             docRefAg.set(docAg);
           },
@@ -82,16 +92,13 @@ Widget discResultField(Query docRefResult) {
 class SnmpDiscResult {
   String ip = "";
 }
-class MIB{
 
-}
-
+class MIB {}
 
 Widget loadingIcon() => const Center(child: CircularProgressIndicator());
 Widget noItem() => const Center(child: Text("No item"));
 
-
 // Sample OID
-const hrDeviceDescr="1.3.6.1.2.1.25.3.2.1.3";
-const hrDeviceStatus="1.3.6.1.2.1.25.3.2.1.5";
-const hrDeviceErrors="1.3.6.1.2.1.25.3.2.1.6";
+const hrDeviceDescr = "1.3.6.1.2.1.25.3.2.1.3";
+const hrDeviceStatus = "1.3.6.1.2.1.25.3.2.1.5";
+const hrDeviceErrors = "1.3.6.1.2.1.25.3.2.1.6";
