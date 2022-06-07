@@ -1,5 +1,7 @@
+/flutter/
+
 # Miscellaneous
-*.class
+*.class]
 *.log
 *.pyc
 *.swp

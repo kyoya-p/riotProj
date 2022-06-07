@@ -4,8 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'firebase_options.dart';
 
+DocumentReference<Map<String, dynamic>>? docRefAppTmpData;
+
 Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  var db = FirebaseFirestore.instance;
+  docRefAppTmpData = db.collection("tmp").doc();
+  docRefAppTmpData?.set({"ag": "Agent1"});
   runApp(MyApp());
 }
 
@@ -14,9 +19,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Console',
-      theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
-      ),
+      theme: ThemeData(primarySwatch: Colors.deepPurple),
       home: const MyHomePage(title: 'Console'),
     );
   }
@@ -29,56 +32,72 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var db = FirebaseFirestore.instance;
-    return Scaffold(
-        appBar: AppBar(title: const Text("Console")),
-        floatingActionButton: FloatingActionButton(
-          child: const Icon(Icons.search),
-          onPressed: () => {},
-        ),
-        body: Column(
-          children: [
-            const TextField(
-                decoration: InputDecoration(label: Text("Agent Id"))),
-            //const TextField(
-            //    decoration: InputDecoration(label: Text("Discovery IP"))),
-            //textViewer(db.doc("device/Agent1")),
-            //const Expanded(child: TextField(minLines: 5, maxLines: null)),
-            //const Expanded(child: discoveryField(db.doc("device/Agent1"))),
-            discoveryField(db.doc("device/Agent1")),
-          ],
-        ));
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: docRefAppTmpData?.snapshots(),
+      builder: (context, snapshot) {
+        final ag = snapshot.data?.data()?["ag"] as String;
+        if (ag == null) return loadingIcon();
+        return Scaffold(
+            appBar: AppBar(title: const Text("Console")),
+//            floatingActionButton: FloatingActionButton(
+//                child: const Icon(Icons.search), onPressed: () => {}),
+            body: Column(
+              children: [
+                TextField(decoration: InputDecoration(label: Text(ag))),
+                discoveryField(db.collection("device").doc("Agent1")),
+                discResultField(db.collection("device/Agent1/discovery")),
+              ],
+            ));
+      },
+    );
   }
 }
 
-class Discovery {
-  String ip = "";
-  List<String> items = [];
-}
-
-Widget discoveryField(DocumentReference docRef) {
+Widget discoveryField(DocumentReference docRefAg) {
   return StreamBuilder<DocumentSnapshot>(
-      stream: docRef.snapshots(),
+      stream: docRefAg.snapshots(),
       builder: (context, snapshot) {
-        //var docDisc = snapshot.data!.data() as Discovery;
-        var ipSpec = TextEditingController();
+        var docAg = snapshot.data!.data()! as Map<String, dynamic>;
+        var ipSpec = TextEditingController(text: docAg["ipSpec"] as String?);
 
-        return Column(
-          children: [
-            const TextField(
-                //controller: ipSpec,
-                decoration: InputDecoration(label: Text("Discovery IP")
-                    //hintText: "IP or IP1,IP2,...IP3 or StartIP-EndIP",
-                    )),
-            const Expanded(child: TextField(minLines: 5, maxLines: null)),
-          ],
+        return TextField(
+          controller: ipSpec,
+          decoration: const InputDecoration(
+            label: Text("Discovery IP"),
+            hintText: "Ex: 1.2.3.1-1.2.3.254",
+          ),
+          onSubmitted: (ip) async {
+            final ress = await docRefAg.collection("discovery").get();
+            ress.docs.forEach((d) => d.reference.delete());
+            docAg["ipSpec"] = ip;
+            docRefAg.set(docAg);
+          },
         );
       });
 }
 
-Widget textViewer<T>(DocumentReference<T> docRef) {
-  return StreamBuilder<DocumentSnapshot>(
-      stream: docRef.snapshots(),
+Widget discResultField(Query docRefResult) {
+  return StreamBuilder<QuerySnapshot>(
+      stream: docRefResult.snapshots(),
       builder: (context, snapshot) {
-        return Text(snapshot.data!.id);
+        final docDevs =
+            snapshot.data?.docs.map((e) => e.data() as Map<String, dynamic>);
+        if (docDevs == null) return loadingIcon();
+        if (docDevs.isEmpty) return noItem();
+        return Column(children: docDevs.map((e) => Text(e["ip"]+" : "+e["vbs"].join(" : ") + e["err"])).toList());
       });
 }
+
+class SnmpDiscResult {
+  String ip = "";
+}
+
+class MIB {}
+
+Widget loadingIcon() => const Center(child: CircularProgressIndicator());
+Widget noItem() => const Center(child: Text("No item"));
+
+// Sample OID
+const hrDeviceDescr = "1.3.6.1.2.1.25.3.2.1.3";
+const hrDeviceStatus = "1.3.6.1.2.1.25.3.2.1.5";
+const hrDeviceErrors = "1.3.6.1.2.1.25.3.2.1.6";
