@@ -9,15 +9,18 @@ flutter pub get
 flutter run -d chrome
 ```
 or
-VSCodeでF5(デバッグ実行)
+
+VSCodeで
+- Ctrl+Shift+P > Flutter:Run Flutter Doctor
+- 実行 > 構成の追加 > Flutter:launch > F5(デバッグ実行)
+
 
 # 開発環境設定
 
 - Flutter SDK - Install
 - VSCode
   - Flutter plugin - Install
-  - Dart plugin > 拡張機能の設定 > Flutter SDK path/ Dart SDK path - setup 
-  - 実行 > 構成の追加 > Flutter:launch
+  - Dart plugin > 拡張機能の設定 > SDK > Flutter SDK path/ Dart SDK path 
   
 # プロジェクト作成履歴
 
@@ -31,6 +34,13 @@ VSCodeでF5(デバッグ実行)
 
 # 参考
 - [【Flutter】iOS/Android/WebでFirebase Firestoreを使えるようにする](https://qiita.com/yoshikoba/items/1cfcda5b9f33555a113a)
+
+
+Proxyネタ
+---
+
+
+
 
 ---
 
