@@ -84,7 +84,7 @@ Widget discResultField(Query docRefResult) {
             snapshot.data?.docs.map((e) => e.data() as Map<String, dynamic>);
         if (docDevs == null) return loadingIcon();
         if (docDevs.isEmpty) return noItem();
-        return Column(children: docDevs.map((e) => Text(e["ip"])).toList());
+        return Column(children: docDevs.map((e) => Text(e["ip"]+" : "+e["vbs"].join(" : ") + e["err"])).toList());
       });
 }
 
