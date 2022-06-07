@@ -32,19 +32,18 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var db = FirebaseFirestore.instance;
-    return StreamBuilder<DocumentSnapshot>(
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: docRefAppTmpData?.snapshots(),
       builder: (context, snapshot) {
+        final ag = snapshot.data?.data()?["ag"] as String;
+        if (ag == null) return loadingIcon();
         return Scaffold(
             appBar: AppBar(title: const Text("Console")),
-            floatingActionButton: FloatingActionButton(
-              child: const Icon(Icons.search),
-              onPressed: () => {},
-            ),
+//            floatingActionButton: FloatingActionButton(
+//                child: const Icon(Icons.search), onPressed: () => {}),
             body: Column(
               children: [
-                const TextField(
-                    decoration: InputDecoration(label: Text("Agent Id"))),
+                TextField(decoration: InputDecoration(label: Text(ag))),
                 discoveryField(db.collection("device").doc("Agent1")),
                 discResultField(db.collection("device/Agent1/discovery")),
               ],
