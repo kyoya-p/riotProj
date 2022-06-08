@@ -10,7 +10,6 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   var db = FirebaseFirestore.instance;
   refApp = db.collection("tmp").doc();
-  //refApp?.set({"ag": "agent"});
   runApp(MyApp());
 }
 
@@ -35,7 +34,7 @@ class MyHomePage extends StatelessWidget {
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: refApp?.snapshots(),
       builder: (context, snapshot) {
-        final ag = snapshot.data?.data()?["ag"] as String? ?? "No Agent";
+        final ag = snapshot.data?.data()?["ag"] as String? ?? "default";
         return Scaffold(
             appBar: AppBar(title: Text("$ag - Console")),
 //            floatingActionButton: FloatingActionButton(
@@ -57,7 +56,7 @@ Widget agentNameField(DocumentReference<Map<String, dynamic>> refApp) {
       stream: refApp.snapshots(),
       builder: (context, snapshot) {
         var docApp = snapshot.data?.data() ?? {} ;
-        var agId = TextEditingController(text: docApp["ag"] as String? ?? "");
+        var agId = TextEditingController(text: docApp["ag"] as String? ?? "default");
         return TextField(
           controller: agId,
           decoration: const InputDecoration(label: Text("Agent ID:")),
