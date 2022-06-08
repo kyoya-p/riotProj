@@ -4,13 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'firebase_options.dart';
 
-DocumentReference<Map<String, dynamic>>? docRefAppTmpData;
+DocumentReference<Map<String, dynamic>>? refApp;
 
 Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   var db = FirebaseFirestore.instance;
-  docRefAppTmpData = db.collection("tmp").doc();
-  docRefAppTmpData?.set({"ag": "Agent1"});
+  refApp = db.collection("tmp").doc();
+  //refApp?.set({"ag": "agent"});
   runApp(MyApp());
 }
 
@@ -33,19 +33,18 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     var db = FirebaseFirestore.instance;
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: docRefAppTmpData?.snapshots(),
+      stream: refApp?.snapshots(),
       builder: (context, snapshot) {
-        final ag = snapshot.data?.data()?["ag"] as String;
-        if (ag == null) return loadingIcon();
+        final ag = snapshot.data?.data()?["ag"] as String? ?? "No Agent";
         return Scaffold(
-            appBar: AppBar(title: const Text("Console")),
+            appBar: AppBar(title: Text("$ag - Console")),
 //            floatingActionButton: FloatingActionButton(
 //                child: const Icon(Icons.search), onPressed: () => {}),
             body: Column(
               children: [
-                TextField(decoration: InputDecoration(label: Text(ag))),
-                discoveryField(db.collection("device").doc("Agent1")),
-                discResultField(db.collection("device/Agent1/discovery")),
+                agentNameField(refApp!),
+                discoveryField(db.collection("d").doc(ag)),
+                discResultField(db.collection("d").doc(ag).collection("discovery")),
               ],
             ));
       },
@@ -53,17 +52,33 @@ class MyHomePage extends StatelessWidget {
   }
 }
 
-Widget discoveryField(DocumentReference docRefAg) {
-  return StreamBuilder<DocumentSnapshot>(
+Widget agentNameField(DocumentReference<Map<String, dynamic>> refApp) {
+  return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: refApp.snapshots(),
+      builder: (context, snapshot) {
+        var docApp = snapshot.data?.data() ?? {} ;
+        var agId = TextEditingController(text: docApp["ag"] as String? ?? "");
+        return TextField(
+          controller: agId,
+          decoration: const InputDecoration(label: Text("Agent ID:")),
+          onSubmitted: (ag) async {
+            docApp["ag"] = ag;
+            refApp.set(docApp);
+          },
+        );
+      });
+}
+
+Widget discoveryField(DocumentReference<Map<String, dynamic>> docRefAg) {
+  return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: docRefAg.snapshots(),
       builder: (context, snapshot) {
-        var docAg = snapshot.data!.data()! as Map<String, dynamic>;
-        var ipSpec = TextEditingController(text: docAg["ipSpec"] as String?);
-
+        final docAg = snapshot.data?.data() ??  {};
+        final ipSpec = docAg["ipSpec"] as String?  ?? "";
         return TextField(
-          controller: ipSpec,
+          controller: TextEditingController(text: ipSpec),
           decoration: const InputDecoration(
-            label: Text("Discovery IP"),
+            label: Text("Discovery IP:"),
             hintText: "Ex: 1.2.3.1-1.2.3.254",
           ),
           onSubmitted: (ip) async {
@@ -84,7 +99,11 @@ Widget discResultField(Query docRefResult) {
             snapshot.data?.docs.map((e) => e.data() as Map<String, dynamic>);
         if (docDevs == null) return loadingIcon();
         if (docDevs.isEmpty) return noItem();
-        return Column(children: docDevs.map((e) => Text(e["ip"]+" : "+e["vbs"].join(" : ") + e["err"])).toList());
+        return Column(
+            children: docDevs
+                .map((e) =>
+                    Text(e["ip"] + " : " + e["vbs"].join(" : ") + e["err"]))
+                .toList());
       });
 }
 
