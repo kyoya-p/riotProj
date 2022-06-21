@@ -49,6 +49,10 @@ class MyHomePage extends StatelessWidget {
                       // });
                       if (s == "clear") {
                         refDev?.collection("discovery");
+                        // final ress = docRefAg.collection("discovery")();
+                        // for (var d in ress.docs) {
+                        //   d.reference.delete();
+                        // }
                       }
                     },
                     itemBuilder: (BuildContext context) {
@@ -94,9 +98,10 @@ Widget agentNameField(DocumentReference<Map<String, dynamic>> refApp) {
 Widget discField(DocumentReference<Map<String, dynamic>> docRefAg) {
   return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: docRefAg.snapshots(),
-      builder: (context, snapshot) {
+      builder: (context, snapshot)  {
         final docAg = snapshot.data?.data() ?? {};
         final ipSpec = docAg["ipSpec"] as String? ?? "";
+async        function updateConfig(){}
         return Row(
           mainAxisSize: MainAxisSize.max,
           children: [
@@ -126,12 +131,8 @@ Widget discField(DocumentReference<Map<String, dynamic>> docRefAg) {
                   label: Text("Interval:"),
                   hintText: "スキャンごとの間隔 ミリ秒単位",
                 ),
-                onSubmitted: (ip) async {
-                  final ress = await docRefAg.collection("discovery").get();
-                  for (var d in ress.docs) {
-                    d.reference.delete();
-                  }
-                  docAg["ipSpec"] = ip;
+                onSubmitted: (intr) async {
+                  docAg["interval"] = int.parse(intr);
                   docRefAg.set(docAg);
                 },
               ),
@@ -156,7 +157,8 @@ Widget discResultField(Query docRefResult) {
           itemBuilder: (context, index) {
             final e = docDevs[index];
             return ListTile(
-                title: Text(e["ip"] + " : " + e["vbs"].join(" : ") + e["err"]));
+                title: Text(
+                    e["time"].toDate().toString() + " : " + e["ip"] + " : " + e["vbs"].join(" : ")));
           },
         );
       });

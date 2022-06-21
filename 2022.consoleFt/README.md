@@ -19,6 +19,12 @@ flutter run -d chrome
 or
 VSCodeでF5(デバッグ実行)
 
+# ビルド&実行
+```
+flutter build web
+```
+
+
 # プロジェクト作成履歴
 
 - Firebase/Firestore プロジェクト(例:`road-to-iot`)作成(略)
