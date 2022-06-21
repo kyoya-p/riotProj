@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'firebase_options.dart';
+import 'vmstat.dart';
 
 DocumentReference<Map<String, dynamic>>? refApp;
 DocumentReference<Map<String, dynamic>>? refDev;
@@ -43,28 +44,32 @@ class MyHomePage extends StatelessWidget {
                 actions: [
                   PopupMenuButton<String>(
                     initialValue: "",
-                    onSelected: (String s) {
-                      // setState(() {
-                      //   //_selectedValue = s;
-                      // });
-                      if (s == "clear") {
-                        refDev?.collection("discovery");
-                        // final ress = docRefAg.collection("discovery")();
-                        // for (var d in ress.docs) {
-                        //   d.reference.delete();
-                        // }
+                    onSelected: (String s) async {
+                      if (s == "clear" && refDev != null) {
+                        (await refDev!.collection("discovery").get())
+                            .docs
+                            .forEach((e) => e.reference.delete());
+                      } else if (s == "vmstat") {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const VmstatPage()),
+                        );
                       }
                     },
                     itemBuilder: (BuildContext context) {
                       return [
                         const PopupMenuItem(
                             value: "clear",
-                            child: Text("Clear detected devices"))
+                            child: Text("Clear detected devices")),
+                        const PopupMenuItem(
+                            value: "vmstat", child: Text("vmstat")),
                       ];
                     },
                   ),
                 ],
               ),
+
 //            floatingActionButton: FloatingActionButton(
 //                child: const Icon(Icons.search), onPressed: () => {}),
               body: Column(children: [
@@ -98,43 +103,38 @@ Widget agentNameField(DocumentReference<Map<String, dynamic>> refApp) {
 Widget discField(DocumentReference<Map<String, dynamic>> docRefAg) {
   return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: docRefAg.snapshots(),
-      builder: (context, snapshot)  {
+      builder: (context, snapshot) {
         final docAg = snapshot.data?.data() ?? {};
-        final ipSpec = docAg["ipSpec"] as String? ?? "";
-async        function updateConfig(){}
+        final tecIpSpec =
+            TextEditingController(text: docAg["ipSpec"] as String? ?? "");
+        final tecInterval = TextEditingController(text: '${docAg["interval"]}');
+        void updateDoc() {
+          docAg["ipSpec"] = tecIpSpec.text;
+          docAg["interval"] = int.parse(tecInterval.text);
+          docRefAg.set(docAg);
+        }
+
         return Row(
           mainAxisSize: MainAxisSize.max,
           children: [
             Expanded(
               child: TextField(
-                controller: TextEditingController(
-                    text: docAg["ipSpec"] as String? ?? ""),
+                controller: tecIpSpec,
                 decoration: const InputDecoration(
                   label: Text("Scanning IP Range:"),
                   hintText: "スキャンIP範囲 例: 192.168.0.1-192.168.0.254",
                 ),
-                onSubmitted: (ip) async {
-                  // final ress = await docRefAg.collection("discovery").get();
-                  // for (var d in ress.docs) {
-                  //   d.reference.delete();
-                  // }
-                  docAg["ipSpec"] = ip;
-                  docRefAg.set(docAg);
-                },
+                onSubmitted: (_) => updateDoc(),
               ),
             ),
             Expanded(
               child: TextField(
-                controller: TextEditingController(
-                    text: (docAg["interval"] as int? ?? 1000).toString()),
+                controller: tecInterval,
                 decoration: const InputDecoration(
                   label: Text("Interval:"),
                   hintText: "スキャンごとの間隔 ミリ秒単位",
                 ),
-                onSubmitted: (intr) async {
-                  docAg["interval"] = int.parse(intr);
-                  docRefAg.set(docAg);
-                },
+                onSubmitted: (_) => updateDoc(),
               ),
             ),
           ],
@@ -158,7 +158,7 @@ Widget discResultField(Query docRefResult) {
             final e = docDevs[index];
             return ListTile(
                 title: Text(
-                    e["time"].toDate().toString() + " : " + e["ip"] + " : " + e["vbs"].join(" : ")));
+                    '${(e["time"] as Timestamp).toDate().toLocal()} : ${e["ip"]} : ${e["vbs"].join(" : ")}'));
           },
         );
       });
