@@ -5,19 +5,7 @@
 # 開発環境設定
 
 - [Flutter SDK - Install](https://docs.flutter.dev/get-started/install)
-  - snapdの場合: `sudo snap install flutter --classic`
-  - gitの場合: 
-    ```
-    git clone --depth 1 https://github.com/flutter/flutter.git
-    export PATH="`pwd`/flutter/bin:$PATH"
-     or
-    set PATH=%cd%\flutter\bin;%path%
-    
-    flutter upgrade --force
-    flutter doctor
-  ```
 - VSCode
-  - Plugin > Remode Development Plugin(Remote WSL Plugin) - install
   - Plugin > Flutter plugin - Install
   - Dart plugin > 拡張機能の設定 > Flutter SDK path/ Dart SDK path - setup 
   - 実行 > 構成の追加 > Flutter:launch
