@@ -1,3 +1,4 @@
+import 'package:console_ft/vmstatChart.dart';
 import 'package:firebase_core/firebase_core.dart' show Firebase;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,6 +17,8 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -46,14 +49,22 @@ class MyHomePage extends StatelessWidget {
                     initialValue: "",
                     onSelected: (String s) async {
                       if (s == "clear" && refDev != null) {
-                        (await refDev!.collection("discovery").get())
-                            .docs
-                            .forEach((e) => e.reference.delete());
+                        for (var e
+                            in (await refDev!.collection("discovery").get())
+                                .docs) {
+                          e.reference.delete();
+                        }
                       } else if (s == "vmstat") {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const VmstatPage()),
+                              builder: (context) =>  VmstatPage()),
+                        );
+                      } else if (s == "vmstatChart") {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => VmstatChartPage()),
                         );
                       }
                     },
@@ -64,6 +75,8 @@ class MyHomePage extends StatelessWidget {
                             child: Text("Clear detected devices")),
                         const PopupMenuItem(
                             value: "vmstat", child: Text("vmstat")),
+                        const PopupMenuItem(
+                            value: "vmstatChart", child: Text("vmstat chart")),
                       ];
                     },
                   ),
