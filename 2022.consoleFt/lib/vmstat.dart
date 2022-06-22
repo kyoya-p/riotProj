@@ -13,7 +13,10 @@ class VmstatPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (refDev == null) return loadingIcon();
-    final refVmstat = refDev!.collection("vmstat");
+    final refVmstat = refDev!
+        .collection("vmstat")
+        .orderBy("time", descending: true)
+        .limit(12);
 
     return Scaffold(
         appBar: AppBar(title: Text('${refDev!.id} - vmstat')),
@@ -25,11 +28,19 @@ class VmstatPage extends StatelessWidget {
               }
               final logs = snapshots.data!.docs;
               return ListView(
-                scrollDirection: Axis.vertical,
-                children: logs.map((e)=>ListTile(title:Text('${e.data()}'))).toList(),
-//                itemCount: logs.length,
-//                itemBuilder: (context, index) => Text('$index'),
-              );
+                  scrollDirection: Axis.vertical,
+                  children: logs
+                      .expand((e) => e.data()["logs"] as List<dynamic>)
+                      .map((e) => Container(
+                            decoration: BoxDecoration(
+                                border: Border(
+                                    bottom: BorderSide(color: Colors.black38))),
+                            child: ListTile(
+                                leading: Text(
+                                    '${(e["time"] as Timestamp).toDate().toLocal()}'),
+                                title: Text('${e["log"]}')),
+                          ))
+                      .toList());
             }));
   }
 }
