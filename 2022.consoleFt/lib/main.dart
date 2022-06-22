@@ -98,10 +98,9 @@ Widget agentNameField(DocumentReference<Map<String, dynamic>> refApp) {
 Widget discField(DocumentReference<Map<String, dynamic>> docRefAg) {
   return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: docRefAg.snapshots(),
-      builder: (context, snapshot)  {
+      builder: (context, snapshot) {
         final docAg = snapshot.data?.data() ?? {};
         final ipSpec = docAg["ipSpec"] as String? ?? "";
-async        function updateConfig(){}
         return Row(
           mainAxisSize: MainAxisSize.max,
           children: [
