@@ -5,6 +5,29 @@ import 'main.dart';
 
 Widget expanded(Widget w) => Expanded(child: w);
 
+class VmstatLog {
+  static splitter(String log) {
+    final v = log.trim().split(RegExp('\\s+'));
+    if (v.length != 17) throw Exception();
+    return v.map((e) => int.parse(e)).toList();
+  }
+
+  VmstatLog(this.time, this.ns);
+  static VmstatLog? fromString(DateTime time, String log) {
+    try {
+      return VmstatLog(time, splitter(log));
+    } catch (e) {
+      return null;
+    }
+  }
+
+  final List<int> ns;
+  final DateTime time;
+  int get r => ns[0];
+  int get free => ns[3];
+  int get idle => ns[14];
+}
+
 class VmstatChartPage extends StatelessWidget {
   //final List<charts.Series<dynamic, num>> seriesList;
   //final bool? animate;
@@ -36,10 +59,15 @@ class VmstatChartPage extends StatelessWidget {
   }
 
   static List<charts.Series<dynamic, DateTime>> createData(List<dynamic> logs) {
-    logSplitter(String log) =>
-        log.split(RegExp('\\s+')).where((e) => e.isNotEmpty).map(
-              (e) => int.parse(e),
-            ).toList();
+    final vmlogs = logs.map((e) => VmstatLog.fromString(e)).toList();
+
+    logSplitter(String log) => log
+        .split(RegExp('\\s+'))
+        .where((e) => e.isNotEmpty)
+        .map(
+          (e) => int.parse(e),
+        )
+        .toList();
     return [
       charts.Series<dynamic, DateTime>(
         id: 'free',
