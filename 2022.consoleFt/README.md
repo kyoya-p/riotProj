@@ -11,7 +11,7 @@
   - 実行 > 構成の追加 > Flutter:launch
 
 
-# デバッグ実行
+# デバッグ/実行
 ```
 flutter pub get
 flutter run -d chrome
@@ -19,11 +19,13 @@ flutter run -d chrome
 or
 VSCodeでF5(デバッグ実行)
 
-# ビルド&実行
+# ビルド/実行
 ```
 flutter build web
+or
+flutter run --release -d chrome
 ```
-
+ターゲットファイルは build/web フォルダ
 
 # プロジェクト作成履歴
 
