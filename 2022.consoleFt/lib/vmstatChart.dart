@@ -5,27 +5,38 @@ import 'main.dart';
 
 Widget expanded(Widget w) => Expanded(child: w);
 
-class VmstatLog {
-  static splitter(String log) {
-    final v = log.trim().split(RegExp('\\s+'));
-    if (v.length != 17) throw Exception();
-    return v.map((e) => int.parse(e)).toList();
-  }
-
-  VmstatLog(this.time, this.ns);
-  static VmstatLog? fromString(DateTime time, String log) {
+class VMLog {
+  static List<int>? splitter(String log) {
     try {
-      return VmstatLog(time, splitter(log));
+      final v = log.trim().split(RegExp('\\s+'));
+      if (v.length != 17) throw Exception();
+      return v.map((e) => int.parse(e)).toList();
     } catch (e) {
+      print('Exception:Log=$log');
       return null;
     }
   }
 
-  final List<int> ns;
+  VMLog(this.time, this.vs);
+  static VMLog? from(DateTime time, String log) {
+    final v = splitter(log);
+    if (v == null) return null;
+    return VMLog(time, splitter(log) as List<int>);
+  }
+
+  static VMLog? fromObj(dynamic e) =>
+      VMLog.from((e["time"] as Timestamp).toDate(), e["log"] as String);
+
+  static Iterable<VMLog> fromObjs(dynamic v) => (v["logs"] as Iterable<dynamic>)
+      .map((e) => VMLog.fromObj(e))
+      .where((e) => e != null)
+      .map((e) => e as VMLog);
+
+  final List<int> vs;
   final DateTime time;
-  int get r => ns[0];
-  int get free => ns[3];
-  int get idle => ns[14];
+  int get r => vs[0];
+  int get free => vs[3];
+  int get idle => vs[14];
 }
 
 class VmstatChartPage extends StatelessWidget {
@@ -49,39 +60,28 @@ class VmstatChartPage extends StatelessWidget {
               stream: refVmstat.snapshots(),
               builder: (context, ss) {
                 if (!ss.hasData || ss.data!.docs.isEmpty) return loadingIcon();
-                final logs = ss.data!.docs
-                    .expand((e) => (e.data()["logs"] as List<dynamic>).reversed)
-                    .toList();
-
-                return charts.TimeSeriesChart(createData(logs), animate: true);
+                final vms = VMLog.fromObjs(ss.data!.docs);
+                return charts.TimeSeriesChart(createData(vms.toList()),
+                    animate: true);
               }),
         ));
   }
 
-  static List<charts.Series<dynamic, DateTime>> createData(List<dynamic> logs) {
-    final vmlogs = logs.map((e) => VmstatLog.fromString(e)).toList();
-
-    logSplitter(String log) => log
-        .split(RegExp('\\s+'))
-        .where((e) => e.isNotEmpty)
-        .map(
-          (e) => int.parse(e),
-        )
-        .toList();
+  static List<charts.Series<dynamic, DateTime>> createData(List<VMLog> vmlogs) {
     return [
-      charts.Series<dynamic, DateTime>(
+      charts.Series<VMLog, DateTime>(
         id: 'free',
         colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
-        domainFn: (e, _) => (e["time"] as Timestamp).toDate(),
-        measureFn: (e, _) => logSplitter(e["log"] as String)[3],
-        data: logs,
+        domainFn: (e, _) => e.time,
+        measureFn: (e, _) => e.free,
+        data: vmlogs,
       ),
-      charts.Series<dynamic, DateTime>(
+      charts.Series<VMLog, DateTime>(
         id: 'idle',
         colorFn: (_, __) => charts.MaterialPalette.red.shadeDefault,
-        domainFn: (e, _) => (e["time"] as Timestamp).toDate(),
-        measureFn: (e, _) => logSplitter(e["log"] as String)[14],
-        data: logs,
+        domainFn: (e, _) => e.time,
+        measureFn: (e, _) => e.idle,
+        data: vmlogs,
       )..setAttribute(
           charts.measureAxisIdKey,
           charts.Axis.secondaryMeasureAxisId,
