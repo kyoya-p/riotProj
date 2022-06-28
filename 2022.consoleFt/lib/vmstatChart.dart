@@ -1,3 +1,4 @@
+import 'package:charts_flutter/flutter.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -108,44 +109,61 @@ class VmstatChartPage extends StatelessWidget {
           charts.measureAxisIdKey,
           charts.Axis.secondaryMeasureAxisId,
         );
+  final layout = LayoutConfig(
+    leftMarginSpec: MarginSpec.fromPixel(minPixel: 65),
+    rightMarginSpec: MarginSpec.fromPixel(minPixel: 25),
+    topMarginSpec: MarginSpec.fromPixel(minPixel: 0),
+    bottomMarginSpec: MarginSpec.fromPixel(minPixel: 35),
+  );
+  final List<ChartBehavior<DateTime>> commonBehaviors = [
+    charts.SeriesLegend()
+//    charts.SeriesLegend(position: BehaviorPosition.bottom)
+  ];
+
   chart1(List<VMLog> vmlogs) => charts.TimeSeriesChart(
         [
-          chartSeries(vmlogs, "User", (v) => v.cpuUser),
-          chartSeries(vmlogs, "System", (v) => v.cpuSys),
-          chartSeries(vmlogs, "Idle", (v) => v.cpuIdle),
-          chartSeries(vmlogs, "Wait", (v) => v.cpuWait),
-          chartSeries(vmlogs, "Stolen", (v) => v.cpuStolen),
+          chartSeries(vmlogs, "user", (v) => v.cpuUser),
+          chartSeries(vmlogs, "sys", (v) => v.cpuSys),
+          chartSeries(vmlogs, "stln", (v) => v.cpuStolen),
+          chartSeries(vmlogs, "wait", (v) => v.cpuWait),
+          chartSeries(vmlogs, "idle", (v) => v.cpuIdle),
         ],
-        animate: true,
-        behaviors: [charts.SeriesLegend()],
+        layoutConfig: layout,
+        animate: false,
+        behaviors: commonBehaviors,
+        defaultRenderer: LineRendererConfig(includeArea: true, stacked: true),
       );
   chart2(List<VMLog> vmlogs) => charts.TimeSeriesChart(
         [
-          chartSeries(vmlogs, "Waiting Runtime", (v) => v.procWaitRun),
-          chartSeries(vmlogs, "IO Blocked", (v) => v.procIoBlocked),
+          chartSeries(vmlogs, "wait-run", (v) => v.procWaitRun),
+          chartSeries(vmlogs, "io-blk", (v) => v.procIoBlocked),
         ],
-        animate: true,
-        behaviors: [charts.SeriesLegend()],
+        layoutConfig: layout,
+        animate: false,
+        behaviors: commonBehaviors,
       );
   chart3(List<VMLog> vmlogs) => charts.TimeSeriesChart(
         [
-          chartSeries(vmlogs, "Swap", (v) => v.memSwap),
-          chartSeries(vmlogs, "Free", (v) => v.memFree),
-          chartSeries(vmlogs, "Buffer", (v) => v.memBuff),
-          chartSeries(vmlogs, "Cache", (v) => v.memCache),
+          chartSeries(vmlogs, "swap", (v) => v.memSwap),
+          chartSeries(vmlogs, "buff", (v) => v.memBuff),
+          chartSeries(vmlogs, "cache", (v) => v.memCache),
+          chartSeries(vmlogs, "free", (v) => v.memFree),
         ],
-        animate: true,
-        behaviors: [charts.SeriesLegend()],
+        layoutConfig: layout,
+        animate: false,
+        behaviors: commonBehaviors,
+        defaultRenderer: LineRendererConfig(includeArea: true, stacked: true),
       );
   chart4(List<VMLog> vmlogs) => charts.TimeSeriesChart(
         [
-          chartSeries(vmlogs, "Swap In", (v) => v.swapIn),
-          chartSeries(vmlogs, "Swap Out", (v) => v.swapOut),
-          chartSeries(vmlogs, "I/O In", (v) => v.ioIn),
-          chartSeries(vmlogs, "I/O Out", (v) => v.ioOut),
+          chartSeries(vmlogs, "sw-in", (v) => v.swapIn),
+          chartSeries(vmlogs, "sw-out", (v) => v.swapOut),
+          chartSeries(vmlogs, "io-in", (v) => v.ioIn),
+          chartSeries(vmlogs, "io-out", (v) => v.ioOut),
         ],
-        animate: true,
-        behaviors: [charts.SeriesLegend()],
+        layoutConfig: layout,
+        animate: false,
+        behaviors: commonBehaviors,
       );
 
   static List<charts.Series<dynamic, DateTime>> createData(List<VMLog> vmlogs) {
