@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:console_ft/vmstatChart.dart';
 import 'package:firebase_core/firebase_core.dart' show Firebase;
 import 'package:flutter/material.dart';
@@ -13,7 +15,7 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final db = FirebaseFirestore.instance;
   refApp = db.collection("tmp").doc();
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -45,6 +47,7 @@ class MyHomePage extends StatelessWidget {
               appBar: AppBar(
                 title: Text("$ag - Console"),
                 actions: [
+                  timeRateIndicator(refDev!.collection("discovery")),
                   PopupMenuButton<String>(
                     initialValue: "",
                     onSelected: (String s) async {
@@ -58,7 +61,7 @@ class MyHomePage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) =>  VmstatPage()),
+                              builder: (context) => const VmstatPage()),
                         );
                       } else if (s == "vmstatChart") {
                         Navigator.push(
@@ -89,10 +92,37 @@ class MyHomePage extends StatelessWidget {
                 agentNameField(refApp!),
                 discField(refDev!),
                 Expanded(
-                    child: discResultField(refDev!.collection("discovery"))),
+                    child: discResultField(refDev!
+                        .collection("discovery")
+                        .orderBy("time", descending: true)
+                        .limit(100))),
               ]));
         });
   }
+}
+
+Widget timeRateIndicator(
+  Query<Map<String, dynamic>> refLogs,
+) {
+  Timer.periodic(const Duration(seconds: 1), (Timer t) => {});
+
+  const nLog = 1;
+  refLogs.orderBy("time", descending: true).limit(nLog);
+  return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: refLogs.snapshots(),
+      builder: (context, snapshots) {
+        final docsLog = snapshots.data?.docs;
+        if (docsLog == null) return loadingIcon();
+        if (docsLog.length < nLog) return noItem();
+        final tNow = Timestamp.now();
+        final t0 = docsLog.last.data()["time"] as Timestamp?;
+        if (t0 == null) return loadingIcon();
+        final td = tNow.millisecondsSinceEpoch - t0.millisecondsSinceEpoch;
+        if (td == 0) return const Center(child: Text("-"));
+        return Center(
+            child: Text(
+                '${tNow.seconds} > ${t0.seconds} = ${td / 1000} ${nLog * 1000.0 / td} /sec'));
+      });
 }
 
 Widget agentNameField(DocumentReference<Map<String, dynamic>> refApp) {
@@ -180,8 +210,6 @@ Widget discResultField(Query docRefResult) {
 class SnmpDiscResult {
   String ip = "";
 }
-
-class MIB {}
 
 Widget loadingIcon() => const Center(child: CircularProgressIndicator());
 Widget noItem() => const Center(child: Text("No item"));

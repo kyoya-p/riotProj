@@ -11,21 +11,22 @@
   - 実行 > 構成の追加 > Flutter:launch
 
 
+# ビルド
+```
+flutter pub get                     
+flutter pub run build_runner build // freezed等でコード生成が必要な場合。常時チェックなら build=>watch
+flutter build web
+]```
+ターゲットファイルは build/web フォルダ
+
 # デバッグ/実行
 ```
-flutter pub get
 flutter run -d chrome
+or 
+flutter run --release -d chrome
 ```
 or
 VSCodeでF5(デバッグ実行)
-
-# ビルド/実行
-```
-flutter build web
-or
-flutter run --release -d chrome
-```
-ターゲットファイルは build/web フォルダ
 
 # プロジェクト作成履歴
 
