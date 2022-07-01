@@ -93,6 +93,7 @@ class __$$_PersonCopyWithImpl<$Res> extends _$PersonCopyWithImpl<$Res>
 
 /// @nodoc
 
+@JsonSerializable(explicitToJson: true)
 class _$_Person implements _Person {
   _$_Person({this.name = 'noname', this.age});
 
@@ -142,32 +143,29 @@ abstract class _Person implements Person {
 }
 
 /// @nodoc
-mixin _$DiscoveryResult {
+mixin _$Discres {
   Timestamp get time => throw _privateConstructorUsedError;
   String get ip => throw _privateConstructorUsedError;
   List<String> get vbs => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
-  $DiscoveryResultCopyWith<DiscoveryResult> get copyWith =>
-      throw _privateConstructorUsedError;
+  $DiscresCopyWith<Discres> get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $DiscoveryResultCopyWith<$Res> {
-  factory $DiscoveryResultCopyWith(
-          DiscoveryResult value, $Res Function(DiscoveryResult) then) =
-      _$DiscoveryResultCopyWithImpl<$Res>;
+abstract class $DiscresCopyWith<$Res> {
+  factory $DiscresCopyWith(Discres value, $Res Function(Discres) then) =
+      _$DiscresCopyWithImpl<$Res>;
   $Res call({Timestamp time, String ip, List<String> vbs});
 }
 
 /// @nodoc
-class _$DiscoveryResultCopyWithImpl<$Res>
-    implements $DiscoveryResultCopyWith<$Res> {
-  _$DiscoveryResultCopyWithImpl(this._value, this._then);
+class _$DiscresCopyWithImpl<$Res> implements $DiscresCopyWith<$Res> {
+  _$DiscresCopyWithImpl(this._value, this._then);
 
-  final DiscoveryResult _value;
+  final Discres _value;
   // ignore: unused_field
-  final $Res Function(DiscoveryResult) _then;
+  final $Res Function(Discres) _then;
 
   @override
   $Res call({
@@ -193,25 +191,22 @@ class _$DiscoveryResultCopyWithImpl<$Res>
 }
 
 /// @nodoc
-abstract class _$$_DiscoveryResultCopyWith<$Res>
-    implements $DiscoveryResultCopyWith<$Res> {
-  factory _$$_DiscoveryResultCopyWith(
-          _$_DiscoveryResult value, $Res Function(_$_DiscoveryResult) then) =
-      __$$_DiscoveryResultCopyWithImpl<$Res>;
+abstract class _$$_DiscresCopyWith<$Res> implements $DiscresCopyWith<$Res> {
+  factory _$$_DiscresCopyWith(
+          _$_Discres value, $Res Function(_$_Discres) then) =
+      __$$_DiscresCopyWithImpl<$Res>;
   @override
   $Res call({Timestamp time, String ip, List<String> vbs});
 }
 
 /// @nodoc
-class __$$_DiscoveryResultCopyWithImpl<$Res>
-    extends _$DiscoveryResultCopyWithImpl<$Res>
-    implements _$$_DiscoveryResultCopyWith<$Res> {
-  __$$_DiscoveryResultCopyWithImpl(
-      _$_DiscoveryResult _value, $Res Function(_$_DiscoveryResult) _then)
-      : super(_value, (v) => _then(v as _$_DiscoveryResult));
+class __$$_DiscresCopyWithImpl<$Res> extends _$DiscresCopyWithImpl<$Res>
+    implements _$$_DiscresCopyWith<$Res> {
+  __$$_DiscresCopyWithImpl(_$_Discres _value, $Res Function(_$_Discres) _then)
+      : super(_value, (v) => _then(v as _$_Discres));
 
   @override
-  _$_DiscoveryResult get _value => super._value as _$_DiscoveryResult;
+  _$_Discres get _value => super._value as _$_Discres;
 
   @override
   $Res call({
@@ -219,7 +214,7 @@ class __$$_DiscoveryResultCopyWithImpl<$Res>
     Object? ip = freezed,
     Object? vbs = freezed,
   }) {
-    return _then(_$_DiscoveryResult(
+    return _then(_$_Discres(
       time == freezed
           ? _value.time
           : time // ignore: cast_nullable_to_non_nullable
@@ -238,8 +233,8 @@ class __$$_DiscoveryResultCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$_DiscoveryResult implements _DiscoveryResult {
-  _$_DiscoveryResult(this.time, this.ip, final List<String> vbs) : _vbs = vbs;
+class _$_Discres implements _Discres {
+  _$_Discres(this.time, this.ip, final List<String> vbs) : _vbs = vbs;
 
   @override
   final Timestamp time;
@@ -254,14 +249,14 @@ class _$_DiscoveryResult implements _DiscoveryResult {
 
   @override
   String toString() {
-    return 'DiscoveryResult(time: $time, ip: $ip, vbs: $vbs)';
+    return 'Discres(time: $time, ip: $ip, vbs: $vbs)';
   }
 
   @override
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_DiscoveryResult &&
+            other is _$_Discres &&
             const DeepCollectionEquality().equals(other.time, time) &&
             const DeepCollectionEquality().equals(other.ip, ip) &&
             const DeepCollectionEquality().equals(other._vbs, _vbs));
@@ -276,14 +271,14 @@ class _$_DiscoveryResult implements _DiscoveryResult {
 
   @JsonKey(ignore: true)
   @override
-  _$$_DiscoveryResultCopyWith<_$_DiscoveryResult> get copyWith =>
-      __$$_DiscoveryResultCopyWithImpl<_$_DiscoveryResult>(this, _$identity);
+  _$$_DiscresCopyWith<_$_Discres> get copyWith =>
+      __$$_DiscresCopyWithImpl<_$_Discres>(this, _$identity);
 }
 
-abstract class _DiscoveryResult implements DiscoveryResult {
-  factory _DiscoveryResult(
+abstract class _Discres implements Discres {
+  factory _Discres(
           final Timestamp time, final String ip, final List<String> vbs) =
-      _$_DiscoveryResult;
+      _$_Discres;
 
   @override
   Timestamp get time => throw _privateConstructorUsedError;
@@ -293,6 +288,6 @@ abstract class _DiscoveryResult implements DiscoveryResult {
   List<String> get vbs => throw _privateConstructorUsedError;
   @override
   @JsonKey(ignore: true)
-  _$$_DiscoveryResultCopyWith<_$_DiscoveryResult> get copyWith =>
+  _$$_DiscresCopyWith<_$_Discres> get copyWith =>
       throw _privateConstructorUsedError;
 }

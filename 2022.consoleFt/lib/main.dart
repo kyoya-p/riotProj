@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'firebase_options.dart';
+import 'type.dart';
 import 'vmstat.dart';
 
 DocumentReference<Map<String, dynamic>>? refApp;
@@ -199,9 +200,12 @@ Widget discResultField(Query docRefResult) {
           itemCount: docDevs.length,
           itemBuilder: (context, index) {
             final e = docDevs[index];
+            print(e);
+
             return ListTile(
-                title: Text(
-                    '${(e["time"] as Timestamp).toDate().toLocal()} : ${e["ip"]} : ${e["vbs"].join(" : ")}'));
+              title: Text(
+                  '${e["time"].toDate().toLocal()} : ${e["ip"]} : ${e["vbs"].join(" : ")}'),
+            );
           },
         );
       });
