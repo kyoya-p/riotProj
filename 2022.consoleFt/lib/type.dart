@@ -16,8 +16,20 @@ class Person with _$Person {
 
 @freezed
 class Discres with _$Discres {
-  factory Discres(Timestamp time, String ip, List<String> vbs) = _Discres;
-  //factory Discres.fromJson(Map<String, Object?> json) =>      _$DiscresFromJson(json);
+  factory Discres( @TimestampConverter() Timestamp time, String ip, List<String> vbs) = _Discres;
+  factory Discres.fromJson(Map<String, Object?> json) =>      _$DiscresFromJson(json);
+}
+
+class TimestampConverter implements JsonConverter<DateTime, Timestamp> {
+  const TimestampConverter();
+
+  @override
+  DateTime fromJson(Timestamp timestamp) {
+    return timestamp.toDate();
+  }
+
+  @override
+  Timestamp toJson(DateTime date) => Timestamp.fromDate(date);
 }
 
 // @freezed

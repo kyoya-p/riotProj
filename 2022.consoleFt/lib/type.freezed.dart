@@ -142,12 +142,17 @@ abstract class _Person implements Person {
       throw _privateConstructorUsedError;
 }
 
+Discres _$DiscresFromJson(Map<String, dynamic> json) {
+  return _Discres.fromJson(json);
+}
+
 /// @nodoc
 mixin _$Discres {
   Timestamp get time => throw _privateConstructorUsedError;
   String get ip => throw _privateConstructorUsedError;
   List<String> get vbs => throw _privateConstructorUsedError;
 
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
   $DiscresCopyWith<Discres> get copyWith => throw _privateConstructorUsedError;
 }
@@ -232,9 +237,12 @@ class __$$_DiscresCopyWithImpl<$Res> extends _$DiscresCopyWithImpl<$Res>
 }
 
 /// @nodoc
-
+@JsonSerializable()
 class _$_Discres implements _Discres {
   _$_Discres(this.time, this.ip, final List<String> vbs) : _vbs = vbs;
+
+  factory _$_Discres.fromJson(Map<String, dynamic> json) =>
+      _$$_DiscresFromJson(json);
 
   @override
   final Timestamp time;
@@ -262,6 +270,7 @@ class _$_Discres implements _Discres {
             const DeepCollectionEquality().equals(other._vbs, _vbs));
   }
 
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -273,12 +282,19 @@ class _$_Discres implements _Discres {
   @override
   _$$_DiscresCopyWith<_$_Discres> get copyWith =>
       __$$_DiscresCopyWithImpl<_$_Discres>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$_DiscresToJson(this);
+  }
 }
 
 abstract class _Discres implements Discres {
   factory _Discres(
           final Timestamp time, final String ip, final List<String> vbs) =
       _$_Discres;
+
+  factory _Discres.fromJson(Map<String, dynamic> json) = _$_Discres.fromJson;
 
   @override
   Timestamp get time => throw _privateConstructorUsedError;
