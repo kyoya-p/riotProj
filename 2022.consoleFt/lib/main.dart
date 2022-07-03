@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'firebase_options.dart';
+import 'snmp.dart';
 import 'type.dart';
 import 'vmstat.dart';
 
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Console',
-      theme: ThemeData(primarySwatch: Colors.blueGrey),
+      theme: ThemeData(primarySwatch: Colors.brown),
       home: const MyHomePage(title: 'Console'),
     );
   }
@@ -89,15 +90,18 @@ class MyHomePage extends StatelessWidget {
 
 //            floatingActionButton: FloatingActionButton(
 //                child: const Icon(Icons.search), onPressed: () => {}),
-              body: Column(children: [
-                agentNameField(refApp!),
-                discField(refDev!),
-                Expanded(
-                    child: discResultField(refDev!
-                        .collection("discovery")
-                        .orderBy("time", descending: true)
-                        .limit(100))),
-              ]));
+              body: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(children: [
+                  agentNameField(refApp!),
+                  discField(refDev!),
+                  Expanded(
+                      child: discResultTable(refDev!
+                          .collection("discovery")
+                          .orderBy("time", descending: true)
+                          .limit(100))),
+                ]),
+              ));
         });
   }
 }
@@ -130,89 +134,16 @@ Widget agentNameField(DocumentReference<Map<String, dynamic>> refApp) {
   return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: refApp.snapshots(),
       builder: (context, snapshot) {
-        var docApp = snapshot.data?.data() ?? {};
-        //var agId = TextEditingController(text: docApp["ag"] as String? ?? "default");
+        var docApp = Application(snapshot.data?.data() ?? {});
         return TextField(
-          controller:
-              TextEditingController(text: docApp["ag"] as String? ?? "default"),
+          controller: TextEditingController(text: docApp.ag ?? "default"),
           decoration: const InputDecoration(label: Text("Agent ID:")),
           onSubmitted: (ag) async {
-            docApp["ag"] = ag;
-            refApp.set(docApp);
+            docApp.ag = ag;
+            refApp.set(docApp.map);
           },
         );
       });
-}
-
-Widget discField(DocumentReference<Map<String, dynamic>> docRefAg) {
-  return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: docRefAg.snapshots(),
-      builder: (context, snapshot) {
-        final docAg = snapshot.data?.data() ?? {};
-        final tecIpSpec =
-            TextEditingController(text: docAg["ipSpec"] as String? ?? "");
-        final tecInterval = TextEditingController(text: '${docAg["interval"]}');
-        void updateDoc() {
-          docAg["ipSpec"] = tecIpSpec.text;
-          docAg["interval"] = int.parse(tecInterval.text);
-          docRefAg.set(docAg);
-        }
-
-        return Row(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Expanded(
-              child: TextField(
-                controller: tecIpSpec,
-                decoration: const InputDecoration(
-                  label: Text("Scanning IP Range:"),
-                  hintText: "スキャンIP範囲 例: 192.168.0.1-192.168.0.254",
-                ),
-                onSubmitted: (_) => updateDoc(),
-              ),
-            ),
-            Expanded(
-              child: TextField(
-                controller: tecInterval,
-                decoration: const InputDecoration(
-                  label: Text("Interval:"),
-                  hintText: "スキャンごとの間隔 ミリ秒単位",
-                ),
-                onSubmitted: (_) => updateDoc(),
-              ),
-            ),
-          ],
-        );
-      });
-}
-
-Widget discResultField(Query docRefResult) {
-  return StreamBuilder<QuerySnapshot>(
-      stream: docRefResult.snapshots(),
-      builder: (context, snapshot) {
-        final docDevs = snapshot.data?.docs
-            .map((e) => e.data() as Map<String, dynamic>)
-            .toList();
-        if (docDevs == null) return loadingIcon();
-        if (docDevs.isEmpty) return noItem();
-        return ListView.builder(
-          scrollDirection: Axis.vertical,
-          itemCount: docDevs.length,
-          itemBuilder: (context, index) {
-            final e = docDevs[index];
-            print(e);
-
-            return ListTile(
-              title: Text(
-                  '${e["time"].toDate().toLocal()} : ${e["ip"]} : ${e["vbs"].join(" : ")}'),
-            );
-          },
-        );
-      });
-}
-
-class SnmpDiscResult {
-  String ip = "";
 }
 
 Widget loadingIcon() => const Center(child: CircularProgressIndicator());

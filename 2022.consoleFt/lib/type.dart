@@ -3,42 +3,28 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:firebase_core/firebase_core.dart' show Firebase;
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-part 'type.freezed.dart'; // freezed等でヘルパコードを生成する必要あり
-part 'type.g.dart';
+class Application {
+  Application(this.map);
 
-
-
-@freezed
-class Person with _$Person {
-  @JsonSerializable(explicitToJson: true)
-  factory Person({@Default('noname') String name, int? age}) = _Person;
+  late Map<String, dynamic> map;
+  String? get ag => map["ag"] as String?;
+  set ag(String? s) => map["ag"] = s;
 }
 
-@freezed
-class Discres with _$Discres {
-  factory Discres( @TimestampConverter() Timestamp time, String ip, List<String> vbs) = _Discres;
-  factory Discres.fromJson(Map<String, Object?> json) =>      _$DiscresFromJson(json);
+class SnmpScanner {
+  SnmpScanner(this.map);
+  Map<String, dynamic> map;
+  String? get id => map["id"] as String?;
+  String? get ipSpec => map["ipSpec"] as String?;
+  set ipSpec(String? s) => map["ipSpec"] = s;
+  int? get interval => map["interval"] as int?;
+  set interval(int? i) => map["interval"] = i;
 }
 
-class TimestampConverter implements JsonConverter<DateTime, Timestamp> {
-  const TimestampConverter();
-
-  @override
-  DateTime fromJson(Timestamp timestamp) {
-    return timestamp.toDate();
-  }
-
-  @override
-  Timestamp toJson(DateTime date) => Timestamp.fromDate(date);
+class DiscoveryRes {
+  DiscoveryRes(this.map);
+  Map<String, dynamic> map;
+  get ip => map["ip"] as String;
+  get time => map["time"] as Timestamp;
+  get vbs => (map["vbs"] as List<dynamic>).map((e) => e as String).toList();
 }
-
-// @freezed
-// abstract class Profile with _$Profile {
-//   factory Profile(
-//       {String? name,
-//       @TimestampConverter() DateTime? birthDate // ←@TimestampConverter()をつける
-//       }) = _Profile;
-
-//   factory Profile.fromJson(Map<String, dynamic> json) =>
-//       _$ProfileFromJson(json);
-// }

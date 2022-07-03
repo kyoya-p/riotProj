@@ -15,6 +15,7 @@
 ```
 flutter pub get                     
 flutter pub run build_runner build // freezed等でコード生成が必要な場合。常時チェックなら build=>watch
+or
 flutter build web
 ]```
 ターゲットファイルは build/web フォルダ

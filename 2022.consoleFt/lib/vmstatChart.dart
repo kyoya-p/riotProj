@@ -115,6 +115,11 @@ class VmstatChartPage extends StatelessWidget {
     topMarginSpec: MarginSpec.fromPixel(minPixel: 0),
     bottomMarginSpec: MarginSpec.fromPixel(minPixel: 35),
   );
+  final domainAxis = charts.DateTimeAxisSpec(
+      tickFormatterSpec: BasicDateTimeTickFormatterSpec(
+    (t) => '${t.hour}:${t.minute.toString().padLeft(2, "00")}',
+  ));
+
   final List<ChartBehavior<DateTime>> commonBehaviors = [
     charts.SeriesLegend()
 //    charts.SeriesLegend(position: BehaviorPosition.bottom)
@@ -128,6 +133,7 @@ class VmstatChartPage extends StatelessWidget {
           chartSeries(vmlogs, "wait", (v) => v.cpuWait),
           chartSeries(vmlogs, "idle", (v) => v.cpuIdle),
         ],
+        domainAxis: domainAxis,
         layoutConfig: layout,
         animate: false,
         behaviors: commonBehaviors,
@@ -138,6 +144,7 @@ class VmstatChartPage extends StatelessWidget {
           chartSeries(vmlogs, "wait-run", (v) => v.procWaitRun),
           chartSeries(vmlogs, "io-blk", (v) => v.procIoBlocked),
         ],
+        domainAxis: domainAxis,
         layoutConfig: layout,
         animate: false,
         behaviors: commonBehaviors,
@@ -149,6 +156,7 @@ class VmstatChartPage extends StatelessWidget {
           chartSeries(vmlogs, "cache", (v) => v.memCache),
           chartSeries(vmlogs, "free", (v) => v.memFree),
         ],
+        domainAxis: domainAxis,
         layoutConfig: layout,
         animate: false,
         behaviors: commonBehaviors,
@@ -161,6 +169,7 @@ class VmstatChartPage extends StatelessWidget {
           chartSeries(vmlogs, "io-in", (v) => v.ioIn),
           chartSeries(vmlogs, "io-out", (v) => v.ioOut),
         ],
+        domainAxis: domainAxis,
         layoutConfig: layout,
         animate: false,
         behaviors: commonBehaviors,
