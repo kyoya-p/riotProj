@@ -27,4 +27,5 @@ class DiscoveryRes {
   get ip => map["ip"] as String;
   get time => map["time"] as Timestamp;
   get vbs => (map["vbs"] as List<dynamic>).map((e) => e as String).toList();
+  get id => map["id"] as String? ?? "undefined";
 }

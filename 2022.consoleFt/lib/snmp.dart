@@ -85,13 +85,16 @@ Widget discResultField(Query docRefResult) {
 
 Widget discResultTable(Query docRefResult) {
   List<DataCell> card(int i, DiscoveryRes e) => [
+        Text(e.time.toDate().toString(), maxLines: 1),
         Text(e.ip),
-        Container(width: 200, child: Text(e.vbs[0], maxLines: 1))
+        //SizedBox(width: 200, child: Text(e.vbs[0], maxLines: 1)),
+        Expanded(child: Text(e.vbs[0], maxLines: 1)),
+        Text(e.id),
       ].map((e) => DataCell(e)).toList();
   return StreamBuilder<QuerySnapshot>(
       stream: docRefResult.snapshots(),
-      builder: (context, snapshot) {
-        final docsDiskRes = snapshot.data?.docs
+      builder: (context, ssDiscRes) {
+        final docsDiskRes = ssDiscRes.data?.docs
             .map((e) => DiscoveryRes(e.data() as Map<String, dynamic>))
             .toList();
         if (docsDiskRes == null) return loadingIcon();
@@ -99,8 +102,10 @@ Widget discResultTable(Query docRefResult) {
         return SingleChildScrollView(
           child: DataTable(
             columns: const [
+              DataColumn(label: Text("Time")),
               DataColumn(label: Text("IP")),
               DataColumn(label: Text("Model")),
+              DataColumn(label: Text("ID")),
             ],
             rows: docsDiskRes.map((e) => DataRow(cells: card(0, e))).toList(),
           ),
