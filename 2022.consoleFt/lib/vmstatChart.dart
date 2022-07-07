@@ -19,15 +19,15 @@ class VMLog {
     }
   }
 
-  VMLog(this.vmTime, this.vs);
-  static VMLog? from(DateTime time, String log) {
+  VMLog(this.rawVmlog, this.vmTime, this.vs);
+  static VMLog? from(dynamic rawVmlog, DateTime time, String log) {
     final v = splitter(log);
     if (v == null) return null;
-    return VMLog(time, splitter(log) as List<int>);
+    return VMLog(rawVmlog, time, splitter(log) as List<int>);
   }
 
   static VMLog? fromObj(dynamic e) =>
-      VMLog.from((e["time"] as Timestamp).toDate(), e["log"] as String);
+      VMLog.from(e, (e["time"] as Timestamp).toDate(), e["log"] as String);
 
   static Iterable<VMLog> fromObjs(dynamic v) => (v["logs"] as Iterable<dynamic>)
       .map((e) => VMLog.fromObj(e))
@@ -37,6 +37,7 @@ class VMLog {
   static Iterable<VMLog> fromDocs(Iterable<dynamic> v) =>
       v.expand((e) => VMLog.fromObjs(e.data()));
 
+  final dynamic rawVmlog;
   final List<int> vs;
   final DateTime vmTime;
   int get procWaitRun => vs[0];
@@ -124,6 +125,17 @@ class VmstatChartPage extends StatelessWidget {
     charts.SeriesLegend()
 //    charts.SeriesLegend(position: BehaviorPosition.bottom)
   ];
+
+  chartSnmp(List<VMLog> vmlogs) => charts.TimeSeriesChart(
+        [
+          chartSeries(vmlogs, "snmp scan", (v) => v.snmpCount),
+        ],
+        domainAxis: domainAxis,
+        layoutConfig: layout,
+        animate: false,
+        behaviors: commonBehaviors,
+        defaultRenderer: LineRendererConfig(includeArea: true, stacked: true),
+      );
 
   chart1(List<VMLog> vmlogs) => charts.TimeSeriesChart(
         [

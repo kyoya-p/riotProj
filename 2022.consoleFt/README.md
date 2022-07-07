@@ -8,7 +8,7 @@
 - VSCode
   - Plugin > Flutter plugin - Install
   - Dart plugin > 拡張機能の設定 > Flutter SDK path/ Dart SDK path - setup 
-  - 実行 > 構成の追加 > Flutter:launch
+  - 実行 > 構成の追加 > Flutter:launch  //commit済
 
 
 # ビルド
