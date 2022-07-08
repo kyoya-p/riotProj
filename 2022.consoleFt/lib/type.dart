@@ -21,6 +21,13 @@ class SnmpScanner {
   set interval(int? i) => map["interval"] = i;
 }
 
+class SnmpMetrics {
+  SnmpMetrics(this.raw);
+  dynamic raw;
+  DateTime? get time => raw["time"] as DateTime?;
+  set time(DateTime? v) => raw["time"] = v;
+}
+
 class DiscoveryRes {
   DiscoveryRes(this.map);
   Map<String, dynamic> map;
