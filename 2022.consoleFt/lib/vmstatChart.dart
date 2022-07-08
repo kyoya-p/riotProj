@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'main.dart';
+import 'type.dart';
 
 Widget expanded(Widget w) => Expanded(child: w);
 
@@ -105,13 +106,14 @@ class VmstatChartPage extends StatelessWidget {
         measureFn: (e, _) => getValue(e),
         data: logs,
       );
-  static chartSeries2nd(
-          List<VMLog> logs, String id, int Function(VMLog) getValue) =>
-      chartSeries(logs, id, getValue)
-        ..setAttribute(
-          charts.measureAxisIdKey,
-          charts.Axis.secondaryMeasureAxisId,
-        );
+  static chartSeriesT<T>(List<T> logs, String id, int Function(T) getValue) =>
+      charts.Series<T, DateTime>(
+        id: id,
+        //colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
+        domainFn: (e, _) => e.vmTime,
+        measureFn: (e, _) => getValue(e),
+        data: logs,
+      );
   final layout = LayoutConfig(
     leftMarginSpec: MarginSpec.fromPixel(minPixel: 65),
     rightMarginSpec: MarginSpec.fromPixel(minPixel: 25),
@@ -128,9 +130,9 @@ class VmstatChartPage extends StatelessWidget {
 //    charts.SeriesLegend(position: BehaviorPosition.bottom)
   ];
 
-  chartSnmp(List<VMLog> vmlogs) => charts.TimeSeriesChart(
+  chartSnmp(List<SnmpMetrics> snmpLog) => charts.TimeSeriesChart(
         [
-          chartSeries(vmlogs, "snmp scan", (v) => v.snmpCount),
+          chartSeries(snmpLog, "snmp scan", (v) => v),
         ],
         domainAxis: domainAxis,
         layoutConfig: layout,
