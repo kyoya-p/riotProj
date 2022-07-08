@@ -57,6 +57,8 @@ class VMLog {
   int get cpuIdle => vs[14];
   int get cpuWait => vs[15];
   int get cpuStolen => vs[16];
+
+  int get scanCount => rawVmlog[""];
 }
 
 class VmstatChartPage extends StatelessWidget {
