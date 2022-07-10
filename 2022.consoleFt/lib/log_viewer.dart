@@ -1,4 +1,6 @@
-import 'package:console_ft/type.dart';
+import 'dart:html';
+
+import 'package:console_ft/types.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'main.dart';
@@ -38,5 +40,58 @@ class VmstatPage extends StatelessWidget {
                           ))
                       .toList());
             }));
+  }
+}
+
+typedef ItemBuilder<T> = Widget Function(
+    BuildContext context, List<T> vItem, int index);
+
+// Firestoreで大きなリストを使う際のテンプレ
+class PrograssiveListView<T> extends StatefulWidget {
+  const PrograssiveListView(this.qrItemsInit, this.itemBuilder, {Key? key})
+      : super(key: key);
+
+  final Query<T> qrItemsInit;
+  final ItemBuilder<DocumentSnapshot<T>> itemBuilder;
+
+  @override
+  _PrograssiveListViewState createState() => _PrograssiveListViewState();
+}
+
+class _PrograssiveListViewState<T> extends State<PrograssiveListView<T>> {
+  List<DocumentSnapshot<T>> vSnapshotItem = [];
+  late Query<T> qrItems = widget.qrItemsInit;
+  _PrograssiveListViewState();
+
+  @override
+  void dispose() {
+    vSnapshotItem = [];
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(itemBuilder: (context, index) {
+      if (index < vSnapshotItem.length) {
+        // return buildListTile(index, listDocSnapshot[index]);
+        return widget.itemBuilder(context, vSnapshotItem, index);
+      } else if (index > vSnapshotItem.length) {
+        return const Text("");
+      }
+      qrItems.limit(50).get().then((value) {
+        if (mounted) {
+          setState(() {
+            if (value.size > 0) {
+              vSnapshotItem.addAll(value.docs);
+              qrItems = qrItems.startAfterDocument(value.docs.last);
+            }
+          });
+        }
+      });
+      //return Center(child: CircularProgressIndicator());
+      return Card(
+          color: Theme.of(context).disabledColor,
+          child: const Center(child: Text("End of Data")));
+    });
   }
 }

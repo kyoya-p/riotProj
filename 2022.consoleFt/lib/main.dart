@@ -95,7 +95,7 @@ class MyHomePage extends StatelessWidget {
                   agentNameField(refApp),
                   discField(refDev),
                   Expanded(
-                      child: discResultTable(refDev!
+                      child: discResultTable(refDev
                           .collection("discovery")
                           .orderBy("time", descending: true)
                           .limit(100))),
