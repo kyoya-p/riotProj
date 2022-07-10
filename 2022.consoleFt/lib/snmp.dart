@@ -1,16 +1,14 @@
-import 'dart:async';
+//import 'dart:async';
 
-import 'package:console_ft/vmstatChart.dart';
-import 'package:firebase_core/firebase_core.dart' show Firebase;
+//import 'package:console_ft/vmstatChart.dart';
+//import 'package:firebase_core/firebase_core.dart' show Firebase;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'firebase_options.dart';
-import 'type.dart';
-import 'vmstat.dart';
+import 'types.dart';
 
 DocumentReference<Map<String, dynamic>>? refApp;
-DocumentReference<Map<String, dynamic>>? refDev;
+//DocumentReference<Map<String, dynamic>>? refDev;
 
 Widget discField(DocumentReference<Map<String, dynamic>> docRefAg) {
   return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
@@ -67,7 +65,7 @@ Widget discResultField(Query docRefResult) {
           itemCount: docsDiskRes.length,
           itemBuilder: (context, index) {
             final e = docsDiskRes[index];
-            return Container(
+            return SizedBox(
               height: 58,
               child: Card(
                 child: ListTile(

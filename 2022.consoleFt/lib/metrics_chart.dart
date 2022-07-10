@@ -4,39 +4,37 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'main.dart';
-import 'type.dart';
 
 Widget expanded(Widget w) => Expanded(child: w);
 
-class VMLog {
+class Log {
   static List<int>? splitter(String log) {
     try {
       final v = log.trim().split(RegExp('\\s+'));
       if (v.length != 17) throw Exception();
       return v.map((e) => int.parse(e)).toList();
     } catch (e) {
-      print('Exception:Log=$log');
       return null;
     }
   }
 
-  VMLog(this.rawVmlog, this.vmTime, this.vs);
-  static VMLog? from(dynamic rawVmlog, DateTime time, String log) {
+  Log(this.rawVmlog, this.vmTime, this.vs);
+  static Log? from(dynamic rawVmlog, DateTime time, String log) {
     final v = splitter(log);
     if (v == null) return null;
-    return VMLog(rawVmlog, time, splitter(log) as List<int>);
+    return Log(rawVmlog, time, splitter(log) as List<int>);
   }
 
-  static VMLog? fromObj(dynamic e) =>
-      VMLog.from(e, (e["time"] as Timestamp).toDate(), e["log"] as String);
+  static Log? fromObj(dynamic e) =>
+      Log.from(e, (e["time"] as Timestamp).toDate(), e["log"] as String);
 
-  static Iterable<VMLog> fromObjs(dynamic v) => (v["logs"] as Iterable<dynamic>)
-      .map((e) => VMLog.fromObj(e))
+  static Iterable<Log> fromObjs(dynamic v) => (v["logs"] as Iterable<dynamic>)
+      .map((e) => Log.fromObj(e))
       .where((e) => e != null)
-      .map((e) => e as VMLog);
+      .map((e) => e as Log);
 
-  static Iterable<VMLog> fromDocs(Iterable<dynamic> v) =>
-      v.expand((e) => VMLog.fromObjs(e.data()));
+  static Iterable<Log> fromDocs(Iterable<dynamic> v) =>
+      v.expand((e) => Log.fromObjs(e.data()));
 
   final dynamic rawVmlog;
   final List<int> vs;
@@ -59,55 +57,42 @@ class VMLog {
   int get cpuWait => vs[15];
   int get cpuStolen => vs[16];
 
-  int get scanCount => rawVmlog[""];
+  //int get scanCount => rawVmlog[""]; //
 }
 
 class VmstatChartPage extends StatelessWidget {
-  //final List<charts.Series<dynamic, num>> seriesList;
-  //final bool? animate;
-
-  //VmstatChartPage(this.seriesList, {this.animate});
-  VmstatChartPage({Key? key}) : super(key: key);
-
+  VmstatChartPage(this.refDev, {Key? key}) : super(key: key);
+  final DocumentReference<Map<String, dynamic>> refDev;
   @override
   Widget build(BuildContext context) {
-    if (refDev == null) return loadingIcon();
-    final refVmstat = refDev!
-        .collection("vmstat")
+    //if (refDev == null) return loadingIcon();
+    final refVmstat = refDev
+        .collection("reports")
         .orderBy("time", descending: true)
         .limit(24);
     return Scaffold(
-        appBar: AppBar(title: Text('${refDev!.id} - vmstat')),
+        appBar: AppBar(title: Text('${refDev.id} - Metrics')),
         body: Center(
           child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
               stream: refVmstat.snapshots(),
               builder: (context, ss) {
                 if (!ss.hasData || ss.data!.docs.isEmpty) return loadingIcon();
                 //final vd = VMLog.fromDocs(ss.data!.docs);
-                final vmlogs = VMLog.fromDocs(ss.data!.docs).sorted((a, b) =>
+                final vmlogs = Log.fromDocs(ss.data!.docs).sorted((a, b) =>
                     a.vmTime.millisecondsSinceEpoch -
                     b.vmTime.millisecondsSinceEpoch);
                 return Column(children: [
                   Expanded(child: chart1(vmlogs)),
-                  Expanded(child: chart2(vmlogs)),
-                  Expanded(child: chart3(vmlogs)),
-                  Expanded(child: chart4(vmlogs)),
+                  //Expanded(child: chart2(vmlogs)),
+                  //Expanded(child: chart3(vmlogs)),
+                  //Expanded(child: chart4(vmlogs)),
                 ]);
               }),
         ));
   }
 
-  static chartSeries(
-          List<VMLog> logs, String id, int Function(VMLog) getValue) =>
-      charts.Series<VMLog, DateTime>(
-        id: id,
-        //colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
-        domainFn: (e, _) => e.vmTime,
-        measureFn: (e, _) => getValue(e),
-        data: logs,
-      );
-  static chartSeriesT<T>(List<T> logs, String id, int Function(T) getValue) =>
-      charts.Series<T, DateTime>(
+  static chartSeries(List<Log> logs, String id, int Function(Log) getValue) =>
+      charts.Series<Log, DateTime>(
         id: id,
         //colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
         domainFn: (e, _) => e.vmTime,
@@ -130,18 +115,18 @@ class VmstatChartPage extends StatelessWidget {
 //    charts.SeriesLegend(position: BehaviorPosition.bottom)
   ];
 
-  chartSnmp(List<SnmpMetrics> snmpLog) => charts.TimeSeriesChart(
-        [
-          chartSeries(snmpLog, "snmp scan", (v) => v),
-        ],
-        domainAxis: domainAxis,
-        layoutConfig: layout,
-        animate: false,
-        behaviors: commonBehaviors,
-        defaultRenderer: LineRendererConfig(includeArea: true, stacked: true),
-      );
+  // chartSnmp(List<SnmpMetrics> snmpLog) => charts.TimeSeriesChart(
+  //       [
+  //         chartSeries(snmpLog, "snmp scan", (v) => v),
+  //       ],
+  //       domainAxis: domainAxis,
+  //       layoutConfig: layout,
+  //       animate: false,
+  //       behaviors: commonBehaviors,
+  //       defaultRenderer: LineRendererConfig(includeArea: true, stacked: true),
+  //     );
 
-  chart1(List<VMLog> vmlogs) => charts.TimeSeriesChart(
+  chart1(List<Log> vmlogs) => charts.TimeSeriesChart(
         [
           chartSeries(vmlogs, "user", (v) => v.cpuUser),
           chartSeries(vmlogs, "sys", (v) => v.cpuSys),
@@ -155,7 +140,7 @@ class VmstatChartPage extends StatelessWidget {
         behaviors: commonBehaviors,
         defaultRenderer: LineRendererConfig(includeArea: true, stacked: true),
       );
-  chart2(List<VMLog> vmlogs) => charts.TimeSeriesChart(
+  chart2(List<Log> vmlogs) => charts.TimeSeriesChart(
         [
           chartSeries(vmlogs, "wait-run", (v) => v.procWaitRun),
           chartSeries(vmlogs, "io-blk", (v) => v.procIoBlocked),
@@ -165,7 +150,7 @@ class VmstatChartPage extends StatelessWidget {
         animate: false,
         behaviors: commonBehaviors,
       );
-  chart3(List<VMLog> vmlogs) => charts.TimeSeriesChart(
+  chart3(List<Log> vmlogs) => charts.TimeSeriesChart(
         [
           chartSeries(vmlogs, "swap", (v) => v.memSwap),
           chartSeries(vmlogs, "buff", (v) => v.memBuff),
@@ -178,7 +163,7 @@ class VmstatChartPage extends StatelessWidget {
         behaviors: commonBehaviors,
         defaultRenderer: LineRendererConfig(includeArea: true, stacked: true),
       );
-  chart4(List<VMLog> vmlogs) => charts.TimeSeriesChart(
+  chart4(List<Log> vmlogs) => charts.TimeSeriesChart(
         [
           chartSeries(vmlogs, "sw-in", (v) => v.swapIn),
           chartSeries(vmlogs, "sw-out", (v) => v.swapOut),
@@ -191,7 +176,7 @@ class VmstatChartPage extends StatelessWidget {
         behaviors: commonBehaviors,
       );
 
-  static List<charts.Series<dynamic, DateTime>> createData(List<VMLog> vmlogs) {
+  static List<charts.Series<dynamic, DateTime>> createData(List<Log> vmlogs) {
     return [
       //chartSeries("free", (v) => v.free),
       chartSeries(vmlogs, "User", (v) => v.cpuUser),

@@ -1,22 +1,20 @@
 import 'dart:async';
 
-import 'package:console_ft/vmstatChart.dart';
+import 'package:console_ft/metrics_chart.dart';
 import 'package:firebase_core/firebase_core.dart' show Firebase;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'firebase_options.dart';
 import 'snmp.dart';
-import 'type.dart';
-import 'vmstat.dart';
+import 'types.dart';
+import 'log_viewer.dart';
 
-DocumentReference<Map<String, dynamic>>? refApp;
-DocumentReference<Map<String, dynamic>>? refDev;
+final db = FirebaseFirestore.instance;
+final refApp = db.collection("tmp").doc();
 
 Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  final db = FirebaseFirestore.instance;
-  refApp = db.collection("tmp").doc();
   runApp(const MyApp());
 }
 
@@ -39,23 +37,22 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var db = FirebaseFirestore.instance;
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-        stream: refApp?.snapshots(),
+        stream: refApp.snapshots(),
         builder: (context, snapshot) {
           final ag = snapshot.data?.data()?["ag"] as String? ?? "default";
-          refDev = db.collection("d").doc(ag);
-          return Scaffold(
-              appBar: AppBar(
-                title: Text("$ag - Console"),
+          final refDev = db.collection("d").doc(ag);
+
+          AppBar appBar(BuildContext context, String ag) => AppBar(
+                title: Text("$ag - Detected devices"),
                 actions: [
-                  timeRateIndicator(refDev!.collection("discovery")),
+                  timeRateIndicator(refDev.collection("discovery")),
                   PopupMenuButton<String>(
                     initialValue: "",
                     onSelected: (String s) async {
-                      if (s == "clear" && refDev != null) {
+                      if (s == "clear") {
                         for (var e
-                            in (await refDev!.collection("discovery").get())
+                            in (await refDev.collection("discovery").get())
                                 .docs) {
                           e.reference.delete();
                         }
@@ -63,13 +60,13 @@ class MyHomePage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const VmstatPage()),
+                              builder: (context) => VmstatPage(refDev)),
                         );
                       } else if (s == "vmstatChart") {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => VmstatChartPage()),
+                              builder: (context) => VmstatChartPage(refDev)),
                         );
                       }
                     },
@@ -79,22 +76,24 @@ class MyHomePage extends StatelessWidget {
                             value: "clear",
                             child: Text("Clear detected devices")),
                         const PopupMenuItem(
-                            value: "vmstat", child: Text("vmstat")),
+                            value: "vmstat", child: Text("Logs")),
                         const PopupMenuItem(
-                            value: "vmstatChart", child: Text("vmstat chart")),
+                            value: "vmstatChart", child: Text("Metrics")),
                       ];
                     },
                   ),
                 ],
-              ),
+              );
 
+          return Scaffold(
+              appBar: appBar(context, ag),
 //            floatingActionButton: FloatingActionButton(
 //                child: const Icon(Icons.search), onPressed: () => {}),
               body: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(children: [
-                  agentNameField(refApp!),
-                  discField(refDev!),
+                  agentNameField(refApp),
+                  discField(refDev),
                   Expanded(
                       child: discResultTable(refDev!
                           .collection("discovery")
@@ -140,7 +139,7 @@ Widget agentNameField(DocumentReference<Map<String, dynamic>> refApp) {
           decoration: const InputDecoration(label: Text("Agent ID:")),
           onSubmitted: (ag) async {
             docApp.ag = ag;
-            refApp.set(docApp.map);
+            refApp.set(docApp.raw);
           },
         );
       });
