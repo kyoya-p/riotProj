@@ -85,6 +85,11 @@ class MyHomePage extends StatelessWidget {
                 ],
               );
 
+          Query qrDiscoveryRes = refDev
+              .collection("discovery")
+              .orderBy("time", descending: true)
+              .limit(100);
+
           return Scaffold(
               appBar: appBar(context, ag),
 //            floatingActionButton: FloatingActionButton(
@@ -94,11 +99,7 @@ class MyHomePage extends StatelessWidget {
                 child: Column(children: [
                   agentNameField(refApp),
                   discField(refDev),
-                  Expanded(
-                      child: discResultTable(refDev
-                          .collection("discovery")
-                          .orderBy("time", descending: true)
-                          .limit(100))),
+                  Expanded(child: discResultTable(qrDiscoveryRes)),
                 ]),
               ));
         });

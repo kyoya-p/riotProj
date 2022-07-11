@@ -43,16 +43,16 @@ class VmstatPage extends StatelessWidget {
   }
 }
 
-typedef ItemBuilder<T> = Widget Function(
-    BuildContext context, List<T> vItem, int index);
+typedef ProgressiveListViewItemBuilder<T> = Widget Function(
+    BuildContext context, List<DocumentSnapshot<T>> vItem, int index);
 
 // Firestoreで大きなリストを使う際のテンプレ
 class PrograssiveListView<T> extends StatefulWidget {
   const PrograssiveListView(this.qrItemsInit, this.itemBuilder, {Key? key})
       : super(key: key);
 
-  final Query<T> qrItemsInit;
-  final ItemBuilder<DocumentSnapshot<T>> itemBuilder;
+  final Query qrItemsInit;
+  final ProgressiveListViewItemBuilder<T> itemBuilder;
 
   @override
   _PrograssiveListViewState createState() => _PrograssiveListViewState();
@@ -60,7 +60,7 @@ class PrograssiveListView<T> extends StatefulWidget {
 
 class _PrograssiveListViewState<T> extends State<PrograssiveListView<T>> {
   List<DocumentSnapshot<T>> vSnapshotItem = [];
-  late Query<T> qrItems = widget.qrItemsInit;
+  late Query<T> qrItems = widget.qrItemsInit as Query<T>;
   _PrograssiveListViewState();
 
   @override
@@ -72,22 +72,22 @@ class _PrograssiveListViewState<T> extends State<PrograssiveListView<T>> {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(itemBuilder: (context, index) {
+      print('${index}');
       if (index < vSnapshotItem.length) {
-        // return buildListTile(index, listDocSnapshot[index]);
         return widget.itemBuilder(context, vSnapshotItem, index);
       } else if (index > vSnapshotItem.length) {
         return const Text("");
       }
-      qrItems.limit(50).get().then((value) {
-        if (mounted) {
-          setState(() {
-            if (value.size > 0) {
-              vSnapshotItem.addAll(value.docs);
-              qrItems = qrItems.startAfterDocument(value.docs.last);
-            }
-          });
-        }
-      });
+      // qrItems.limit(10).get().then((value) {
+      //   if (mounted) {
+      //     setState(() {
+      //       if (value.size > 0) {
+      //         vSnapshotItem.addAll(value.docs);
+      //         qrItems = qrItems.startAfterDocument(value.docs.last);
+      //       }
+      //     });
+      //   }
+      // });
       //return Center(child: CircularProgressIndicator());
       return Card(
           color: Theme.of(context).disabledColor,

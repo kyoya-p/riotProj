@@ -2,6 +2,7 @@
 
 //import 'package:console_ft/vmstatChart.dart';
 //import 'package:firebase_core/firebase_core.dart' show Firebase;
+import 'package:console_ft/log_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -81,7 +82,28 @@ Widget discResultField(Query docRefResult) {
       });
 }
 
-Widget discResultTable(Query docRefResult) {
+Widget discResultTable(Query docsRefResult) {
+  // List<DataCell> card(int i, DiscoveryRes e) => [
+  //       Text(e.time.toDate().toString(), maxLines: 1),
+  //       Text(e.ip),
+  //       //SizedBox(width: 200, child: Text(e.vbs[0], maxLines: 1)),
+  //       Expanded(child: Text(e.vbs[0], maxLines: 1)),
+  //       Text(e.id),
+  //     ].map((e) => DataCell(e)).toList();
+  ProgressiveListViewItemBuilder<DiscoveryRes> builder =
+      (context, vItem, index) {
+    final e = vItem[index].data();
+    if (e == null) {
+      return loadingIcon();
+    } else {
+      final t = Text(e.time.toDate().toIso8601String());
+      return ListTile(leading: t);
+    }
+  };
+  return PrograssiveListView<DiscoveryRes>(docsRefResult, builder);
+}
+
+Widget discResultTableX(Query docRefResult) {
   List<DataCell> card(int i, DiscoveryRes e) => [
         Text(e.time.toDate().toString(), maxLines: 1),
         Text(e.ip),

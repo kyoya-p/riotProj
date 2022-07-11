@@ -51,8 +51,9 @@ class SnmpMetrics {
 class DiscoveryRes {
   DiscoveryRes(this.raw);
   Map<String, dynamic> raw;
-  get ip => raw["ip"] as String;
-  get time => raw["time"] as Timestamp;
-  get vbs => (raw["vbs"] as List<dynamic>).map((e) => e as String).toList();
-  get id => raw["id"] as String? ?? "undefined";
+  String get ip => raw["ip"] as String;
+  Timestamp get time => raw["time"] as Timestamp;
+  List<String> get vbs =>
+      (raw["vbs"] as List<dynamic>).map((e) => e as String).toList();
+  String get id => raw["id"] as String? ?? "undefined";
 }
