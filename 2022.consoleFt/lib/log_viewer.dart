@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:console_ft/types.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -72,12 +70,12 @@ class _PrograssiveListViewState<T> extends State<PrograssiveListView<T>> {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(itemBuilder: (context, index) {
-      print('${index}');
       if (index < vSnapshotItem.length) {
         return widget.itemBuilder(context, vSnapshotItem, index);
       } else if (index > vSnapshotItem.length) {
         return const Text("");
       }
+      print('${index}');
       // qrItems.limit(10).get().then((value) {
       //   if (mounted) {
       //     setState(() {
