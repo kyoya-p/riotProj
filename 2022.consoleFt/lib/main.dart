@@ -44,7 +44,7 @@ class MyHomePage extends StatelessWidget {
           final refDev = db.collection("d").doc(ag);
 
           AppBar appBar(BuildContext context, String ag) => AppBar(
-                title: Text("$ag - Detected devices"),
+                title: Text("$ag - Scan Monitor"),
                 actions: [
                   timeRateIndicator(refDev.collection("discovery")),
                   PopupMenuButton<String>(
@@ -88,7 +88,7 @@ class MyHomePage extends StatelessWidget {
           Query qrDiscoveryRes = refDev
               .collection("discovery")
               .orderBy("time", descending: true)
-              .limit(100);
+              .limit(10);
 
           return Scaffold(
               appBar: appBar(context, ag),
@@ -99,29 +99,26 @@ class MyHomePage extends StatelessWidget {
                 child: Column(children: [
                   agentNameField(refApp),
                   discField(refDev),
-                  Expanded(child: discResultTable(qrDiscoveryRes)),
+                  Expanded(child: listMonitor(qrDiscoveryRes)),
                 ]),
               ));
         });
   }
 }
 
-Widget timeRateIndicator(
-  Query<Map<String, dynamic>> refLogs,
-) {
+Widget timeRateIndicator(Query refLogs) {
   Timer.periodic(const Duration(seconds: 1), (Timer t) => {});
 
   const nLog = 1;
   refLogs.orderBy("time", descending: true).limit(nLog);
-  return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+  return StreamBuilder<QuerySnapshot>(
       stream: refLogs.snapshots(),
       builder: (context, snapshots) {
         final docsLog = snapshots.data?.docs;
         if (docsLog == null) return loadingIcon();
         if (docsLog.length < nLog) return noItem();
         final tNow = Timestamp.now();
-        final t0 = docsLog.last.data()["time"] as Timestamp?;
-        if (t0 == null) return loadingIcon();
+        final t0 = DiscoveryRes(docsLog.last.data()).time;
         final td = tNow.millisecondsSinceEpoch - t0.millisecondsSinceEpoch;
         if (td == 0) return const Center(child: Text("-"));
         return Center(

@@ -50,7 +50,7 @@ class SnmpMetrics {
 
 class DiscoveryRes {
   DiscoveryRes(this.raw);
-  Map<String, dynamic> raw;
+  dynamic raw;
   String get ip => raw["ip"] as String;
   Timestamp get time => raw["time"] as Timestamp;
   List<String> get vbs =>

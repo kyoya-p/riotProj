@@ -2,6 +2,7 @@ import 'package:console_ft/types.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'main.dart';
+import 'snmp.dart';
 
 Widget expanded(Widget w) => Expanded(child: w);
 
@@ -41,10 +42,11 @@ class VmstatPage extends StatelessWidget {
   }
 }
 
-typedef ProgressiveListViewItemBuilder<T> = Widget Function(
-    BuildContext context, List<DocumentSnapshot<T>> vItem, int index);
-
 // Firestoreで大きなリストを使う際のテンプレ
+
+typedef ProgressiveListViewItemBuilder<T> = Widget Function(
+    BuildContext context, List<QueryDocumentSnapshot> vItem, int index);
+
 class PrograssiveListView<T> extends StatefulWidget {
   const PrograssiveListView(this.qrItemsInit, this.itemBuilder, {Key? key})
       : super(key: key);
@@ -57,7 +59,7 @@ class PrograssiveListView<T> extends StatefulWidget {
 }
 
 class _PrograssiveListViewState<T> extends State<PrograssiveListView<T>> {
-  List<DocumentSnapshot<T>> vSnapshotItem = [];
+  List<QueryDocumentSnapshot> vSnapshotItem = [];
   late Query<T> qrItems = widget.qrItemsInit as Query<T>;
   _PrograssiveListViewState();
 
@@ -75,17 +77,14 @@ class _PrograssiveListViewState<T> extends State<PrograssiveListView<T>> {
       } else if (index > vSnapshotItem.length) {
         return const Text("");
       }
-      print('${index}');
-      // qrItems.limit(10).get().then((value) {
-      //   if (mounted) {
-      //     setState(() {
-      //       if (value.size > 0) {
-      //         vSnapshotItem.addAll(value.docs);
-      //         qrItems = qrItems.startAfterDocument(value.docs.last);
-      //       }
-      //     });
-      //   }
-      // });
+      qrItems.limit(20).get().then((v) {
+        if (mounted && v.size > 0) {
+          setState(() {
+            vSnapshotItem.addAll(v.docs);
+            qrItems = qrItems.startAfterDocument(v.docs.last);
+          });
+        }
+      });
       //return Center(child: CircularProgressIndicator());
       return Card(
           color: Theme.of(context).disabledColor,
