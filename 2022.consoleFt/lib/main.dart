@@ -109,21 +109,20 @@ class MyHomePage extends StatelessWidget {
 Widget timeRateIndicator(Query refLogs) {
   Timer.periodic(const Duration(seconds: 1), (Timer t) => {});
 
-  const nLog = 1;
+  const nLog = 10;
   refLogs.orderBy("time", descending: true).limit(nLog);
   return StreamBuilder<QuerySnapshot>(
       stream: refLogs.snapshots(),
-      builder: (context, snapshots) {
+      builder: (_, snapshots) {
         final docsLog = snapshots.data?.docs;
         if (docsLog == null) return loadingIcon();
         if (docsLog.length < nLog) return noItem();
         final tNow = Timestamp.now();
+
         final t0 = DiscoveryRes(docsLog.last.data()).time;
         final td = tNow.millisecondsSinceEpoch - t0.millisecondsSinceEpoch;
-        if (td == 0) return const Center(child: Text("-"));
-        return Center(
-            child: Text(
-                '${tNow.seconds} > ${t0.seconds} = ${td / 1000} ${nLog * 1000.0 / td} /sec'));
+        final lps = docsLog.length * 1000 / td;
+        return Text('${lps} rps');
       });
 }
 
