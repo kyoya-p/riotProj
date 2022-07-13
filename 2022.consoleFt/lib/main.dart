@@ -60,7 +60,7 @@ class MyHomePage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => VmstatPage(refDev)),
+                              builder: (context) => LogsPage(refDev)),
                         );
                       } else if (s == "vmstatChart") {
                         Navigator.push(
@@ -99,7 +99,8 @@ class MyHomePage extends StatelessWidget {
                 child: Column(children: [
                   agentNameField(refApp),
                   discField(refDev),
-                  Expanded(child: listMonitor(qrDiscoveryRes)),
+                  //Expanded(child: listMonitor(qrDiscoveryRes)),
+                  Expanded(child: LogsPage(refDev)),
                 ]),
               ));
         });

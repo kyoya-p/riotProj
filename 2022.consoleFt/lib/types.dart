@@ -20,13 +20,13 @@ class Log {
   Log(this.raw);
   dynamic raw;
   Timestamp get time => raw["time"] as Timestamp;
-  Iterable<Vmlog> get vmlogs => Vmlog.fromList(raw["vmlogs"] as Iterable);
+  Iterable<VmLog> get vmlogs => VmLog.fromList(raw["vmlogs"] as Iterable);
 }
 
-class Vmlog {
-  Vmlog(this.raw);
+class VmLog {
+  VmLog(this.raw);
   dynamic raw;
-  static Iterable<Vmlog> fromList(Iterable v) => v.map((e) => Vmlog(e));
+  static Iterable<VmLog> fromList(Iterable v) => v.map((e) => VmLog(e));
   Timestamp get time => raw["time"] as Timestamp;
   String get log => raw["log"] as String;
 }
