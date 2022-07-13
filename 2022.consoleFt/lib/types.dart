@@ -29,6 +29,26 @@ class VmLog {
   static Iterable<VmLog> fromList(Iterable v) => v.map((e) => VmLog(e));
   Timestamp get time => raw["time"] as Timestamp;
   String get log => raw["log"] as String;
+
+  int vs(int i) => int.parse(log.split(" ").toList()[i]);
+
+  int get procWaitRun => vs(0);
+  int get procIoBlocked => vs(1);
+  int get memSwap => vs(2);
+  int get memFree => vs(3);
+  int get memBuff => vs(4);
+  int get memCache => vs(5);
+  int get swapIn => vs(6);
+  int get swapOut => vs(7);
+  int get ioIn => vs(8);
+  int get ioOut => vs(9);
+  int get sysIntr => vs(10);
+  int get sysCtxSw => vs(11);
+  int get cpuUser => vs(12);
+  int get cpuSys => vs(13);
+  int get cpuIdle => vs(14);
+  int get cpuWait => vs(15);
+  int get cpuStolen => vs(16);
 }
 
 class SnmpScanner {

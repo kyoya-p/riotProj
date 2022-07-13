@@ -69,6 +69,9 @@ class VmstatChartPage extends StatelessWidget {
     final refVmstat = refDev
         .collection("reports")
         .orderBy("time", descending: true)
+        .where("time",
+            isGreaterThanOrEqualTo: Timestamp.fromMillisecondsSinceEpoch(
+                DateTime.now().millisecondsSinceEpoch - 60 * 60 * 1000))
         .limit(24);
     return Scaffold(
         appBar: AppBar(title: Text('${refDev.id} - Metrics')),

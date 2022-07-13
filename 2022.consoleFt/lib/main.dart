@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:console_ft/metrics_chart.dart';
+import 'package:console_ft/realtime_chart.dart';
 import 'package:firebase_core/firebase_core.dart' show Firebase;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -76,7 +77,7 @@ class MyHomePage extends StatelessWidget {
                             value: "clear",
                             child: Text("Clear detected devices")),
                         const PopupMenuItem(
-                            value: "vmstat", child: Text("Logs")),
+                            value: "vmstat", child: Text("Vmstat Logs")),
                         const PopupMenuItem(
                             value: "vmstatChart", child: Text("Metrics")),
                       ];
@@ -99,8 +100,9 @@ class MyHomePage extends StatelessWidget {
                 child: Column(children: [
                   agentNameField(refApp),
                   discField(refDev),
+                  Expanded(child: RealtimeMericsWidget(refDev)),
                   //Expanded(child: listMonitor(qrDiscoveryRes)),
-                  Expanded(child: LogsPage(refDev)),
+                  //Expanded(child: LogsPage(refDev)),
                 ]),
               ));
         });

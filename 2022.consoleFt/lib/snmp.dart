@@ -48,6 +48,30 @@ Widget discField(DocumentReference<Map<String, dynamic>> docRefAg) {
       });
 }
 
+Widget listMonitor(Query docRefResult) {
+  return StreamBuilder<QuerySnapshot>(
+      stream: docRefResult.snapshots(),
+      builder: (context, snapshot) {
+        final docsDiskRes = snapshot.data?.docs
+            .map((e) => DiscoveryRes(e.data() as Map<String, dynamic>))
+            .toList();
+        if (docsDiskRes == null) return loadingIcon();
+        if (docsDiskRes.isEmpty) return noItem();
+        return ListView(
+          children: docsDiskRes.map((e) => discResultItemMaker(e)).toList(),
+        );
+      });
+}
+
+Card discResultItemMaker(DiscoveryRes e) => Card(
+        child: Row(children: [
+      SizedBox(
+          width: 180,
+          child: Text(e.time.toDate().toLocal().toString(), maxLines: 1)),
+      SizedBox(width: 120, child: Text(e.ip, maxLines: 1)),
+      Expanded(child: Text(e.vbs[0], maxLines: 1)),
+    ]));
+
 Widget SnmpMonitorListView(Query docRefResult) {
   return StreamBuilder<QuerySnapshot>(
       stream: docRefResult.snapshots(),
