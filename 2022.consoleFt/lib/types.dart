@@ -25,6 +25,7 @@ class Log {
 
 class VmLog {
   VmLog(this.raw) {
+    print('log=${log}/ ${log.split(RegExp("\\s+"))}');
     vVmstatLog = log.split(" ").map((e) => int.parse(e)).toList();
   }
   dynamic raw;
