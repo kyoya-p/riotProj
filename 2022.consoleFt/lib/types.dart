@@ -24,13 +24,26 @@ class Log {
 }
 
 class VmLog {
-  VmLog(this.raw);
+  VmLog(this.raw) {
+    vVmstatLog = log.split(" ").map((e) => int.parse(e)).toList();
+  }
   dynamic raw;
-  static Iterable<VmLog> fromList(Iterable v) => v.map((e) => VmLog(e));
+  static Iterable<VmLog> fromList(Iterable v) => v.expand((e) {
+        try {
+          final vm = VmLog(e);
+          print(vm);
+          return [vm];
+        } catch (ex) {
+          print("Exception:");
+          return <VmLog>[];
+        }
+      });
+
   Timestamp get time => raw["time"] as Timestamp;
   String get log => raw["log"] as String;
 
-  int vs(int i) => int.parse(log.split(" ").toList()[i]);
+  late List<int> vVmstatLog;
+  int vs(int i) => vVmstatLog[i];
 
   int get procWaitRun => vs(0);
   int get procIoBlocked => vs(1);

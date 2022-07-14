@@ -22,9 +22,11 @@ class RealtimeMericsWidget extends StatelessWidget {
     return StreamBuilder<QuerySnapshot>(
         stream: refLogs.snapshots(),
         builder: (context, ssLogs) {
+          if (ssLogs.hasError) return noItem();
           final docsLog = ssLogs.data?.docs.map((e) => Log(e));
           if (docsLog == null) return loadingIcon();
           final vmlogList = vVmlog(docsLog);
+          print(vmlogList);
           return Column(children: [
             Expanded(child: chartVmstatCpu(vmlogList)),
             //Expanded(child: chart2(vmlogs)),
@@ -35,7 +37,7 @@ class RealtimeMericsWidget extends StatelessWidget {
   }
 
   List<VmLog> vVmlog(Iterable<Log> vlog) => vlog
-      .expand((log) => log.vmlogs.toList().sorted((a, b) =>
+      .expand((log) => VmLog.fromList(log.vmlogs).toList().sorted((a, b) =>
           b.time.millisecondsSinceEpoch - a.time.millisecondsSinceEpoch))
       .toList();
 
