@@ -72,10 +72,17 @@ class MyHomePage extends StatelessWidget {
                                 MaterialPageRoute(
                                     builder: (context) => LogsPage(refDev)),
                               );
-                            }, //"vmstat" //
+                            },
                             child: const Text("Vmstat Logs")),
                         PopupMenuItem(
-                            value: () {}, //"detected",
+                            value: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        DetectedDevicesPage(refDev)),
+                              );
+                            },
                             child: const Text("Detected Devices")),
                       ];
                     },
