@@ -17,8 +17,8 @@ class RealtimeMericsWidget extends StatelessWidget {
         .orderBy("time", descending: true)
         .where("time",
             isGreaterThanOrEqualTo: Timestamp.fromMillisecondsSinceEpoch(
-                DateTime.now().millisecondsSinceEpoch - 60 * 60 * 1000))
-        .limit(24);
+                DateTime.now().millisecondsSinceEpoch - 2 * 60 * 60 * 1000))
+        .limit(120);
     return StreamBuilder<QuerySnapshot>(
         stream: refLogs.snapshots(),
         builder: (context, ssLogs) {
@@ -26,18 +26,17 @@ class RealtimeMericsWidget extends StatelessWidget {
           final docsLog = ssLogs.data?.docs.map((e) => Log(e));
           if (docsLog == null) return loadingIcon();
           final vmlogList = vVmlog(docsLog);
-          print(vmlogList);
           return Column(children: [
             Expanded(child: chartVmstatCpu(vmlogList)),
-            //Expanded(child: chart2(vmlogs)),
-            //Expanded(child: chart3(vmlogs)),
-            //Expanded(child: chart4(vmlogs)),
+            Expanded(child: chart2(vmlogList)),
+            Expanded(child: chart3(vmlogList)),
+            Expanded(child: chart4(vmlogList)),
           ]);
         });
   }
 
   List<VmLog> vVmlog(Iterable<Log> vlog) => vlog
-      .expand((log) => VmLog.fromList(log.vmlogs).toList().sorted((a, b) =>
+      .expand((log) => log.vmlogs.toList().sorted((a, b) =>
           b.time.millisecondsSinceEpoch - a.time.millisecondsSinceEpoch))
       .toList();
 
@@ -58,7 +57,7 @@ class RealtimeMericsWidget extends StatelessWidget {
   );
   final domainAxis = charts.DateTimeAxisSpec(
       tickFormatterSpec: BasicDateTimeTickFormatterSpec(
-    (t) => '${t.hour}:${t.minute.toString().padLeft(2, "00")}',
+    (t) => '${t.hour}:${t.minute.toString().padLeft(2, "0")}',
   ));
 
   final List<ChartBehavior<DateTime>> commonBehaviors = [
@@ -81,14 +80,39 @@ class RealtimeMericsWidget extends StatelessWidget {
         defaultRenderer: LineRendererConfig(includeArea: true, stacked: true),
       );
 
-  static List<charts.Series<dynamic, DateTime>> createData(List<VmLog> vmlogs) {
-    return [
-      //chartSeries("free", (v) => v.free),
-      chartSeries(vmlogs, "User", (v) => v.cpuUser),
-      chartSeries(vmlogs, "System", (v) => v.cpuSys),
-      chartSeries(vmlogs, "Idle", (v) => v.cpuIdle),
-      chartSeries(vmlogs, "Wait", (v) => v.cpuWait),
-      chartSeries(vmlogs, "Stolen", (v) => v.cpuStolen),
-    ];
-  }
+  chart2(List<VmLog> vmlogs) => charts.TimeSeriesChart(
+        [
+          chartSeries(vmlogs, "wait-run", (v) => v.procWaitRun),
+          chartSeries(vmlogs, "io-blk", (v) => v.procIoBlocked),
+        ],
+        domainAxis: domainAxis,
+        layoutConfig: layout,
+        animate: false,
+        behaviors: commonBehaviors,
+      );
+  chart3(List<VmLog> vmlogs) => charts.TimeSeriesChart(
+        [
+          chartSeries(vmlogs, "swap", (v) => v.memSwap),
+          chartSeries(vmlogs, "buff", (v) => v.memBuff),
+          chartSeries(vmlogs, "cache", (v) => v.memCache),
+          chartSeries(vmlogs, "free", (v) => v.memFree),
+        ],
+        domainAxis: domainAxis,
+        layoutConfig: layout,
+        animate: false,
+        behaviors: commonBehaviors,
+        defaultRenderer: LineRendererConfig(includeArea: true, stacked: true),
+      );
+  chart4(List<VmLog> vmlogs) => charts.TimeSeriesChart(
+        [
+          chartSeries(vmlogs, "sw-in", (v) => v.swapIn),
+          chartSeries(vmlogs, "sw-out", (v) => v.swapOut),
+          chartSeries(vmlogs, "io-in", (v) => v.ioIn),
+          chartSeries(vmlogs, "io-out", (v) => v.ioOut),
+        ],
+        domainAxis: domainAxis,
+        layoutConfig: layout,
+        animate: false,
+        behaviors: commonBehaviors,
+      );
 }

@@ -1,8 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:console_ft/vmstatChart.dart';
-// import 'package:freezed_annotation/freezed_annotation.dart';
-// import 'package:firebase_core/firebase_core.dart' show Firebase;
-// import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Application {
   Application(this.raw);
@@ -20,22 +16,21 @@ class Log {
   Log(this.raw);
   dynamic raw;
   Timestamp get time => raw["time"] as Timestamp;
-  Iterable<VmLog> get vmlogs => VmLog.fromList(raw["vmlogs"] as Iterable);
+  Iterable<VmLog> get vmlogs =>
+      VmLog.fromList(raw["vmlogs"] as Iterable<dynamic>);
 }
 
 class VmLog {
   VmLog(this.raw) {
-    print('log=${log}/ ${log.split(RegExp("\\s+"))}');
-    vVmstatLog = log.split(" ").map((e) => int.parse(e)).toList();
+    final log = this.raw["log"] as String;
+    vVmstatLog =
+        log.trim().split(RegExp("\\s+")).map((e) => int.parse(e)).toList();
   }
   dynamic raw;
-  static Iterable<VmLog> fromList(Iterable v) => v.expand((e) {
+  static Iterable<VmLog> fromList(Iterable<dynamic> v) => v.expand((e) {
         try {
-          final vm = VmLog(e);
-          print(vm);
-          return [vm];
-        } catch (ex) {
-          print("Exception:");
+          return <VmLog>[VmLog(e)];
+        } catch (ex, st) {
           return <VmLog>[];
         }
       });
@@ -44,7 +39,13 @@ class VmLog {
   String get log => raw["log"] as String;
 
   late List<int> vVmstatLog;
-  int vs(int i) => vVmstatLog[i];
+  int vs(int i) {
+    try {
+      return vVmstatLog[i];
+    } catch (ex) {
+      return 0;
+    }
+  }
 
   int get procWaitRun => vs(0);
   int get procIoBlocked => vs(1);

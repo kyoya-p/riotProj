@@ -38,7 +38,7 @@ Widget discField(DocumentReference<Map<String, dynamic>> docRefAg) {
                 controller: tecInterval,
                 decoration: const InputDecoration(
                   label: Text("Interval:"),
-                  hintText: "スキャンごとの間隔 ミリ秒単位",
+                  hintText: "スキャンごとの間隔[msec]",
                 ),
                 onSubmitted: (_) => updateDoc(),
               ),
@@ -72,35 +72,58 @@ Card discResultItemMaker(DiscoveryRes e) => Card(
       Expanded(child: Text(e.vbs[0], maxLines: 1)),
     ]));
 
-Widget SnmpMonitorListView(Query docRefResult) {
-  return StreamBuilder<QuerySnapshot>(
-      stream: docRefResult.snapshots(),
-      builder: (context, snapshot) {
-        final docsDiskRes = snapshot.data?.docs
-            .map((e) => DiscoveryRes(e.data() as Map<String, dynamic>))
-            .toList();
-        if (docsDiskRes == null) return loadingIcon();
-        if (docsDiskRes.isEmpty) return noItem();
-        return ListView(
-          children: docsDiskRes.map((e) => SnmpMonitorListViewItem(e)).toList(),
-        );
-      });
+class DetectedDevicesPage extends StatelessWidget {
+  const DetectedDevicesPage(this.refDev, {Key? key}) : super(key: key);
+  final DocumentReference refDev;
+  @override
+  Widget build(BuildContext context) {
+    final refvRes = refDev.collection("discovery");
+
+    return Scaffold(
+        appBar: AppBar(title: Text('${refDev.id} - Detected Devices')),
+        body: StreamBuilder<QuerySnapshot>(
+            stream: refvRes.snapshots(),
+            builder: (context, snapshots) {
+              final reports = snapshots.data?.docs.map((e) => Log(e.data()));
+              final vmlogs = reports?.expand((log) => log.vmlogs).toList();
+              if (vmlogs == null || vmlogs.isEmpty) return noItem();
+              return PrograssiveListView2(
+                refvRes,
+                (context, vTgItem, vSrc, index) {},
+              );
+            }));
+  }
 }
 
-Card SnmpMonitorListViewItem(DiscoveryRes e) => Card(
-        child: Row(children: [
-      SizedBox(
-          width: 180,
-          child: Text(e.time.toDate().toLocal().toString(), maxLines: 1)),
-      SizedBox(width: 120, child: Text(e.ip, maxLines: 1)),
-      Expanded(child: Text(e.vbs[0], maxLines: 1)),
-    ]));
+// Widget SnmpMonitorListView(Query docRefResult) {
+//   return StreamBuilder<QuerySnapshot>(
+//       stream: docRefResult.snapshots(),
+//       builder: (context, snapshot) {
+//         final docsDiskRes = snapshot.data?.docs
+//             .map((e) => DiscoveryRes(e.data() as Map<String, dynamic>))
+//             .toList();
+//         if (docsDiskRes == null) return loadingIcon();
+//         if (docsDiskRes.isEmpty) return noItem();
+//         return ListView(
+//           children: docsDiskRes.map((e) => SnmpMonitorListViewItem(e)).toList(),
+//         );
+//       });
+// }
 
-Widget discResultTable(Query docsRefResult) {
-  ProgressiveListViewItemBuilder<DiscoveryRes> builder =
-      (_, vItem, i) => SnmpMonitorListViewItem(DiscoveryRes(vItem[i].data()));
-  return PrograssiveListView<DiscoveryRes>(docsRefResult, builder);
-}
+// Card SnmpMonitorListViewItem(DiscoveryRes e) => Card(
+//         child: Row(children: [
+//       SizedBox(
+//           width: 180,
+//           child: Text(e.time.toDate().toLocal().toString(), maxLines: 1)),
+//       SizedBox(width: 120, child: Text(e.ip, maxLines: 1)),
+//       Expanded(child: Text(e.vbs[0], maxLines: 1)),
+//     ]));
+
+// Widget discResultTable(Query docsRefResult) {
+//   ProgressiveListViewItemBuilder<DiscoveryRes> builder =
+//       (_, vItem, i) => SnmpMonitorListViewItem(DiscoveryRes(vItem[i].data()));
+//   return PrograssiveListView<DiscoveryRes>(docsRefResult, builder);
+// }
 
 // Sample OID
 const hrDeviceDescr = "1.3.6.1.2.1.25.3.2.1.3";

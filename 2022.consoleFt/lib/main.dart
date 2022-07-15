@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:console_ft/metrics_chart.dart';
 import 'package:console_ft/realtime_chart.dart';
 import 'package:firebase_core/firebase_core.dart' show Firebase;
 import 'package:flutter/material.dart';
@@ -13,6 +12,9 @@ import 'log_viewer.dart';
 
 final db = FirebaseFirestore.instance;
 final refApp = db.collection("tmp").doc();
+
+//const defaultDevId = "default";
+const defaultDevId = "sc";
 
 Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -41,45 +43,40 @@ class MyHomePage extends StatelessWidget {
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         stream: refApp.snapshots(),
         builder: (context, snapshot) {
-          final ag = snapshot.data?.data()?["ag"] as String? ?? "default";
+          final ag = snapshot.data?.data()?["ag"] as String? ?? defaultDevId;
           final refDev = db.collection("d").doc(ag);
 
           AppBar appBar(BuildContext context, String ag) => AppBar(
                 title: Text("$ag - Scan Monitor"),
                 actions: [
                   timeRateIndicator(refDev.collection("discovery")),
-                  PopupMenuButton<String>(
-                    initialValue: "",
-                    onSelected: (String s) async {
-                      if (s == "clear") {
-                        for (var e
-                            in (await refDev.collection("discovery").get())
-                                .docs) {
-                          e.reference.delete();
-                        }
-                      } else if (s == "vmstat") {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => LogsPage(refDev)),
-                        );
-                      } else if (s == "vmstatChart") {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => VmstatChartPage(refDev)),
-                        );
-                      }
-                    },
+                  PopupMenuButton<Function>(
+                    initialValue: () {},
+                    onSelected: (Function f) => f(),
                     itemBuilder: (BuildContext context) {
                       return [
-                        const PopupMenuItem(
-                            value: "clear",
-                            child: Text("Clear detected devices")),
-                        const PopupMenuItem(
-                            value: "vmstat", child: Text("Vmstat Logs")),
-                        const PopupMenuItem(
-                            value: "vmstatChart", child: Text("Metrics")),
+                        PopupMenuItem(
+                            value: () async {
+                              for (final e in (await refDev
+                                      .collection("discovery")
+                                      .get())
+                                  .docs) {
+                                e.reference.delete();
+                              }
+                            }, // "clear",
+                            child: const Text("Clear detected devices")),
+                        PopupMenuItem(
+                            value: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => LogsPage(refDev)),
+                              );
+                            }, //"vmstat" //
+                            child: const Text("Vmstat Logs")),
+                        PopupMenuItem(
+                            value: () {}, //"detected",
+                            child: const Text("Detected Devices")),
                       ];
                     },
                   ),
@@ -135,7 +132,7 @@ Widget agentNameField(DocumentReference<Map<String, dynamic>> refApp) {
       builder: (context, snapshot) {
         var docApp = Application(snapshot.data?.data() ?? {});
         return TextField(
-          controller: TextEditingController(text: docApp.ag ?? "default"),
+          controller: TextEditingController(text: docApp.ag ?? defaultDevId),
           decoration: const InputDecoration(label: Text("Agent ID:")),
           onSubmitted: (ag) async {
             docApp.ag = ag;
