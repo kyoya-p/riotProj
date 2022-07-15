@@ -143,7 +143,6 @@ class _PrograssiveListView2State<T> extends State<PrograssiveListView2> {
       qrItems.limit(20).get().then((v) {
         if (mounted && v.size > 0) {
           setState(() {
-            //final logs = v.docs.map((e) => e.data()).toList();
             widget.appendItems(context, vItem, v.docs, index);
             qrItems = qrItems.startAfterDocument(v.docs.last);
           });

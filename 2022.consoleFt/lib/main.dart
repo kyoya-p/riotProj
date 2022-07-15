@@ -104,9 +104,8 @@ class MyHomePage extends StatelessWidget {
                 child: Column(children: [
                   agentNameField(refApp),
                   discField(refDev),
-                  Expanded(child: RealtimeMericsWidget(refDev)),
-                  //Expanded(child: listMonitor(qrDiscoveryRes)),
-                  //Expanded(child: LogsPage(refDev)),
+                  //Expanded(child: RealtimeMericsWidget(refDev)),
+                  Expanded(child: DetectedDevicesWidget(refDev)),
                 ]),
               ));
         });

@@ -80,18 +80,25 @@ class DetectedDevicesPage extends StatelessWidget {
     final refvRes = refDev.collection("discovery");
 
     return Scaffold(
-        appBar: AppBar(title: Text('${refDev.id} - Detected Devices')),
-        body: StreamBuilder<QuerySnapshot>(
-            stream: refvRes.snapshots(),
-            builder: (context, snapshots) {
-              final reports = snapshots.data?.docs.map((e) => Log(e.data()));
-              final vmlogs = reports?.expand((log) => log.vmlogs).toList();
-              if (vmlogs == null || vmlogs.isEmpty) return noItem();
-              return PrograssiveListView2(
-                refvRes,
-                (context, vTgItem, vSrc, index) {},
-              );
-            }));
+      appBar: AppBar(title: Text('${refDev.id} - Detected Devices')),
+      body: DetectedDevicesWidget(refDev),
+    );
+  }
+}
+
+class DetectedDevicesWidget extends StatelessWidget {
+  final DocumentReference refDev;
+  const DetectedDevicesWidget(this.refDev, {Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    final refvRes = refDev.collection("discovery");
+    return PrograssiveListView2(
+      refvRes,
+      (context, vTgItem, vSrc, index) {
+        print(index);
+        vTgItem.add(Text('$index'));
+      },
+    );
   }
 }
 
