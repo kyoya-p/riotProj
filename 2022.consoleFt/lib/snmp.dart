@@ -7,7 +7,7 @@ import 'types.dart';
 
 DocumentReference<Map<String, dynamic>>? refApp;
 
-Widget discField(DocumentReference<Map<String, dynamic>> docRefAg) {
+Widget discSettingField(DocumentReference<Map<String, dynamic>> docRefAg) {
   return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: docRefAg.snapshots(),
       builder: (context, snapshot) {
@@ -52,9 +52,8 @@ Widget listMonitor(Query docRefResult) {
   return StreamBuilder<QuerySnapshot>(
       stream: docRefResult.snapshots(),
       builder: (context, snapshot) {
-        final docsDiskRes = snapshot.data?.docs
-            .map((e) => DiscoveryRes(e.data() as Map<String, dynamic>))
-            .toList();
+        final docsDiskRes =
+            snapshot.data?.docs.map((e) => DiscoveryRes(e.data())).toList();
         if (docsDiskRes == null) return loadingIcon();
         if (docsDiskRes.isEmpty) return noItem();
         return ListView(
@@ -77,8 +76,6 @@ class DetectedDevicesPage extends StatelessWidget {
   final DocumentReference refDev;
   @override
   Widget build(BuildContext context) {
-    final refvRes = refDev.collection("discovery");
-
     return Scaffold(
       appBar: AppBar(title: Text('${refDev.id} - Detected Devices')),
       body: DetectedDevicesWidget(refDev),
@@ -91,12 +88,14 @@ class DetectedDevicesWidget extends StatelessWidget {
   const DetectedDevicesWidget(this.refDev, {Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    final refvRes = refDev.collection("discovery");
-    return PrograssiveListView2(
+    final refvRes = refDev.collection("discovery"); //.limit(20);
+    return PrograssiveListView2<DiscoveryRes>(
       refvRes,
       (context, vTgItem, vSrc, index) {
-        print(index);
-        vTgItem.add(Text('$index'));
+        print('$index');
+        vSrc.map((e) => DiscoveryRes(e.data())).forEach((e) {
+          vTgItem.add(discResultItemMaker(e));
+        });
       },
     );
   }

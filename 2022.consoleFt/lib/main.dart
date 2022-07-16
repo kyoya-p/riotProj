@@ -1,6 +1,4 @@
 import 'dart:async';
-
-import 'package:console_ft/realtime_chart.dart';
 import 'package:firebase_core/firebase_core.dart' show Firebase;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,8 +11,8 @@ import 'log_viewer.dart';
 final db = FirebaseFirestore.instance;
 final refApp = db.collection("tmp").doc();
 
-//const defaultDevId = "default";
-const defaultDevId = "sc";
+const defaultDevId = "default";
+//const defaultDevId = "sc";
 
 Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -56,6 +54,16 @@ class MyHomePage extends StatelessWidget {
                     itemBuilder: (BuildContext context) {
                       return [
                         PopupMenuItem(
+                            value: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        DetectedDevicesPage(refDev)),
+                              );
+                            },
+                            child: const Text("Detected Devices")),
+                        PopupMenuItem(
                             value: () async {
                               for (final e in (await refDev
                                       .collection("discovery")
@@ -74,16 +82,6 @@ class MyHomePage extends StatelessWidget {
                               );
                             },
                             child: const Text("Vmstat Logs")),
-                        PopupMenuItem(
-                            value: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        DetectedDevicesPage(refDev)),
-                              );
-                            },
-                            child: const Text("Detected Devices")),
                       ];
                     },
                   ),
@@ -103,7 +101,7 @@ class MyHomePage extends StatelessWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: Column(children: [
                   agentNameField(refApp),
-                  discField(refDev),
+                  discSettingField(refDev),
                   //Expanded(child: RealtimeMericsWidget(refDev)),
                   Expanded(child: DetectedDevicesWidget(refDev)),
                 ]),

@@ -49,33 +49,27 @@ class LogsPage extends StatelessWidget {
             child: Text(e.time.toDate().toLocal().toString(), maxLines: 1)),
         Expanded(child: Text(e.log, maxLines: 1)),
       ]));
-
-  // Widget discResultTable(Query docsRefResult) {
-  //   ProgressiveListViewAppendItem<DiscoveryRes> builder =
-  //       (_, vItem, i) => logItem(DiscoveryRes(vItem[i].data()));
-  //   return PrograssiveListView2<DiscoveryRes>(docsRefResult, builder);
-  // }
 }
 
 // Firestoreで大きなリストを使う際のテンプレ
 typedef ProgressiveListViewItemBuilder<T> = Widget Function(
     BuildContext context, List<QueryDocumentSnapshot> vItem, int index);
 
-class PrograssiveListView<T> extends StatefulWidget {
-  const PrograssiveListView(this.qrItemsInit, this.itemBuilder, {Key? key})
+class PrograssiveListView1<T> extends StatefulWidget {
+  const PrograssiveListView1(this.qrItemsInit, this.itemBuilder, {Key? key})
       : super(key: key);
 
   final Query qrItemsInit;
   final ProgressiveListViewItemBuilder<T> itemBuilder;
 
   @override
-  _PrograssiveListViewState createState() => _PrograssiveListViewState();
+  _PrograssiveListView1State createState() => _PrograssiveListView1State();
 }
 
-class _PrograssiveListViewState<T> extends State<PrograssiveListView<T>> {
+class _PrograssiveListView1State<T> extends State<PrograssiveListView1<T>> {
   List<QueryDocumentSnapshot> vSnapshotItem = [];
   late Query<T> qrItems = widget.qrItemsInit as Query<T>;
-  _PrograssiveListViewState();
+  _PrograssiveListView1State();
 
   @override
   void dispose() {
@@ -106,11 +100,11 @@ class _PrograssiveListViewState<T> extends State<PrograssiveListView<T>> {
   }
 }
 
-// Firestoreで大きなリストを使う際のテンプレ(Widgetをリストに保存)
+// Firestoreで大きなリストを使う際のテンプレ(Widgetをリストに保持)
 typedef ProgressiveListViewAppendItem = Function(BuildContext context,
     List<Widget> vTgItem, List<QueryDocumentSnapshot> vSrc, int index);
 
-class PrograssiveListView2 extends StatefulWidget {
+class PrograssiveListView2<T> extends StatefulWidget {
   const PrograssiveListView2(this.qrItemsInit, this.appendItems, {Key? key})
       : super(key: key);
 
@@ -140,7 +134,8 @@ class _PrograssiveListView2State<T> extends State<PrograssiveListView2> {
       } else if (index > vItem.length) {
         return const Text("");
       }
-      qrItems.limit(20).get().then((v) {
+      final q = qrItems.limit(20);
+      q.get().then((v) {
         if (mounted && v.size > 0) {
           setState(() {
             widget.appendItems(context, vItem, v.docs, index);
@@ -150,16 +145,8 @@ class _PrograssiveListView2State<T> extends State<PrograssiveListView2> {
       });
 
       return Card(
-          color: Theme.of(context).disabledColor,
+          color: Theme.of(context).backgroundColor,
           child: const Center(child: Text("End of Data")));
     });
   }
 }
-
-// class VmstatLogs {
-//   VmstatLogs();
-//   List<VmLog> vmLogs = [];
-//   operator  (int i) {}
-// }
-
-// class SnmpLogs {}
