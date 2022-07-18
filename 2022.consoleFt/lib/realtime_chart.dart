@@ -137,9 +137,7 @@ class RealtimeMericsWidget extends StatelessWidget {
             id: "req /s",
             domainFn: (e, _) => e.time.toDate(),
             measureFn: (_, i) {
-              if (i == snmpLogs.length - 1) {
-                return null;
-              }
+              if (i == snmpLogs.length - 1) return null;
               return (snmpLogs[i as int].snmpScanCount -
                       snmpLogs[(i) + 1].snmpScanCount) /
                   60;
