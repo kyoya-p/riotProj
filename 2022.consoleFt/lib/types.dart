@@ -7,22 +7,19 @@ class Application {
   set ag(String? s) => raw["ag"] = s;
 }
 
-class Device {
-  Device(this.raw);
-  Map<String, dynamic> raw;
-}
-
 class Log {
   Log(this.raw);
   dynamic raw;
   Timestamp get time => raw["time"] as Timestamp;
   Iterable<VmLog> get vmlogs =>
       VmLog.fromList(raw["vmlogs"] as Iterable<dynamic>);
+  Iterable<SnmpLog> get snmpLogs =>
+      SnmpLog.fromList(raw["snmpLogs"] as Iterable<dynamic>);
 }
 
 class VmLog {
   VmLog(this.raw) {
-    final log = this.raw["log"] as String;
+    final log = raw["log"] as String;
     vVmstatLog =
         log.trim().split(RegExp("\\s+")).map((e) => int.parse(e)).toList();
   }
@@ -30,7 +27,7 @@ class VmLog {
   static Iterable<VmLog> fromList(Iterable<dynamic> v) => v.expand((e) {
         try {
           return <VmLog>[VmLog(e)];
-        } catch (ex, st) {
+        } catch (ex, _) {
           return <VmLog>[];
         }
       });
@@ -64,6 +61,22 @@ class VmLog {
   int get cpuIdle => vs(14);
   int get cpuWait => vs(15);
   int get cpuStolen => vs(16);
+}
+
+class SnmpLog {
+  SnmpLog(this.raw);
+  dynamic raw;
+
+  static Iterable<SnmpLog> fromList(Iterable<dynamic> v) => v.expand((e) {
+        try {
+          return <SnmpLog>[SnmpLog(e)];
+        } catch (ex, _) {
+          return <SnmpLog>[];
+        }
+      });
+
+  Timestamp get time => raw["time"] as Timestamp;
+  int get snmpScanCount => raw["snmpScanCount"] as int;
 }
 
 class SnmpScanner {

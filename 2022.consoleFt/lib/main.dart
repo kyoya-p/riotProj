@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'firebase_options.dart';
+import 'realtime_chart.dart';
 import 'snmp.dart';
 import 'types.dart';
 import 'log_viewer.dart';
@@ -11,8 +12,8 @@ import 'log_viewer.dart';
 final db = FirebaseFirestore.instance;
 final refApp = db.collection("tmp").doc();
 
-const defaultDevId = "default";
-//const defaultDevId = "sc";
+//const defaultDevId = "default";
+const defaultDevId = "sc";
 
 Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -102,8 +103,8 @@ class MyHomePage extends StatelessWidget {
                 child: Column(children: [
                   agentNameField(refApp),
                   discSettingField(refDev),
-                  //Expanded(child: RealtimeMericsWidget(refDev)),
-                  Expanded(child: DetectedDevicesWidget(refDev)),
+                  Expanded(child: RealtimeMericsWidget(refDev)),
+                  //Expanded(child: DetectedDevicesWidget(refDev)),
                 ]),
               ));
         });

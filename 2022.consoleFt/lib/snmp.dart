@@ -92,7 +92,6 @@ class DetectedDevicesWidget extends StatelessWidget {
     return PrograssiveListView2<DiscoveryRes>(
       refvRes,
       (context, vTgItem, vSrc, index) {
-        print('$index');
         vSrc.map((e) => DiscoveryRes(e.data())).forEach((e) {
           vTgItem.add(discResultItemMaker(e));
         });
