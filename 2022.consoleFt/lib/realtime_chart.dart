@@ -134,7 +134,18 @@ class RealtimeMericsWidget extends StatelessWidget {
         [
           //chartSeriesSnmp(snmpLogs, "total req", (v) => v.snmpScanCount),
           charts.Series<SnmpLog, DateTime>(
-            id: "req /s",
+            id: "scan /s",
+            domainFn: (e, _) => e.time.toDate(),
+            measureFn: (_, i) {
+              if (i == snmpLogs.length - 1) return null;
+              return (snmpLogs[i as int].snmpScanCount -
+                      snmpLogs[(i) + 1].snmpScanCount) /
+                  60;
+            },
+            data: snmpLogs,
+          ),
+          charts.Series<SnmpLog, DateTime>(
+            id: "detected /s",
             domainFn: (e, _) => e.time.toDate(),
             measureFn: (_, i) {
               if (i == snmpLogs.length - 1) return null;
