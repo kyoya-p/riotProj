@@ -96,7 +96,6 @@ class MyHomePage extends StatelessWidget {
               .orderBy("time", descending: true)
               .limit(10);
 
-          final now = getServerTime();
           return Scaffold(
               appBar: appBar(context, ag),
 //            floatingActionButton: FloatingActionButton(
@@ -106,7 +105,7 @@ class MyHomePage extends StatelessWidget {
                 child: Column(children: [
                   agentNameField(refApp),
                   discSettingField(refDev),
-                  Expanded(child: RealtimeMericsWidget(refDev, now)),
+                  Expanded(child: RealtimeMericsWidget(refDev)),
                   //Expanded(child: DetectedDevicesWidget(refDev)),
                 ]),
               ));
