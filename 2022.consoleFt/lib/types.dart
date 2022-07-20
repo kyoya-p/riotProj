@@ -76,7 +76,7 @@ class SnmpLog {
       });
 
   Timestamp get time => raw["time"] as Timestamp;
-  int get snmpScanCount => raw["snmpScanCount"] as int;
+  int get scanCount => raw["scanCount"] as int;
   int get detectCount => raw["detectCount"] as int;
 }
 

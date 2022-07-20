@@ -1,6 +1,7 @@
 import 'package:charts_flutter/flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
+import 'package:console_ft/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 
@@ -8,10 +9,16 @@ import 'main.dart';
 import 'types.dart';
 
 class RealtimeMericsWidget extends StatelessWidget {
-  RealtimeMericsWidget(this.refDev, {Key? key}) : super(key: key);
+  RealtimeMericsWidget(this.refDev, this.start, {Key? key}) : super(key: key);
   final DocumentReference refDev;
+  late final DateTime? start = null;
+  late final DateTime? end = DateTime.fromMillisecondsSinceEpoch(
+      start.millisecondsSinceEpoch - 60 * 60 * 1000);
   @override
   Widget build(BuildContext context) {
+    print('start: ${start}');
+    print('end: ${end}');
+
     final refLogs = refDev
         .collection("reports")
         .orderBy("time", descending: true)
@@ -28,11 +35,12 @@ class RealtimeMericsWidget extends StatelessWidget {
           final vmlogList = vVmlog(vLog);
           final snmpLogList = vSnmplog(vLog);
           return Column(children: [
-            Expanded(child: chartSnmp(snmpLogList)),
+            Expanded(child: chartSnmpScan(snmpLogList)),
+            Expanded(child: chartSnmpDetect(snmpLogList)),
             Expanded(child: chartVmstatCpu(vmlogList)),
-            Expanded(child: chartQueue(vmlogList)),
-            Expanded(child: chartMemory(vmlogList)),
-            Expanded(child: chartSwapIo(vmlogList)),
+            Expanded(child: chartVmstatQueue(vmlogList)),
+            Expanded(child: chartVmstatMemory(vmlogList)),
+            Expanded(child: chartVmstatSwapIo(vmlogList)),
           ]);
         });
   }
@@ -55,25 +63,21 @@ class RealtimeMericsWidget extends StatelessWidget {
         measureFn: (e, _) => getValue(e),
         data: logs,
       );
-  static chartSeriesSnmp(
-          List<SnmpLog> logs, String id, int Function(SnmpLog) getValue) =>
-      charts.Series<SnmpLog, DateTime>(
-        id: id,
-        //colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
-        domainFn: (e, _) => e.time.toDate(),
-        measureFn: (e, _) => getValue(e),
-        data: logs,
-      );
-  final layout = LayoutConfig(
+  static final layout = LayoutConfig(
     leftMarginSpec: MarginSpec.fromPixel(minPixel: 65),
     rightMarginSpec: MarginSpec.fromPixel(minPixel: 25),
     topMarginSpec: MarginSpec.fromPixel(minPixel: 0),
     bottomMarginSpec: MarginSpec.fromPixel(minPixel: 35),
   );
-  final domainAxis = charts.DateTimeAxisSpec(
+  final n = getServerTime();
+  late final domainAxis = charts.DateTimeAxisSpec(
+      viewport: DateTimeExtents(
+        start: start,
+        end: end,
+      ),
       tickFormatterSpec: BasicDateTimeTickFormatterSpec(
-    (t) => '${t.hour}:${t.minute.toString().padLeft(2, "0")}',
-  ));
+        (t) => '${t.hour}:${t.minute.toString().padLeft(2, "0")}',
+      ));
 
   final List<ChartBehavior<DateTime>> commonBehaviors = [
     charts.SeriesLegend()
@@ -95,7 +99,7 @@ class RealtimeMericsWidget extends StatelessWidget {
         defaultRenderer: LineRendererConfig(includeArea: true, stacked: true),
       );
 
-  chartQueue(List<VmLog> vmlogs) => charts.TimeSeriesChart(
+  chartVmstatQueue(List<VmLog> vmlogs) => charts.TimeSeriesChart(
         [
           chartSeriesVmstat(vmlogs, "proc", (v) => v.procWaitRun),
           chartSeriesVmstat(vmlogs, "io", (v) => v.procIoBlocked),
@@ -105,7 +109,7 @@ class RealtimeMericsWidget extends StatelessWidget {
         animate: false,
         behaviors: commonBehaviors,
       );
-  chartMemory(List<VmLog> vmlogs) => charts.TimeSeriesChart(
+  chartVmstatMemory(List<VmLog> vmlogs) => charts.TimeSeriesChart(
         [
           chartSeriesVmstat(vmlogs, "swap", (v) => v.memSwap),
           chartSeriesVmstat(vmlogs, "buff", (v) => v.memBuff),
@@ -118,7 +122,7 @@ class RealtimeMericsWidget extends StatelessWidget {
         behaviors: commonBehaviors,
         defaultRenderer: LineRendererConfig(includeArea: true, stacked: true),
       );
-  chartSwapIo(List<VmLog> vmlogs) => charts.TimeSeriesChart(
+  chartVmstatSwapIo(List<VmLog> vmlogs) => charts.TimeSeriesChart(
         [
           chartSeriesVmstat(vmlogs, "sw-in", (v) => v.swapIn),
           chartSeriesVmstat(vmlogs, "sw-out", (v) => v.swapOut),
@@ -130,28 +134,35 @@ class RealtimeMericsWidget extends StatelessWidget {
         animate: false,
         behaviors: commonBehaviors,
       );
-  chartSnmp(List<SnmpLog> snmpLogs) => charts.TimeSeriesChart(
+  chartSnmpScan(List<SnmpLog> snmpLogs) => charts.TimeSeriesChart(
         [
-          //chartSeriesSnmp(snmpLogs, "total req", (v) => v.snmpScanCount),
           charts.Series<SnmpLog, DateTime>(
             id: "scan /s",
             domainFn: (e, _) => e.time.toDate(),
             measureFn: (_, i) {
               if (i == snmpLogs.length - 1) return null;
-              return (snmpLogs[i as int].snmpScanCount -
-                      snmpLogs[(i) + 1].snmpScanCount) /
+              return (snmpLogs[i as int].scanCount -
+                      snmpLogs[i + 1].scanCount) /
                   60;
             },
             data: snmpLogs,
           ),
+        ],
+        domainAxis: domainAxis,
+        layoutConfig: layout,
+        animate: false,
+        behaviors: commonBehaviors,
+      );
+  chartSnmpDetect(List<SnmpLog> snmpLogs) => charts.TimeSeriesChart(
+        [
           charts.Series<SnmpLog, DateTime>(
-            id: "detected /s",
+            id: "detected /60s",
             domainFn: (e, _) => e.time.toDate(),
             measureFn: (_, i) {
               if (i == snmpLogs.length - 1) return null;
-              return (snmpLogs[i as int].snmpScanCount -
-                      snmpLogs[(i) + 1].snmpScanCount) /
-                  60;
+              return (snmpLogs[i as int].detectCount -
+                      snmpLogs[i + 1].detectCount) /
+                  1;
             },
             data: snmpLogs,
           ),

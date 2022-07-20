@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart' show Firebase;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'clock.dart';
 import 'firebase_options.dart';
 import 'realtime_chart.dart';
 import 'snmp.dart';
@@ -17,6 +18,7 @@ const defaultDevId = "sc";
 
 Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await initializeServerClock();
   runApp(const MyApp());
 }
 
@@ -94,6 +96,7 @@ class MyHomePage extends StatelessWidget {
               .orderBy("time", descending: true)
               .limit(10);
 
+          final now = getServerTime();
           return Scaffold(
               appBar: appBar(context, ag),
 //            floatingActionButton: FloatingActionButton(
@@ -103,7 +106,7 @@ class MyHomePage extends StatelessWidget {
                 child: Column(children: [
                   agentNameField(refApp),
                   discSettingField(refDev),
-                  Expanded(child: RealtimeMericsWidget(refDev)),
+                  Expanded(child: RealtimeMericsWidget(refDev, now)),
                   //Expanded(child: DetectedDevicesWidget(refDev)),
                 ]),
               ));
