@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:firebase_core/firebase_core.dart' show Firebase;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -30,7 +31,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Console',
       theme: ThemeData(primarySwatch: Colors.brown),
-      home: const MyHomePage(title: 'Console'),
+      home: const MyHomePage(title: 'Monitor'),
     );
   }
 }
@@ -67,24 +68,26 @@ class MyHomePage extends StatelessWidget {
           },
           child: const Text("Vmstat Logs"));
 
-  AppBar appBar(BuildContext context, String ag, DocumentReference refDev) =>
-      AppBar(
-        title: Text("$ag - Monitor"),
-        actions: [
-          aliveIndicator(refDev.collection("discovery")),
-          PopupMenuButton<Function>(
-            initialValue: () {},
-            onSelected: (Function f) => f(),
-            itemBuilder: (BuildContext context) {
-              return [
-                menuItem1(context, refDev),
-                menuItem2(context, refDev),
-                menuItem3(context, refDev),
-              ];
-            },
-          ),
-        ],
-      );
+  AppBar appBar(BuildContext context, String ag, DocumentReference refDev) {
+    print(refDev.path);
+    return AppBar(
+      title: Text("$ag - Monitor"),
+      actions: [
+        aliveIndicator(refDev),
+        PopupMenuButton<Function>(
+          initialValue: () {},
+          onSelected: (Function f) => f(),
+          itemBuilder: (BuildContext context) {
+            return [
+              menuItem1(context, refDev),
+              menuItem2(context, refDev),
+              menuItem3(context, refDev),
+            ];
+          },
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,46 +96,7 @@ class MyHomePage extends StatelessWidget {
       builder: (context, snapshot) {
         final ag = snapshot.data?.data()?["ag"] as String? ?? defaultDevId;
         final refDev = db.collection("d").doc(ag);
-        // AppBar appBarX(BuildContext context, String ag) =>
-        //     AppBar(title: Text("$ag - Scan Monitor"), actions: [
-        //       timeRateIndicator(refDev.collection("discovery")),
-        //       PopupMenuButton<Function>(
-        //         initialValue: () {},
-        //         onSelected: (Function f) => f(),
-        //         itemBuilder: (BuildContext context) {
-        //           return [
-        //             PopupMenuItem(
-        //                 value: () {
-        //                   Navigator.push(
-        //                     context,
-        //                     MaterialPageRoute(
-        //                         builder: (context) =>
-        //                             DetectedDevicesPage(refDev)),
-        //                   );
-        //                 },
-        //                 child: const Text("Detected Devices")),
-        //             PopupMenuItem(
-        //                 value: () async {
-        //                   for (final e
-        //                       in (await refDev.collection("discovery").get())
-        //                           .docs) {
-        //                     e.reference.delete();
-        //                   }
-        //                 }, // "clear",
-        //                 child: const Text("Clear detected devices")),
-        //             PopupMenuItem(
-        //                 value: () {
-        //                   Navigator.push(
-        //                     context,
-        //                     MaterialPageRoute(
-        //                         builder: (context) => LogsPage(refDev)),
-        //                   );
-        //                 },
-        //                 child: const Text("Vmstat Logs")),
-        //           ];
-        //         },
-        //       ),
-        //     ]);
+        print('L1:${refDev.path}');
         return Scaffold(
             appBar: appBar(context, ag, refDev),
 //            floatingActionButton: FloatingActionButton(
@@ -151,29 +115,23 @@ class MyHomePage extends StatelessWidget {
   }
 }
 
-Widget aliveIndicator(Query refLogs) {
-  Timer.periodic(const Duration(seconds: 1), (Timer t) => {});
-
-  const nLog = 2;
+Widget aliveIndicator(DocumentReference refDev) {
+  const nLog = 1;
   final now = getServerTime();
-  refLogs
-      //.where("time", isGreaterThan: now.subtract(const Duration(minutes: 3)))
+  final qrLog = refDev
+      .collection("reports")
+      .where("time", isGreaterThan: now.subtract(const Duration(minutes: 1)))
       .limit(nLog);
-  Widget alive() => const Center(
-      child: Text('Alive',
-          style: TextStyle(color: Color.fromARGB(255, 136, 179, 253))));
-  Widget noSignal() => const Center(
-      child: Text('No Signal',
-          style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Color.fromARGB(255, 238, 153, 128))));
+
+  Widget alive() => const Center(child: Icon(Icons.favorite));
+  Widget noSignal() =>
+      const Center(child: Icon(Icons.heart_broken, color: Colors.red));
   return StreamBuilder<QuerySnapshot>(
-      stream: refLogs.snapshots(),
+      stream: qrLog.snapshots(),
       builder: (_, snapshots) {
         final docsLog = snapshots.data?.docs;
         if (docsLog == null) return loadingIcon();
         if (docsLog.length < nLog) return noSignal();
-
         return alive();
       });
 }
@@ -196,6 +154,23 @@ Widget agentNameField(DocumentReference<Map<String, dynamic>> refApp) {
 
 Widget loadingIcon() => const Center(child: CircularProgressIndicator());
 Widget noItem() => const Center(child: Text("No item"));
+
+// Widget intervalBuilder<T>(Duration interval,
+//     {required Widget Function(BuildContext, AsyncSnapshot<dynamic>) builder}) {
+//   Stream<dynamic>? stream() async* {
+//     while (true) {
+//       yield null;
+//       sleep(interval);
+//     }
+//   }
+
+//   return StreamBuilder<T>(
+//     stream: stream(),
+//     builder: (context, snapshot) {
+//       return builder(context, snapshot);
+//     },
+//   );
+// }
 
 // Sample OID
 const hrDeviceDescr = "1.3.6.1.2.1.25.3.2.1.3";
