@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:js';
 import 'package:firebase_core/firebase_core.dart' show Firebase;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
