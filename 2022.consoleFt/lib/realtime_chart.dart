@@ -73,11 +73,11 @@ class RealtimeMericsWidget extends StatelessWidget {
 
           chartVmstatCpu(List<VmLog> vmlogs) => charts.TimeSeriesChart(
                 [
-                  chartSeriesVmstat(vmlogs, "user", (v) => v.cpuUser),
-                  chartSeriesVmstat(vmlogs, "sys", (v) => v.cpuSys),
-                  chartSeriesVmstat(vmlogs, "wait", (v) => v.cpuWait),
-                  chartSeriesVmstat(vmlogs, "stolen", (v) => v.cpuStolen),
-                  chartSeriesVmstat(vmlogs, "idle", (v) => v.cpuIdle),
+                  chartSeriesVmstat(vmlogs, "user%", (v) => v.cpuUser),
+                  chartSeriesVmstat(vmlogs, "sys%", (v) => v.cpuSys),
+                  chartSeriesVmstat(vmlogs, "wait%", (v) => v.cpuWait),
+                  chartSeriesVmstat(vmlogs, "stolen%", (v) => v.cpuStolen),
+                  chartSeriesVmstat(vmlogs, "idle%", (v) => v.cpuIdle),
                 ],
                 domainAxis: domainAxis,
                 layoutConfig: layout,
@@ -125,7 +125,7 @@ class RealtimeMericsWidget extends StatelessWidget {
           chartSnmpScan(List<SnmpLog> snmpLogs) => charts.TimeSeriesChart(
                 [
                   charts.Series<SnmpLog, DateTime>(
-                    id: "scan /s",
+                    id: "scan/s",
                     domainFn: (e, _) => e.time.toDate(),
                     measureFn: (_, i) {
                       if (i == snmpLogs.length - 1) return null;
@@ -144,7 +144,7 @@ class RealtimeMericsWidget extends StatelessWidget {
           chartSnmpDetect(List<SnmpLog> snmpLogs) => charts.TimeSeriesChart(
                 [
                   charts.Series<SnmpLog, DateTime>(
-                    id: "detected /60s",
+                    id: "detected/min",
                     domainFn: (e, _) => e.time.toDate(),
                     measureFn: (_, i) {
                       if (i == snmpLogs.length - 1) return null;

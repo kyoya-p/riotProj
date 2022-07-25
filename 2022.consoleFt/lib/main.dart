@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:firebase_core/firebase_core.dart' show Firebase;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -69,7 +68,6 @@ class MyHomePage extends StatelessWidget {
           child: const Text("Vmstat Logs"));
 
   AppBar appBar(BuildContext context, String ag, DocumentReference refDev) {
-    print(refDev.path);
     return AppBar(
       title: Text("$ag - Monitor"),
       actions: [
