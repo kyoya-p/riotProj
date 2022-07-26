@@ -5,7 +5,7 @@ late final int localTimeOffset;
 
 initializeServerClock() async {
   final refTime =
-      await db.collection("tmp").add({"time": FieldValue.serverTimestamp()});
+      await db.collection("d").add({"time": FieldValue.serverTimestamp()});
   final ssTime = await refTime.get();
   final docTime = ssTime.data();
   if (docTime == null) throw Exception("Error: initializeServerClock()");

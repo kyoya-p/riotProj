@@ -11,7 +11,7 @@ import 'types.dart';
 import 'log_viewer.dart';
 
 final db = FirebaseFirestore.instance;
-final refApp = db.collection("tmp").doc();
+final refApp = db.collection("d").doc();
 
 const defaultDevId = "default";
 //const defaultDevId = "sc";
@@ -94,7 +94,6 @@ class MyHomePage extends StatelessWidget {
       builder: (context, snapshot) {
         final ag = snapshot.data?.data()?["ag"] as String? ?? defaultDevId;
         final refDev = db.collection("d").doc(ag);
-        print('L1:${refDev.path}');
         return Scaffold(
             appBar: appBar(context, ag, refDev),
 //            floatingActionButton: FloatingActionButton(
