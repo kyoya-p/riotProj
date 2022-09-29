@@ -127,7 +127,7 @@ Widget aliveIndicator(BuildContext context, DocumentReference refDev) {
               context: context,
               builder: (context) => SimpleDialog(
                     children: [
-                      Text('Last communication: ${log.time.toDate()}')
+                      Text(' Last communication: ${log.time.toDate()} ')
                     ],
                   )),
         ),
