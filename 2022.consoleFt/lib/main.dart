@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Console',
       theme: ThemeData(primarySwatch: Colors.blueGrey),
-      home: const MyHomePage(title: 'Monitor'),
+      home: const MyHomePage(title: 'Dashboard'),
     );
   }
 }
@@ -69,7 +69,7 @@ class MyHomePage extends StatelessWidget {
 
   AppBar appBar(BuildContext context, String ag, DocumentReference refDev) {
     return AppBar(
-      title: Text("$ag - Monitor"),
+      title: Text("$ag - Dashboard"),
       actions: [
         aliveIndicator(context, refDev),
         PopupMenuButton<Function>(
