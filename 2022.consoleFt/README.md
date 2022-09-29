@@ -5,6 +5,7 @@
 # 開発環境設定
 
 - [Flutter SDK - Install](https://docs.flutter.dev/get-started/install)
+- Firebase Tools
 - VSCode
   - Plugin > Flutter plugin - Install
   - Dart plugin > 拡張機能の設定 > Flutter SDK path/ Dart SDK path - setup 
@@ -29,11 +30,31 @@ flutter run --release -d chrome
 or
 VSCodeでF5(デバッグ実行)
 
+# ローカルデプロイでテスト
+```
+firebase emulators:start
+```
+`http://localhost:4000/firestore ` を開き、Hostingなら、`http://localhost:5000/`をクリック
+
+# Firebas Hostingでデプロイ
+```
+flutter build web
+firebase deploy
+```
+
+```:Hostingでのデプロイを停止したい場合
+firebase hosting:disable
+```
+Note: previewは機能し続けるようだ
+
 # プロジェクト作成履歴
 
 - Firebase/Firestore プロジェクト(例:`road-to-iot`)作成(略)
 - [Flutter アプリに Firebase を追加する](https://firebase.google.com/docs/flutter/setup)
+  - npm install -g firebase-tools  // Firebase Tools導入
   - firebase login
+  - firebase init    // Firestoreをチェック
+  - firebase init hosting //  public directory = build/web
   - flutterfire configure --out lib/firebase_options.dart --project road-to-iot
   - main.dart に追記
     - `import 'firebase_options.dart'; `
