@@ -12,36 +12,39 @@
   - 実行 > 構成の追加 > Flutter:launch  //commit済
 
 
-# ビルド
+## ビルド
 ```
 flutter pub get                     
 flutter pub run build_runner build // freezed等でコード生成が必要な場合。常時チェックなら build=>watch
 or
 flutter build web
-]```
-ターゲットファイルは build/web フォルダ
+```
+`build/web` 以下に生成される
 
-# デバッグ/実行
+## デバッグ/実行
 ```
 flutter run -d chrome
 or 
 flutter run --release -d chrome
 ```
 or
-VSCodeでF5(デバッグ実行)
+VSCodeならF5(デバッグ実行)
 
-# ローカルデプロイでテスト
+## テストのためローカルデプロイ
 ```
 firebase emulators:start
 ```
 `http://localhost:4000/firestore ` を開き、Hostingなら、`http://localhost:5000/`をクリック
 
-# Firebas Hostingでデプロイ
+## Firebas Hostingでインターネットにデプロイ
 ```
 flutter build web
 firebase deploy
 ```
 
+```:Preview版としてデプロイ
+firebase hosting:channel:deploy preview_name
+```
 ```:Hostingでのデプロイを停止したい場合
 firebase hosting:disable
 ```

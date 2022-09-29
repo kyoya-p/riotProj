@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Console',
-      theme: ThemeData(primarySwatch: Colors.indigo),
+      theme: ThemeData(primarySwatch: Colors.blueGrey),
       home: const MyHomePage(title: 'Monitor'),
     );
   }
@@ -71,7 +71,7 @@ class MyHomePage extends StatelessWidget {
     return AppBar(
       title: Text("$ag - Monitor"),
       actions: [
-        aliveIndicator(refDev),
+        aliveIndicator(context, refDev),
         PopupMenuButton<Function>(
           initialValue: () {},
           onSelected: (Function f) => f(),
@@ -112,7 +112,7 @@ class MyHomePage extends StatelessWidget {
   }
 }
 
-Widget aliveIndicator(DocumentReference refDev) {
+Widget aliveIndicator(BuildContext context, DocumentReference refDev) {
   const nLog = 1;
   final now = getServerTime();
   final qrLog = refDev
@@ -120,7 +120,18 @@ Widget aliveIndicator(DocumentReference refDev) {
       .where("time", isGreaterThan: now.subtract(const Duration(minutes: 1)))
       .limit(nLog);
 
-  Widget alive() => const Center(child: Icon(Icons.favorite));
+  Widget alive(Log log) => Center(
+        child: IconButton(
+          icon: const Icon(Icons.favorite),
+          onPressed: () => showDialog(
+              context: context,
+              builder: (context) => SimpleDialog(
+                    children: [
+                      Text('Last communication: ${log.time.toDate()}')
+                    ],
+                  )),
+        ),
+      );
   Widget noSignal() =>
       const Center(child: Icon(Icons.heart_broken, color: Colors.red));
   return StreamBuilder<QuerySnapshot>(
@@ -129,7 +140,7 @@ Widget aliveIndicator(DocumentReference refDev) {
         final docsLog = snapshots.data?.docs;
         if (docsLog == null) return loadingIcon();
         if (docsLog.length < nLog) return noSignal();
-        return alive();
+        return alive(Log(docsLog[0].data()));
       });
 }
 
@@ -151,23 +162,6 @@ Widget agentNameField(DocumentReference<Map<String, dynamic>> refApp) {
 
 Widget loadingIcon() => const Center(child: CircularProgressIndicator());
 Widget noItem() => const Center(child: Text("No item"));
-
-// Widget intervalBuilder<T>(Duration interval,
-//     {required Widget Function(BuildContext, AsyncSnapshot<dynamic>) builder}) {
-//   Stream<dynamic>? stream() async* {
-//     while (true) {
-//       yield null;
-//       sleep(interval);
-//     }
-//   }
-
-//   return StreamBuilder<T>(
-//     stream: stream(),
-//     builder: (context, snapshot) {
-//       return builder(context, snapshot);
-//     },
-//   );
-// }
 
 // Sample OID
 const hrDeviceDescr = "1.3.6.1.2.1.25.3.2.1.3";
