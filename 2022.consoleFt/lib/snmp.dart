@@ -88,7 +88,9 @@ class DetectedDevicesWidget extends StatelessWidget {
   const DetectedDevicesWidget(this.refDev, {Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    final refvRes = refDev.collection("discovery"); //.limit(20);
+    final refvRes = refDev
+        .collection("discovery")
+        .orderBy("time", descending: true); //.limit(20);
     return PrograssiveListView2<DiscoveryRes>(
       refvRes,
       (context, vTgItem, vSrc, index) {

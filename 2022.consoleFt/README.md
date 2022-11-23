@@ -19,6 +19,8 @@ flutter pub run build_runner build // freezed等でコード生成が必要な�
 or
 flutter build web
 ```
+or VSCodeなら「ビルドタスクの実行」 (Ctrl+Shift+B)
+
 `build/web` 以下に生成される
 
 ## デバッグ/実行
@@ -27,8 +29,7 @@ flutter run -d chrome
 or 
 flutter run --release -d chrome
 ```
-or
-VSCodeならF5(デバッグ実行)
+or VSCodeなら「デバッグ実行」(F5)
 
 ## テストのためローカルデプロイ
 ```
@@ -45,6 +46,8 @@ firebase deploy
 ```:Preview版としてデプロイ
 firebase hosting:channel:deploy preview_name
 ```
+Note: Previewはデフォルト1weekで停止
+
 ```:Hostingでのデプロイを停止したい場合
 firebase hosting:disable
 ```
