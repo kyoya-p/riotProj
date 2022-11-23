@@ -151,7 +151,7 @@ Widget agentNameField(DocumentReference<Map<String, dynamic>> refApp) {
         var docApp = Application(snapshot.data?.data() ?? {});
         return TextField(
           controller: TextEditingController(text: docApp.ag ?? defaultDevId),
-          decoration: const InputDecoration(label: Text("Agent ID:")),
+          decoration: const InputDecoration(label: Text("Device ID:")),
           onSubmitted: (ag) async {
             docApp.ag = ag;
             refApp.set(docApp.raw);
