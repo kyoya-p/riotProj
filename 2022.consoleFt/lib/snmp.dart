@@ -102,6 +102,18 @@ class DetectedDevicesWidget extends StatelessWidget {
   }
 }
 
+List<Widget> errorIcons(int hrPrinterDetectedErrorState) {
+  Widget errorIcon(int i) {
+    if (hrPrinterDetectedErrorState & (1 << i) != 0) {
+      return Text('$i');
+    } else {
+      return const Text(" ");
+    }
+  }
+
+  return List.generate(16, errorIcon);
+}
+
 const hrDeviceDescr = "1.3.6.1.2.1.25.3.2.1.3";
 const hrDeviceStatus = "1.3.6.1.2.1.25.3.2.1.5";
 const hrDeviceErrors = "1.3.6.1.2.1.25.3.2.1.6";
