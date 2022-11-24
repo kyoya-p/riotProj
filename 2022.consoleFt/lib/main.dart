@@ -167,8 +167,3 @@ Widget agentNameField(DocumentReference<Map<String, dynamic>> refApp) {
 
 Widget loadingIcon() => const Center(child: CircularProgressIndicator());
 Widget noItem() => const Center(child: Text("No item"));
-
-// Sample OID
-const hrDeviceDescr = "1.3.6.1.2.1.25.3.2.1.3";
-const hrDeviceStatus = "1.3.6.1.2.1.25.3.2.1.5";
-const hrDeviceErrors = "1.3.6.1.2.1.25.3.2.1.6";

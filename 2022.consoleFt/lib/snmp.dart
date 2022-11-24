@@ -102,7 +102,11 @@ class DetectedDevicesWidget extends StatelessWidget {
   }
 }
 
-// Sample OID
 const hrDeviceDescr = "1.3.6.1.2.1.25.3.2.1.3";
 const hrDeviceStatus = "1.3.6.1.2.1.25.3.2.1.5";
 const hrDeviceErrors = "1.3.6.1.2.1.25.3.2.1.6";
+const sysDescr = "1.3.6.1.2.1.1.1";
+const sysObjectID = "1.3.6.1.2.1.1.2";
+const sysName = "1.3.6.1.2.1.1.5";
+const sysLocation = "1.3.6.1.2.1.1.6";
+const hrPrinterDetectedErrorState = "1.3.6.1.2.1.25.3.5.1.2";
