@@ -52,12 +52,12 @@ Widget listMonitor(Query docRefResult) {
   return StreamBuilder<QuerySnapshot>(
       stream: docRefResult.snapshots(),
       builder: (context, snapshot) {
-        final docsDiskRes =
+        final docsDiscRes =
             snapshot.data?.docs.map((e) => DiscoveryRes(e.data())).toList();
-        if (docsDiskRes == null) return loadingIcon();
-        if (docsDiskRes.isEmpty) return noItem();
+        if (docsDiscRes == null) return loadingIcon();
+        if (docsDiscRes.isEmpty) return noItem();
         return ListView(
-          children: docsDiskRes.map((e) => discResultItemMaker(e)).toList(),
+          children: docsDiscRes.map((e) => discResultItemMaker(e)).toList(),
         );
       });
 }

@@ -94,6 +94,10 @@ class MyHomePage extends StatelessWidget {
       builder: (context, snapshot) {
         final ag = snapshot.data?.data()?["ag"] as String? ?? defaultDevId;
         final refDev = db.collection("d").doc(ag);
+        final refSnmpDevList = refDev
+            .collection("discovery")
+            .orderBy("time", descending: true)
+            .limit(10);
         return Scaffold(
             appBar: appBar(context, ag, refDev),
 //            floatingActionButton: FloatingActionButton(
@@ -103,6 +107,7 @@ class MyHomePage extends StatelessWidget {
               child: Column(children: [
                 agentNameField(refApp),
                 discSettingField(refDev),
+                SizedBox(child: listMonitor(refSnmpDevList), height: 100),
                 Expanded(child: RealtimeMericsWidget(refDev)),
                 //Expanded(child: DetectedDevicesWidget(refDev)),
               ]),
