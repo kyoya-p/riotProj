@@ -63,8 +63,11 @@ Widget listMonitor(Query docRefResult) {
 }
 
 Widget errorList(Map<dynamic, String> vbm) {
-  var k = vbm as Map<List<int>, String>;
-  return Text("--------${k}");
+  var k = Map.fromIterable(vbm.entries.map((e) {
+    print(e.key);
+    return MapEntry(e.key as List<int>, e.value);
+  }));
+  return Text("--------${1}");
 }
 
 Card discResultItemMaker(DiscoveryRes e) => Card(
