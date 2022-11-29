@@ -62,8 +62,9 @@ Widget listMonitor(Query docRefResult) {
       });
 }
 
-Widget errorList(vbm) {
-  return Text("--------${vbm}");
+Widget errorList(Map<dynamic, String> vbm) {
+  var k = vbm as Map<List<int>, String>;
+  return Text("--------${k}");
 }
 
 Card discResultItemMaker(DiscoveryRes e) => Card(
@@ -74,7 +75,7 @@ Card discResultItemMaker(DiscoveryRes e) => Card(
       SizedBox(width: 120, child: Text(e.ip, maxLines: 1)),
       Expanded(child: Text(e.vbs[0], maxLines: 1)),
       SizedBox(
-        width: 180,
+        //width: 180,
         child: errorList(e.vbm),
       ),
     ]));
