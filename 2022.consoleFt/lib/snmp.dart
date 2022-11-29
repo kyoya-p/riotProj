@@ -62,6 +62,10 @@ Widget listMonitor(Query docRefResult) {
       });
 }
 
+Widget errorList(vbm) {
+  return Text("--------${vbm}");
+}
+
 Card discResultItemMaker(DiscoveryRes e) => Card(
         child: Row(children: [
       SizedBox(
@@ -69,6 +73,10 @@ Card discResultItemMaker(DiscoveryRes e) => Card(
           child: Text(e.time.toDate().toLocal().toString(), maxLines: 1)),
       SizedBox(width: 120, child: Text(e.ip, maxLines: 1)),
       Expanded(child: Text(e.vbs[0], maxLines: 1)),
+      SizedBox(
+        width: 180,
+        child: errorList(e.vbm),
+      ),
     ]));
 
 class DetectedDevicesPage extends StatelessWidget {
