@@ -125,13 +125,12 @@ class RealtimeMericsWidget extends StatelessWidget {
           chartSnmpScan(List<SnmpLog> snmpLogs) => charts.TimeSeriesChart(
                 [
                   charts.Series<SnmpLog, DateTime>(
-                    id: "scan/s",
+                    id: "scan/min",
                     domainFn: (e, _) => e.time.toDate(),
                     measureFn: (_, i) {
                       if (i == snmpLogs.length - 1) return null;
                       return (snmpLogs[i as int].scanCount -
-                              snmpLogs[i + 1].scanCount) /
-                          60;
+                          snmpLogs[i + 1].scanCount);
                     },
                     data: snmpLogs,
                   ),

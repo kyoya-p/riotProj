@@ -67,13 +67,12 @@ Widget listMonitor(Query docRefResult) {
 
 Iterable<int> oidToSeq(String oid) => oid.split(".").map((e) => int.parse(e));
 Widget errorList(Map<String, String> vbm) {
-  final vbm2 = Map.fromEntries(
-      vbm.entries.map((e) => MapEntry(oidToSeq(e.key).toList(), e.value)));
-  final hrPrtErr = vbm2[[1, 3, 6, 1, 2, 1, 25, 3, 5, 1, 2, 1]]!;
+  final hrPrtErr = vbm[hrPrinterDetectedErrorState + ".1"];
+  if (hrPrtErr == null) return const Text("");
   final hrPrtErrByte = utf8.encode(hrPrtErr);
-  final flags = hrPrtErrByte[0].toRadixString(2);
-
-  return Text("----${hrPrtErrByte.length} ${flags}");
+  final flags0 = hrPrtErrByte[0].toRadixString(2).padLeft(8, '0');
+  final flags1 = hrPrtErrByte[1].toRadixString(2).padLeft(8, '0');
+  return Text("${flags0}_$flags1");
 }
 
 Card discResultItemMaker(DiscoveryRes e) => Card(
