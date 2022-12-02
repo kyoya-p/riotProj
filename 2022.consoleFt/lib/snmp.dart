@@ -1,3 +1,6 @@
+import 'dart:html';
+import 'dart:convert';
+
 import 'package:console_ft/log_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -62,13 +65,15 @@ Widget listMonitor(Query docRefResult) {
       });
 }
 
-Widget errorList(Map<dynamic, String> vbm) {
-  // var k = Map.fromIterable(vbm.entries.map((e) {
-  //   print(e.key);
-  //   return MapEntry(e.key as List<int>, e.value);
-  // }));
-  forEach ( e in vbm) {}
-  return Text("----${vbm.keys}");
+Iterable<int> oidToSeq(String oid) => oid.split(".").map((e) => int.parse(e));
+Widget errorList(Map<String, String> vbm) {
+  final vbm2 = Map.fromEntries(
+      vbm.entries.map((e) => MapEntry(oidToSeq(e.key).toList(), e.value)));
+  final hrPrtErr = vbm2[[1, 3, 6, 1, 2, 1, 25, 3, 5, 1, 2, 1]]!;
+  final hrPrtErrByte = utf8.encode(hrPrtErr);
+  final flags = hrPrtErrByte[0].toRadixString(2);
+
+  return Text("----${hrPrtErrByte.length} ${flags}");
 }
 
 Card discResultItemMaker(DiscoveryRes e) => Card(

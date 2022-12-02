@@ -107,5 +107,5 @@ class DiscoveryRes {
   List<String> get vbs =>
       (raw["vbs"] as List<dynamic>).map((e) => e as String).toList();
 
-  Map<dynamic, String> get vbm => Map<dynamic, String>.from(raw["vbm"]);
+  Map<String, String> get vbm => Map<String, String>.from(raw["vbm"]);
 }
