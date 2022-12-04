@@ -1,4 +1,4 @@
-import 'dart:html';
+import 'dart:collection';
 import 'dart:convert';
 
 import 'package:console_ft/log_viewer.dart';
@@ -65,6 +65,23 @@ Widget listMonitor(Query docRefResult) {
       });
 }
 
+Object addVbToMap(Map<int, dynamic> map, List<int> oid, String v) {
+  final key = oid[0];
+  if (oid.length == 1) {
+    map[key] = v;
+  } else {
+    map[key] = addVbToMap(map[key] ?? {}, oid.sublist(1), v);
+  }
+  return map;
+}
+
+Map<int, dynamic> addVbmToMap(Map<int, dynamic> map, Map<String, String> vbm) {
+  for (final e in vbm.entries) {
+    addVbToMap(map, oidToSeq(e.key).toList(), e.value);
+  }
+  return map;
+}
+
 Iterable<int> oidToSeq(String oid) => oid.split(".").map((e) => int.parse(e));
 Widget errorList(Map<String, String> vbm) {
   final hrPrtErr = vbm[hrPrinterDetectedErrorState + ".1"];
@@ -72,6 +89,9 @@ Widget errorList(Map<String, String> vbm) {
   final hrPrtErrByte = utf8.encode(hrPrtErr);
   final flags0 = hrPrtErrByte[0].toRadixString(2).padLeft(8, '0');
   final flags1 = hrPrtErrByte[1].toRadixString(2).padLeft(8, '0');
+  final vbl = addVbmToMap({}, vbm);
+  final n = vbl.hrPrinterDetectedErrorState();
+  print(n.firstDescendantsEntry());
   return Text("${flags0}_$flags1");
 }
 
@@ -134,8 +154,26 @@ List<Widget> errorIcons(int hrPrinterDetectedErrorState) {
 const hrDeviceDescr = "1.3.6.1.2.1.25.3.2.1.3";
 const hrDeviceStatus = "1.3.6.1.2.1.25.3.2.1.5";
 const hrDeviceErrors = "1.3.6.1.2.1.25.3.2.1.6";
+const hrPrinterDetectedErrorState = "1.3.6.1.2.1.25.3.5.1.2";
 const sysDescr = "1.3.6.1.2.1.1.1";
 const sysObjectID = "1.3.6.1.2.1.1.2";
 const sysName = "1.3.6.1.2.1.1.5";
 const sysLocation = "1.3.6.1.2.1.1.6";
-const hrPrinterDetectedErrorState = "1.3.6.1.2.1.25.3.5.1.2";
+
+extension VBLExt on dynamic {
+  dynamic mib2() => this[1][3][6][1][2][1];
+  dynamic hrPrinterDetectedErrorState() => this.mib2()[25][3][5][1][2];
+
+  MapEntry<int, dynamic> firstChildEntry() =>
+      SplayTreeMap<int, dynamic>.from(this as Map).entries.first;
+  dynamic firstDescendantsEntry() {
+    if (this.value is String) {
+      return this;
+    } else if (this.value is Map) {
+      return this.firstChildEntry().value.firstDescendantsEntry();
+    }
+  }
+
+  dynamic isNode() => this is Map;
+  dynamic isLeaf() => this is String;
+}
