@@ -107,7 +107,8 @@ class MyHomePage extends StatelessWidget {
               child: Column(children: [
                 agentNameField(refApp),
                 discSettingField(refDev),
-                SizedBox(child: listMonitor(refSnmpDevList), height: 100),
+                SizedBox(
+                    child: listMonitor(context, refSnmpDevList), height: 100),
                 Expanded(child: RealtimeMericsWidget(refDev)),
                 //Expanded(child: DetectedDevicesWidget(refDev)),
               ]),
