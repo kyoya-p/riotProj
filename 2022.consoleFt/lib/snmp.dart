@@ -1,9 +1,11 @@
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:html';
 
 import 'package:console_ft/log_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'main.dart';
 import 'types.dart';
@@ -63,7 +65,7 @@ Widget discSettingField(DocumentReference<Map<String, dynamic>> docRefAg) {
 }
 
 // SNMP検索結果表示(リアルタイム更新)Widget
-Widget listMonitor(Query docRefResult) {
+Widget listMonitor(BuildContext context, Query docRefResult) {
   return StreamBuilder<QuerySnapshot>(
       stream: docRefResult.snapshots(),
       builder: (context, snapshot) {
@@ -72,7 +74,8 @@ Widget listMonitor(Query docRefResult) {
         if (docsDiscRes == null) return loadingIcon();
         if (docsDiscRes.isEmpty) return noItem();
         return ListView(
-          children: docsDiscRes.map((e) => discResultItemMaker(e)).toList(),
+          children:
+              docsDiscRes.map((e) => discResultItemMaker(context, e)).toList(),
         );
       });
 }
@@ -91,10 +94,10 @@ Widget errorList(Map<String, String> vbm) {
         .map((e) => e.toRadixString(2).padLeft(8, "0"))
         .join("_");
   }
-  return Text("$status");
+  return Text(status);
 }
 
-Card discResultItemMaker(DiscoveryRes e) => Card(
+Card discResultItemMaker(BuildContext context, DiscoveryRes e) => Card(
         child: Row(children: [
       SizedBox(
           width: 180,
@@ -103,7 +106,50 @@ Card discResultItemMaker(DiscoveryRes e) => Card(
       Expanded(child: Text(e.vbs[0], maxLines: 1)),
       SizedBox(
         //width: 180,
-        child: errorList(e.vbm),
+        child: InkWell(
+            onTap: () => showDialog(
+                context: context,
+                builder: (buildContext) => AlertDialog(
+                      title: Text("SNMP Status"),
+                      content: Text(
+                        """hrDeviceStatus/hrPrinterStatus/hrPrinterDetectedErrorState
+
+hrDeviceStatus:
+- unknown(1)
+- running(2)
+- warning(3)
+- testing(4)
+- down(5)
+
+hrPrinterStatus:
+- other(1)
+- unknown(2)
+- idle(3)
+- printing(4)
+- warmup(5)
+
+hrPrinterDetectedErrorState:
+- lowPaper(bit0)                 10000000_00000000
+- noPaper(bit1)                  01000000_00000000
+- lowToner(bit2)                 00100000_00000000
+- noToner(bit3)                  00010000_00000000
+- doorOpen(bit4)                 00001000_00000000
+- jammed(bit5)                   00000100_00000000
+- offline(bit6)                  00000010_00000000
+- serviceRequested(bit7)         00000001_00000000
+
+- inputTrayMissing(bit8)         00000000_10000000
+- outputTrayMissing(bit9)        00000000_01000000
+- markerSupplyMissing(bit10)     00000000_00100000
+- outputNearFull(bit11)          00000000_00010000
+- outputFull(bit12)              00000000_00001000
+- inputTrayEmpty(bit13)          00000000_00000100
+- overduePreventMaint(bit14)     00000000_00000010
+""",
+                        style: GoogleFonts.courierPrime(),
+                      ),
+                    )),
+            child: errorList(e.vbm)),
       ),
     ]));
 
@@ -131,7 +177,7 @@ class DetectedDevicesWidget extends StatelessWidget {
       refvRes,
       (context, vTgItem, vSrc, index) {
         vSrc.map((e) => DiscoveryRes(e.data())).forEach((e) {
-          vTgItem.add(discResultItemMaker(e));
+          vTgItem.add(discResultItemMaker(context, e));
         });
       },
     );

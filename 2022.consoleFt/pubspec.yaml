@@ -30,6 +30,7 @@ dependencies:
   flutter:
     sdk: flutter
   collection: 1.16.0        # https://pub.dev/packages/collection
+  google_fonts: 2.2.0       # https://fonts.google.com/?query=mono
 
   firebase_core: 1.15.0     # https://pub.dev/packages/firebase_core
   cloud_firestore: 3.2.1   # https://pub.dev/packages/cloud_firestore
