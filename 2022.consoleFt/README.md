@@ -43,7 +43,7 @@ flutter build web
 firebase deploy
 ```
 
-```:Preview版としてデプロイ
+```:Preview版としてクラウドにデプロイ
 firebase hosting:channel:deploy preview_name
 ```
 Note: Previewはデフォルト1weekで停止
