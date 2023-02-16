@@ -116,7 +116,7 @@ class MyHomePage extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: Column(children: [
                 agentNameField(refApp),
-                discSettingField(refDev),
+                Scrollbar(child: discSettingField(refDev)),
                 SizedBox(
                     child: listMonitor(context, refSnmpDevList), height: 100),
                 Expanded(child: RealtimeMericsWidget(refDev)),

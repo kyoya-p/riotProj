@@ -16,17 +16,22 @@ class LogsPage extends StatelessWidget {
         refDev.collection("reports").orderBy("time", descending: true);
     return Scaffold(
         appBar: AppBar(title: Text('${refDev.id} - Logs')),
-        body: StreamBuilder<QuerySnapshot>(
-            stream: refLogs.snapshots(),
-            builder: (context, snapshots) {
-              final reports = snapshots.data?.docs.map((e) => Log(e.data()));
-              final vmlogs = reports?.expand((log) => log.vmlogs).toList();
-              if (vmlogs == null || vmlogs.isEmpty) return noItem();
-              return PrograssiveListView2(
-                refLogs,
-                appendItems,
-              );
-            }));
+        body: Scrollbar(
+          child: SingleChildScrollView(
+            child: StreamBuilder<QuerySnapshot>(
+                stream: refLogs.snapshots(),
+                builder: (context, snapshots) {
+                  final reports =
+                      snapshots.data?.docs.map((e) => Log(e.data()));
+                  final vmlogs = reports?.expand((log) => log.vmlogs).toList();
+                  if (vmlogs == null || vmlogs.isEmpty) return noItem();
+                  return PrograssiveListView2(
+                    refLogs,
+                    appendItems,
+                  );
+                }),
+          ),
+        ));
   }
 
   static ProgressiveListViewAppendItem appendItems =
@@ -79,24 +84,26 @@ class _PrograssiveListView1State<T> extends State<PrograssiveListView1<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(itemBuilder: (context, index) {
-      if (index < vSnapshotItem.length) {
-        return widget.itemBuilder(context, vSnapshotItem, index);
-      } else if (index > vSnapshotItem.length) {
-        return const Text("");
-      }
-      qrItems.limit(20).get().then((v) {
-        if (mounted && v.size > 0) {
-          setState(() {
-            vSnapshotItem.addAll(v.docs);
-            qrItems = qrItems.startAfterDocument(v.docs.last);
-          });
+    return Scrollbar(
+      child: ListView.builder(itemBuilder: (context, index) {
+        if (index < vSnapshotItem.length) {
+          return widget.itemBuilder(context, vSnapshotItem, index);
+        } else if (index > vSnapshotItem.length) {
+          return const Text("");
         }
-      });
-      return Card(
-          color: Theme.of(context).disabledColor,
-          child: const Center(child: Text("End of Data")));
-    });
+        qrItems.limit(20).get().then((v) {
+          if (mounted && v.size > 0) {
+            setState(() {
+              vSnapshotItem.addAll(v.docs);
+              qrItems = qrItems.startAfterDocument(v.docs.last);
+            });
+          }
+        });
+        return Card(
+            color: Theme.of(context).disabledColor,
+            child: const Center(child: Text("End of Data")));
+      }),
+    );
   }
 }
 
