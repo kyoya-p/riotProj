@@ -19,7 +19,7 @@ flutter pub run build_runner build // freezed等でコード生成が必要な�
 or
 flutter build web
 ```
-or VSCodeなら「ビルドタスクの実行」 (Ctrl+Shift+B)
+or VSCodeのFlutterプラグインなら「ビルドタスクの実行」 (Ctrl+Shift+B)
 
 `build/web` 以下に生成される
 
@@ -29,7 +29,7 @@ flutter run -d chrome
 or 
 flutter run --release -d chrome
 ```
-or VSCodeなら「デバッグ実行」(F5)
+or VSCodeのFlutterプラグインなら「デバッグ実行」(F5)
 
 ## テストのためローカルデプロイ
 ```

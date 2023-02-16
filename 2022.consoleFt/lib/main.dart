@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'clock.dart';
+import 'document_editor.dart';
 import 'firebase_options.dart';
 import 'realtime_chart.dart';
 import 'snmp.dart';
@@ -66,6 +67,14 @@ class MyHomePage extends StatelessWidget {
                 MaterialPageRoute(builder: (context) => LogsPage(refDev)));
           },
           child: const Text("Vmstat Logs"));
+  PopupMenuItem<Function> menuItem4(
+          BuildContext context, DocumentReference refDev) =>
+      PopupMenuItem(
+          value: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => DocumentPage(refDev)));
+          },
+          child: const Text("Document Editor"));
 
   AppBar appBar(BuildContext context, String ag, DocumentReference refDev) {
     return AppBar(
@@ -80,6 +89,7 @@ class MyHomePage extends StatelessWidget {
               menuItem1(context, refDev),
               menuItem2(context, refDev),
               menuItem3(context, refDev),
+              menuItem4(context, refDev),
             ];
           },
         ),

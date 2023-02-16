@@ -29,12 +29,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  collection: 1.16.0        # https://pub.dev/packages/collection
-  google_fonts: 2.2.0       # https://fonts.google.com/?query=mono
+  collection: ^1.17.0        # https://pub.dev/packages/collection
+  google_fonts: ^4.0.3       # https://fonts.google.com/?query=mono
 
-  firebase_core: 1.15.0     # https://pub.dev/packages/firebase_core
-  cloud_firestore: 3.2.1   # https://pub.dev/packages/cloud_firestore
-  firebase_auth: 3.3.18     # https://pub.dev/packages/firebase_auth
+  firebase_core: ^2.6.0     # https://pub.dev/packages/firebase_core
+  cloud_firestore: ^4.4.1   # https://pub.dev/packages/cloud_firestore
+  firebase_auth: ^4.2.7     # https://pub.dev/packages/firebase_auth
   charts_flutter: 0.12.0    # https://pub.dev/packages/charts_flutter
 
   # The following adds the Cupertino Icons font to your application.
@@ -51,10 +51,10 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^1.0.0
-  freezed: 2.0.3+1
-  build_runner: 2.1.11
-  json_serializable: 6.2.0 # https://pub.dev/packages/json_serializable
+  flutter_lints: ^2.0.1
+  freezed: ^2.3.2
+  build_runner: ^2.3.3
+  json_serializable: ^6.6.1 # https://pub.dev/packages/json_serializable
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
