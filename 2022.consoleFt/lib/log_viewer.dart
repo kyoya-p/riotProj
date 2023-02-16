@@ -16,22 +16,17 @@ class LogsPage extends StatelessWidget {
         refDev.collection("reports").orderBy("time", descending: true);
     return Scaffold(
         appBar: AppBar(title: Text('${refDev.id} - Logs')),
-        body: Scrollbar(
-          child: SingleChildScrollView(
-            child: StreamBuilder<QuerySnapshot>(
-                stream: refLogs.snapshots(),
-                builder: (context, snapshots) {
-                  final reports =
-                      snapshots.data?.docs.map((e) => Log(e.data()));
-                  final vmlogs = reports?.expand((log) => log.vmlogs).toList();
-                  if (vmlogs == null || vmlogs.isEmpty) return noItem();
-                  return PrograssiveListView2(
-                    refLogs,
-                    appendItems,
-                  );
-                }),
-          ),
-        ));
+        body: StreamBuilder<QuerySnapshot>(
+            stream: refLogs.snapshots(),
+            builder: (context, snapshots) {
+              final reports = snapshots.data?.docs.map((e) => Log(e.data()));
+              final vmlogs = reports?.expand((log) => log.vmlogs).toList();
+              if (vmlogs == null || vmlogs.isEmpty) return noItem();
+              return PrograssiveListView2(
+                refLogs,
+                appendItems,
+              );
+            }));
   }
 
   static ProgressiveListViewAppendItem appendItems =
@@ -84,8 +79,8 @@ class _PrograssiveListView1State<T> extends State<PrograssiveListView1<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return Scrollbar(
-      child: ListView.builder(itemBuilder: (context, index) {
+    return ListView.builder(
+      itemBuilder: (context, index) {
         if (index < vSnapshotItem.length) {
           return widget.itemBuilder(context, vSnapshotItem, index);
         } else if (index > vSnapshotItem.length) {
@@ -102,7 +97,7 @@ class _PrograssiveListView1State<T> extends State<PrograssiveListView1<T>> {
         return Card(
             color: Theme.of(context).disabledColor,
             child: const Center(child: Text("End of Data")));
-      }),
+      },
     );
   }
 }
