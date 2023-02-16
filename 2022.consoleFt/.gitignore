@@ -1,5 +1,9 @@
 /.firebase/
 /flutter/
+/build/
+/.idea/
+/.dart_tool/
+/node_modules/
 
 # Miscellaneous
 *.class]
