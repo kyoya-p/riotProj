@@ -32,7 +32,7 @@ dependencies:
   collection: ^1.17.0        # https://pub.dev/packages/collection
   google_fonts: ^4.0.3       # https://fonts.google.com/?query=mono
 
-  firebase_core: ^2.6.0     # https://pub.dev/packages/firebase_core
+  firebase_core: ^2.6.1     # https://pub.dev/packages/firebase_core
   cloud_firestore: ^4.4.1   # https://pub.dev/packages/cloud_firestore
   firebase_auth: ^4.2.7     # https://pub.dev/packages/firebase_auth
   charts_flutter: 0.12.0    # https://pub.dev/packages/charts_flutter
