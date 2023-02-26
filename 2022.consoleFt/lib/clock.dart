@@ -4,8 +4,9 @@ import 'main.dart';
 late final int localTimeOffset;
 
 initializeServerClock() async {
-  final refTime =
-      await db.collection("d").add({"time": FieldValue.serverTimestamp()});
+  final refTime = await refTmp
+      .collection("time")
+      .add({"time": FieldValue.serverTimestamp()});
   final ssTime = await refTime.get();
   final docTime = ssTime.data();
   if (docTime == null) throw Exception("Error: initializeServerClock()");

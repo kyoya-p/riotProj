@@ -5,6 +5,8 @@ class Application {
   late Map<String, dynamic> raw;
   String? get ag => raw["ag"] as String?;
   set ag(String? s) => raw["ag"] = s;
+  // Timestamp? get time => raw["time"] as Timestamp?;
+  // set time(Timestamp? s) => raw["time"] = s;
 }
 
 // d/*/reports/*
@@ -101,11 +103,11 @@ class SnmpMetrics {
 class DiscoveryRes {
   DiscoveryRes(this.raw);
   dynamic raw;
-  String get id => raw["id"] as String? ?? "undefined";
-  String get ip => raw["ip"] as String;
-  Timestamp get time => raw["time"] as Timestamp;
-  List<String> get vbs =>
+  String? get id => raw["id"] as String?;
+  String? get ip => raw["ip"] as String?;
+  int get time => raw["time"] as int;
+  List<String>? get vbs =>
       (raw["vbs"] as List<dynamic>).map((e) => e as String).toList();
 
-  Map<String, String> get vbm => Map<String, String>.from(raw["vbm"]);
+  Map<String, String>? get vbm => Map<String, String>.from(raw["vbm"]);
 }

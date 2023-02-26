@@ -1,7 +1,7 @@
 import 'dart:collection';
 import 'dart:convert';
-import 'dart:html';
 
+import 'package:console_ft/document_editor.dart';
 import 'package:console_ft/log_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -69,13 +69,14 @@ Widget listMonitor(BuildContext context, Query docRefResult) {
   return StreamBuilder<QuerySnapshot>(
       stream: docRefResult.snapshots(),
       builder: (context, snapshot) {
-        final docsDiscRes =
-            snapshot.data?.docs.map((e) => DiscoveryRes(e.data())).toList();
-        if (docsDiscRes == null) return loadingIcon();
-        if (docsDiscRes.isEmpty) return noItem();
+        if (snapshot.data == null) return loadingIcon();
+        if (snapshot.data!.docs.isEmpty) return noItem();
         return ListView(
           children:
-              docsDiscRes.map((e) => discResultItemMaker(context, e)).toList(),
+              // docsDiscRes.map((e) => discResultItemMaker(context, e)).toList(),
+              snapshot.data!.docs
+                  .map((e) => discResultItemMaker(context, e))
+                  .toList(),
         );
       });
 }
@@ -97,22 +98,46 @@ Widget errorList(Map<String, String> vbm) {
   return Text(status);
 }
 
-Card discResultItemMaker(BuildContext context, DiscoveryRes e) => Card(
+Widget discResultItemMaker(BuildContext context, QueryDocumentSnapshot e) {
+  final d = DiscoveryRes(e.data());
+  return InkWell(
+    child: Card(
         child: Row(children: [
       SizedBox(
           width: 180,
-          child: Text(e.time.toDate().toLocal().toString(), maxLines: 1)),
-      SizedBox(width: 120, child: Text(e.ip, maxLines: 1)),
-      Expanded(child: Text(e.vbs[0], maxLines: 1)),
-      SizedBox(
-        //width: 180,
-        child: InkWell(
-            onTap: () => showDialog(
-                context: context,
-                builder: (buildContext) => AlertDialog(
-                      title: Text("SNMP Status"),
-                      content: Text(
-                        """hrDeviceStatus/hrPrinterStatus/hrPrinterDetectedErrorState
+          child: Text(
+              DateTime.fromMillisecondsSinceEpoch(d.time).toLocal().toString(),
+              maxLines: 1)),
+      if (d.id != null)
+        SizedBox(width: 240, child: Text("${d.id}", maxLines: 1)),
+      if (d.ip != null)
+        SizedBox(width: 120, child: Text("${d.ip}", maxLines: 1)),
+      //if (e.vbs != null) Expanded(child: Text("${e.vbs![0]}", maxLines: 1)),
+      if (false)
+        SizedBox(
+          //width: 180,
+          child: InkWell(
+              onTap: () => showDialog(
+                  context: context,
+                  builder: (buildContext) => AlertDialog(
+                        title: Text("SNMP Status"),
+                        content: Text(
+                          snmpStatusInfo,
+                          style: GoogleFonts.courierPrime(),
+                        ),
+                      )),
+              child: errorList(d.vbm ?? {})),
+        ),
+    ])),
+    onTap: () {
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => DocumentPage(e.reference)));
+    },
+  );
+}
+
+const snmpStatusInfo =
+    """hrDeviceStatus/hrPrinterStatus/hrPrinterDetectedErrorState
 
 hrDeviceStatus:
 - unknown(1)
@@ -120,7 +145,7 @@ hrDeviceStatus:
 - warning(3)
 - testing(4)
 - down(5)
-
+  
 hrPrinterStatus:
 - other(1)
 - unknown(2)
@@ -137,7 +162,7 @@ hrPrinterDetectedErrorState:
 - jammed(bit5)                   00000100_00000000
 - offline(bit6)                  00000010_00000000
 - serviceRequested(bit7)         00000001_00000000
-
+  
 - inputTrayMissing(bit8)         00000000_10000000
 - outputTrayMissing(bit9)        00000000_01000000
 - markerSupplyMissing(bit10)     00000000_00100000
@@ -145,13 +170,7 @@ hrPrinterDetectedErrorState:
 - outputFull(bit12)              00000000_00001000
 - inputTrayEmpty(bit13)          00000000_00000100
 - overduePreventMaint(bit14)     00000000_00000010
-""",
-                        style: GoogleFonts.courierPrime(),
-                      ),
-                    )),
-            child: errorList(e.vbm)),
-      ),
-    ]));
+""";
 
 class DetectedDevicesPage extends StatelessWidget {
   const DetectedDevicesPage(this.refDev, {Key? key}) : super(key: key);
@@ -176,9 +195,7 @@ class DetectedDevicesWidget extends StatelessWidget {
     return PrograssiveListView2<DiscoveryRes>(
       refvRes,
       (context, vTgItem, vSrc, index) {
-        vSrc.map((e) => DiscoveryRes(e.data())).forEach((e) {
-          vTgItem.add(discResultItemMaker(context, e));
-        });
+        vSrc.forEach((e) => vTgItem.add(discResultItemMaker(context, e)));
       },
     );
   }

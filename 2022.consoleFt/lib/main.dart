@@ -12,10 +12,11 @@ import 'types.dart';
 import 'log_viewer.dart';
 
 final db = FirebaseFirestore.instance;
-final refApp = db.collection("d").doc();
+final refRoot = db.collection("d");
+final refTmp = refRoot.doc("0-tmp");
+final refApp = refTmp.collection("app").doc();
 
 const defaultDevId = "default";
-//const defaultDevId = "sc";
 
 Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -103,7 +104,7 @@ class MyHomePage extends StatelessWidget {
       stream: refApp.snapshots(),
       builder: (context, snapshot) {
         final ag = snapshot.data?.data()?["ag"] as String? ?? defaultDevId;
-        final refDev = db.collection("d").doc(ag);
+        final refDev = refRoot.doc(ag);
         final refSnmpDevList = refDev
             .collection("discovery")
             .orderBy("time", descending: true)
