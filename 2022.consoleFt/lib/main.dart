@@ -55,7 +55,7 @@ class MyHomePage extends StatelessWidget {
           BuildContext context, DocumentReference refDev) =>
       PopupMenuItem(
           value: () async {
-            for (final e in (await refDev.collection("discovery").get()).docs) {
+            for (final e in (await refDev.collection("devices").get()).docs) {
               e.reference.delete();
             }
           }, // "clear",
@@ -106,7 +106,7 @@ class MyHomePage extends StatelessWidget {
         final ag = snapshot.data?.data()?["ag"] as String? ?? defaultDevId;
         final refDev = refRoot.doc(ag);
         final refSnmpDevList = refDev
-            .collection("discovery")
+            .collection("devices")
             .orderBy("time", descending: true)
             .limit(10);
         return Scaffold(

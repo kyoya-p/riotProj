@@ -190,7 +190,7 @@ class DetectedDevicesWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final refvRes = refDev
-        .collection("discovery")
+        .collection("devices")
         .orderBy("time", descending: true); //.limit(20);
     return PrograssiveListView2<DiscoveryRes>(
       refvRes,
