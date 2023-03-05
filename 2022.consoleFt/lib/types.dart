@@ -18,6 +18,8 @@ class Log {
       VmLog.fromList(raw["vmlogs"] as Iterable<dynamic>);
   Iterable<SnmpLog> get snmpLogs =>
       SnmpLog.fromList(raw["snmpLogs"] as Iterable<dynamic>);
+  Iterable<DebugLog> get debugLogs =>
+      DebugLog.fromList(raw["debugLog"] as Iterable<dynamic>);
 }
 
 class VmLog {
@@ -81,6 +83,22 @@ class SnmpLog {
   Timestamp get time => raw["time"] as Timestamp;
   int get scanCount => raw["scanCount"] as int;
   int get detectCount => raw["detectCount"] as int;
+}
+
+class DebugLog {
+  DebugLog(this.raw);
+  dynamic raw;
+
+  static Iterable<DebugLog> fromList(Iterable<dynamic> v) => v.expand((e) {
+        try {
+          return <DebugLog>[DebugLog(e)];
+        } catch (ex, _) {
+          return <DebugLog>[];
+        }
+      });
+
+  Timestamp get time => raw["time"] as Timestamp;
+  String get log => raw["log"] as String;
 }
 
 class SnmpScanner {

@@ -2,7 +2,7 @@ import 'dart:collection';
 import 'dart:convert';
 
 import 'package:console_ft/document_editor.dart';
-import 'package:console_ft/log_viewer.dart';
+import 'package:console_ft/vmlog_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -23,21 +23,22 @@ String escaped(String s) {
 DocumentReference<Map<String, dynamic>>? refApp;
 
 // SNMP検索条件設定Widget
-Widget discSettingField(DocumentReference<Map<String, dynamic>> docRefAg) {
-  return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+Widget discSettingField(DocumentReference docRefAg) {
+  return StreamBuilder<DocumentSnapshot>(
       stream: docRefAg.snapshots(),
       builder: (context, snapshot) {
-        final docAg = SnmpScanner(snapshot.data?.data() ?? {});
-        final tecIpSpec = TextEditingController(text: docAg.ipSpec);
-        final tecInterval = TextEditingController(text: '${docAg.interval}');
+        final docAg = snapshot.data?.data() as Map<String, dynamic>;
+        final scanner = SnmpScanner(docAg);
+        final tecIpSpec = TextEditingController(text: scanner.ipSpec);
+        final tecInterval = TextEditingController(text: '${scanner.interval}');
         void updateDoc() {
-          docAg.ipSpec = tecIpSpec.text;
-          docAg.interval = int.parse(tecInterval.text);
-          docRefAg.set(docAg.map);
+          scanner.ipSpec = tecIpSpec.text;
+          scanner.interval = int.parse(tecInterval.text);
+          docRefAg.set(scanner.map);
         }
 
         return Row(
-          mainAxisSize: MainAxisSize.max,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Expanded(
               child: TextField(

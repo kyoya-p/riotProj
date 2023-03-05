@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'clock.dart';
+import 'debuglog_viewer.dart';
 import 'document_editor.dart';
 import 'firebase_options.dart';
+import 'fss_controller.dart';
 import 'realtime_chart.dart';
 import 'snmp.dart';
 import 'types.dart';
-import 'log_viewer.dart';
+import 'vmlog_viewer.dart';
 
 final db = FirebaseFirestore.instance;
 final refRoot = db.collection("d");
@@ -30,9 +32,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Console',
+      title: 'Dummy Device Dashboard',
       theme: ThemeData(primarySwatch: Colors.blueGrey),
-      home: const MyHomePage(title: 'Dashboard'),
+      home: const MyHomePage(title: 'Dummy Device Dashboard'),
     );
   }
 }
@@ -41,6 +43,14 @@ class MyHomePage extends StatelessWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
   final String title;
 
+  PopupMenuItem<Function> menuDebugLog(
+          BuildContext context, DocumentReference refDev) =>
+      PopupMenuItem(
+          value: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => DebugLogsPage(refDev)));
+          },
+          child: const Text("Debug Log"));
   PopupMenuItem<Function> menuItem1(
           BuildContext context, DocumentReference refDev) =>
       PopupMenuItem(
@@ -58,7 +68,7 @@ class MyHomePage extends StatelessWidget {
             for (final e in (await refDev.collection("devices").get()).docs) {
               e.reference.delete();
             }
-          }, // "clear",
+          },
           child: const Text("Clear detected devices"));
   PopupMenuItem<Function> menuItem3(
           BuildContext context, DocumentReference refDev) =>
@@ -79,7 +89,7 @@ class MyHomePage extends StatelessWidget {
 
   AppBar appBar(BuildContext context, String ag, DocumentReference refDev) {
     return AppBar(
-      title: Text("$ag - Dashboard"),
+      title: Text("$ag - $title"),
       actions: [
         aliveIndicator(context, refDev),
         PopupMenuButton<Function>(
@@ -87,6 +97,7 @@ class MyHomePage extends StatelessWidget {
           onSelected: (Function f) => f(),
           itemBuilder: (BuildContext context) {
             return [
+              menuDebugLog(context, refDev),
               menuItem1(context, refDev),
               menuItem2(context, refDev),
               menuItem3(context, refDev),
@@ -105,10 +116,7 @@ class MyHomePage extends StatelessWidget {
       builder: (context, snapshot) {
         final ag = snapshot.data?.data()?["ag"] as String? ?? defaultDevId;
         final refDev = refRoot.doc(ag);
-        final refSnmpDevList = refDev
-            .collection("devices")
-            .orderBy("time", descending: true)
-            .limit(10);
+
         return Scaffold(
             appBar: appBar(context, ag, refDev),
 //            floatingActionButton: FloatingActionButton(
@@ -117,9 +125,7 @@ class MyHomePage extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: Column(children: [
                 agentNameField(refApp),
-                Scrollbar(child: discSettingField(refDev)),
-                SizedBox(
-                    child: listMonitor(context, refSnmpDevList), height: 100),
+                consoleField(context, refDev),
                 Expanded(child: RealtimeMericsWidget(refDev)),
                 //Expanded(child: DetectedDevicesWidget(refDev)),
               ]),
@@ -179,3 +185,28 @@ Widget agentNameField(DocumentReference<Map<String, dynamic>> refApp) {
 
 Widget loadingIcon() => const Center(child: CircularProgressIndicator());
 Widget noItem() => const Center(child: Text("No item"));
+
+Widget consoleField(BuildContext context, DocumentReference refDev) {
+  return StreamBuilder<DocumentSnapshot>(
+      stream: refDev.snapshots(),
+      builder: (context, snapshots) {
+        final dev = snapshots.data?.data() as Map<String, dynamic>?;
+        if (dev == null) return noItem();
+
+        final refSnmpDevList = refDev
+            .collection("devices")
+            .orderBy("time", descending: true)
+            .limit(10);
+        final Widget listDevs =
+            SizedBox(height: 150, child: listMonitor(context, refSnmpDevList));
+
+        return Column(
+          // mainAxisSize: MainAxisSize.min,
+          children: [
+            if (dev["ipSpec"] != null) discSettingField(refDev),
+            if (dev["ipSpec"] != null) listDevs,
+            if (dev["fssSpec"] != null) fssControlerField(context, refDev),
+          ],
+        );
+      });
+}
