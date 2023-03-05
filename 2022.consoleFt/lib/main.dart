@@ -1,3 +1,4 @@
+import 'dart:html';
 import 'dart:async';
 import 'package:firebase_core/firebase_core.dart' show Firebase;
 import 'package:flutter/material.dart';
@@ -18,7 +19,7 @@ final refRoot = db.collection("d");
 final refTmp = refRoot.doc("0-tmp");
 final refApp = refTmp.collection("app").doc();
 
-const defaultDevId = "default";
+String defaultDevId = window.localStorage['deviceId'] ?? "default";
 
 Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -32,9 +33,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Dummy Device Dashboard',
-      theme: ThemeData(primarySwatch: Colors.blueGrey),
-      home: const MyHomePage(title: 'Dummy Device Dashboard'),
+      title: 'DevConsole',
+      theme: ThemeData(primarySwatch: Colors.brown),
+      home: const MyHomePage(title: 'DevConsole'),
     );
   }
 }
@@ -177,6 +178,7 @@ Widget agentNameField(DocumentReference<Map<String, dynamic>> refApp) {
           decoration: const InputDecoration(label: Text("Device ID:")),
           onSubmitted: (ag) async {
             docApp.ag = ag;
+            window.localStorage["deviceId"] = ag;
             refApp.set(docApp.raw);
           },
         );
