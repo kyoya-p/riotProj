@@ -113,6 +113,7 @@ Widget discResultItemMaker(BuildContext context, QueryDocumentSnapshot e) {
         SizedBox(width: 240, child: Text("${d.id}", maxLines: 1)),
       if (d.ip != null)
         SizedBox(width: 120, child: Text("${d.ip}", maxLines: 1)),
+      const TextButton(onPressed: null, child: Text("FSS")),
       //if (e.vbs != null) Expanded(child: Text("${e.vbs![0]}", maxLines: 1)),
       if (false)
         SizedBox(
