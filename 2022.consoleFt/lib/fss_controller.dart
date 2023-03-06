@@ -21,6 +21,7 @@ Widget fssControlerField(BuildContext context1, DocumentReference refDev) {
                 as LinkedHashMap<dynamic, dynamic>;
             final initUrl =
                 TextEditingController(text: dev["fssSpec"]["initUrl"]);
+            final adr = TextEditingController(text: dev["fssSpec"]["adr"]);
             final pollItvl = TextEditingController(
                 text: dev["fssSpec"]["pollInterval"].toString());
             return Column(
@@ -33,6 +34,15 @@ Widget fssControlerField(BuildContext context1, DocumentReference refDev) {
                         hintText: "Log in to the RMM site to obtain"),
                     onSubmitted: (_) {
                       dev["fssSpec"]["initUrl"] = initUrl.text;
+                      refDev.set(dev);
+                    }),
+                TextField(
+                    controller: adr,
+                    decoration: const InputDecoration(
+                        label: Text("Target SNMP address:"),
+                        hintText: "Basically enter the IP address of the MFP"),
+                    onSubmitted: (_) {
+                      dev["fssSpec"]["adr"] = adr.text;
                       refDev.set(dev);
                     }),
                 Row(children: [

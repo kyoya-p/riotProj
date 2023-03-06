@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:html';
 import 'dart:async';
 import 'package:firebase_core/firebase_core.dart' show Firebase;
@@ -52,6 +53,14 @@ class MyHomePage extends StatelessWidget {
                 MaterialPageRoute(builder: (context) => DebugLogsPage(refDev)));
           },
           child: const Text("Debug Log"));
+  PopupMenuItem<Function> menuDocEditor(
+          BuildContext context, DocumentReference refDev) =>
+      PopupMenuItem(
+          value: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => DocumentPage(refDev)));
+          },
+          child: const Text("Document Editor"));
   PopupMenuItem<Function> menuItem1(
           BuildContext context, DocumentReference refDev) =>
       PopupMenuItem(
@@ -79,14 +88,13 @@ class MyHomePage extends StatelessWidget {
                 MaterialPageRoute(builder: (context) => LogsPage(refDev)));
           },
           child: const Text("Vmstat Logs"));
-  PopupMenuItem<Function> menuItem4(
+  PopupMenuItem<Function> menuInitForFSS(
           BuildContext context, DocumentReference refDev) =>
       PopupMenuItem(
-          value: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => DocumentPage(refDev)));
-          },
-          child: const Text("Document Editor"));
+          value: () => refDev.set({
+                "fssSpec": {"initUrl": null, "adr": null}
+              }),
+          child: const Text("💀Initialize for FSS Device"));
 
   AppBar appBar(BuildContext context, String ag, DocumentReference refDev) {
     return AppBar(
@@ -98,11 +106,12 @@ class MyHomePage extends StatelessWidget {
           onSelected: (Function f) => f(),
           itemBuilder: (BuildContext context) {
             return [
+              menuDocEditor(context, refDev),
               menuDebugLog(context, refDev),
               menuItem1(context, refDev),
               menuItem2(context, refDev),
               menuItem3(context, refDev),
-              menuItem4(context, refDev),
+              menuInitForFSS(context, refDev),
             ];
           },
         ),

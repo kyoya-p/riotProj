@@ -5,7 +5,7 @@
 # 開発環境設定
 
 - [Flutter SDK - Install](https://docs.flutter.dev/get-started/install)
-- Firebase Tools
+- [Firebase Tools](https://firebase.google.com/docs/cli?hl=ja)
 - VSCode
   - Plugin > Flutter plugin - Install
   - Dart plugin > 拡張機能の設定 > Flutter SDK path/ Dart SDK path - setup 
