@@ -1,5 +1,6 @@
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:html';
 
 import 'package:console_ft/document_editor.dart';
 import 'package:console_ft/vmlog_viewer.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'clock.dart';
 import 'main.dart';
 import 'types.dart';
 
@@ -113,7 +115,7 @@ Widget discResultItemMaker(BuildContext context, QueryDocumentSnapshot e) {
         SizedBox(width: 240, child: Text("${d.id}", maxLines: 1)),
       if (d.ip != null)
         SizedBox(width: 120, child: Text("${d.ip}", maxLines: 1)),
-      const TextButton(onPressed: null, child: Text("FSS")),
+      FssLaunchButton(context, e),
       //if (e.vbs != null) Expanded(child: Text("${e.vbs![0]}", maxLines: 1)),
       if (false)
         SizedBox(
@@ -136,6 +138,60 @@ Widget discResultItemMaker(BuildContext context, QueryDocumentSnapshot e) {
           MaterialPageRoute(builder: (context) => DocumentPage(e.reference)));
     },
   );
+}
+
+FssLaunchButton(BuildContext context, QueryDocumentSnapshot ssDiscRes) {
+  final disc = DiscoveryRes(ssDiscRes.data());
+  final refDev = ssDiscRes.reference.parent.parent!;
+  final refTgDev = ssDiscRes.reference.parent.parent!.parent.doc(disc.id);
+
+// 直近1min以内に d/{devId}/reports/* があるかチェック
+  final now = getServerTime();
+  final qrLog = refTgDev
+      .collection("reports")
+      .where("time", isGreaterThan: now.subtract(const Duration(minutes: 1)))
+      .limit(1);
+
+  return StreamBuilder<QuerySnapshot>(
+      stream: qrLog.snapshots(),
+      builder: (_, snapshots) {
+        final docsLog = snapshots.data?.docs;
+        Widget btnFace;
+        if (docsLog == null || docsLog.length == 0) {
+          btnFace = Text("FSS:${refTgDev.path}",
+              style: TextStyle(color: Colors.grey));
+        } else {
+          btnFace = Text("FSS", style: TextStyle(color: Colors.green));
+        }
+        return TextButton(
+          child: btnFace,
+          onPressed: () {
+            createFssDevice(context, refDev, refTgDev, disc.ip);
+            launchRequest(refDev, refTgDev.id);
+          },
+        );
+      });
+}
+
+createFssDevice(BuildContext context, DocumentReference refDev,
+    DocumentReference refTgDev, String? adr) {
+  refDev.get().then((ssDev) {
+    final dev = (ssDev.data() ?? {}) as Map<String, dynamic>;
+    final tgDev = {"fssSpec": dev["defaultFssSpec"]};
+    tgDev["fssSpec"]["adr"] = adr;
+    refTgDev.set(tgDev);
+    // window.localStorage["deviceId"] = refTgDev.id;
+    // Navigator.push(
+    //     context,
+    //     MaterialPageRoute(
+    //         builder: (context) => MyHomePage(refTgDev.id, title: "DevConsole")));
+    window.open("?id=${refTgDev.id}", "");
+  });
+}
+
+launchRequest(DocumentReference refDev, String devId) {
+  final refLaunchReq = refDev.collection("ctrl").doc("launchDevReq");
+  refLaunchReq.set({"devId": devId});
 }
 
 const snmpStatusInfo =

@@ -20,7 +20,7 @@ final refRoot = db.collection("d");
 final refTmp = refRoot.doc("0-tmp");
 final refApp = refTmp.collection("app").doc();
 
-String defaultDevId = window.localStorage['deviceId'] ?? "default";
+// String defaultDevId = window.localStorage['deviceId'] ?? "default";
 
 Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -33,17 +33,23 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String devId = Uri.base.queryParameters["id"] ??
+        window.localStorage["deviceId"] ??
+        "default";
+    refApp.set({"ag": devId});
     return MaterialApp(
       title: 'DevConsole',
       theme: ThemeData(primarySwatch: Colors.brown),
-      home: const MyHomePage(title: 'DevConsole'),
+      home: MyHomePage(devId, title: 'DevConsole'),
     );
   }
 }
 
 class MyHomePage extends StatelessWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
+  const MyHomePage(String this.devId, {Key? key, required this.title})
+      : super(key: key);
   final String title;
+  final String devId;
 
   PopupMenuItem<Function> menuDebugLog(
           BuildContext context, DocumentReference refDev) =>
@@ -124,7 +130,7 @@ class MyHomePage extends StatelessWidget {
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: refApp.snapshots(),
       builder: (context, snapshot) {
-        final ag = snapshot.data?.data()?["ag"] as String? ?? defaultDevId;
+        final ag = snapshot.data?.data()?["ag"] as String? ?? devId;
         final refDev = refRoot.doc(ag);
 
         return Scaffold(
@@ -183,7 +189,7 @@ Widget agentNameField(DocumentReference<Map<String, dynamic>> refApp) {
       builder: (context, snapshot) {
         var docApp = Application(snapshot.data?.data() ?? {});
         return TextField(
-          controller: TextEditingController(text: docApp.ag ?? defaultDevId),
+          controller: TextEditingController(text: docApp.ag),
           decoration: const InputDecoration(label: Text("Device ID:")),
           onSubmitted: (ag) async {
             docApp.ag = ag;
