@@ -158,8 +158,7 @@ FssLaunchButton(BuildContext context, QueryDocumentSnapshot ssDiscRes) {
         final docsLog = snapshots.data?.docs;
         Widget btnFace;
         if (docsLog == null || docsLog.length == 0) {
-          btnFace = Text("FSS:${refTgDev.path}",
-              style: TextStyle(color: Colors.grey));
+          btnFace = Text("FSS", style: TextStyle(color: Colors.black));
         } else {
           btnFace = Text("FSS", style: TextStyle(color: Colors.green));
         }
