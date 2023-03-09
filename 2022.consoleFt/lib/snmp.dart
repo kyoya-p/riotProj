@@ -143,7 +143,8 @@ Widget discResultItemMaker(BuildContext context, QueryDocumentSnapshot e) {
 FssLaunchButton(BuildContext context, QueryDocumentSnapshot ssDiscRes) {
   final disc = DiscoveryRes(ssDiscRes.data());
   final refDev = ssDiscRes.reference.parent.parent!;
-  final refTgDev = ssDiscRes.reference.parent.parent!.parent.doc(disc.id);
+  final refTgDev =
+      ssDiscRes.reference.parent.parent!.parent.doc("FSS_${disc.id}");
 
 // 直近1min以内に d/{devId}/reports/* があるかチェック
   final now = getServerTime();
@@ -168,6 +169,16 @@ FssLaunchButton(BuildContext context, QueryDocumentSnapshot ssDiscRes) {
             createFssDevice(context, refDev, refTgDev, disc.ip);
             launchRequest(refDev, refTgDev.id);
           },
+          onLongPress: () => showDialog(
+              context: context,
+              builder: (BuildContext context) => AlertDialog(
+                      title: Text('Alert Dialog'),
+                      content: Text("Launch as FSS Device\n${refTgDev.id}"),
+                      actions: <Widget>[
+                        SimpleDialogOption(
+                            child: Text('Close'),
+                            onPressed: () => Navigator.pop(context)),
+                      ])),
         );
       });
 }
