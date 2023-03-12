@@ -141,8 +141,7 @@ class MyHomePage extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: Column(children: [
                 agentNameField(refApp),
-                consoleField(context, refDev),
-                Expanded(child: RealtimeMericsWidget(refDev)),
+                Expanded(child: consoleField(context, refDev)),
                 //Expanded(child: DetectedDevicesWidget(refDev)),
               ]),
             ));
@@ -209,21 +208,20 @@ Widget consoleField(BuildContext context, DocumentReference refDev) {
       builder: (context, snapshots) {
         final dev = snapshots.data?.data() as Map<String, dynamic>?;
         if (dev == null) return noItem();
-
-        final refSnmpDevList = refDev
-            .collection("devices")
-            .orderBy("time", descending: true)
-            .limit(10);
-        final Widget listDevs =
-            SizedBox(height: 150, child: listMonitor(context, refSnmpDevList));
-
-        return Column(
-          // mainAxisSize: MainAxisSize.min,
-          children: [
-            if (dev["ipSpec"] != null) discSettingField(refDev),
-            if (dev["ipSpec"] != null) listDevs,
-            if (dev["fssSpec"] != null) fssControlerField(context, refDev),
-          ],
-        );
+        if (dev["ipSpec"] != null) return snmpScannerConsole(context, refDev);
+        if (dev["fssSpec"] != null) return fssControlerField(context, refDev);
+        return noItem();
       });
+}
+
+Widget snmpScannerConsole(BuildContext context, DocumentReference refDev) {
+  final refSnmpDevList =
+      refDev.collection("devices").orderBy("time", descending: true).limit(10);
+  return Column(
+    children: [
+      discSettingField(refDev),
+      SizedBox(height: 150, child: listMonitor(context, refSnmpDevList)),
+      Expanded(child: RealtimeMericsWidget(refDev)),
+    ],
+  );
 }

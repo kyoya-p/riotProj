@@ -1,7 +1,6 @@
 import 'package:console_ft/types.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'main.dart';
 
 Widget expanded(Widget w) => Expanded(child: w);
 
@@ -13,15 +12,8 @@ class DebugLogsPage extends StatelessWidget {
     final refLogs =
         refDev.collection("reports").orderBy("time", descending: true);
     return Scaffold(
-        appBar: AppBar(title: Text('${refDev.id} - Debug Logs')),
-        body: StreamBuilder<QuerySnapshot>(
-            stream: refLogs.snapshots(),
-            builder: (context, snapshots) {
-              final reports = snapshots.data?.docs.map((e) => Log(e.data()));
-              final logs = reports?.expand((log) => log.vmlogs).toList();
-              if (logs == null || logs.isEmpty) return noItem();
-              return PrograssiveListView2(refLogs, appendItems);
-            }));
+        appBar: AppBar(title: Text('${refDev.path} - Debug Logs')),
+        body: PrograssiveListView2(refLogs, appendItems));
   }
 
   static ProgressiveListViewAppendItem appendItems =
@@ -30,12 +22,12 @@ class DebugLogsPage extends StatelessWidget {
             vLog.sort((a, b) =>
                 b.time.millisecondsSinceEpoch - a.time.millisecondsSinceEpoch);
             for (var vmLog in vLog) {
-              vTgItem.add(vmstatLogItem(vmLog, vTgItem.length + 1));
+              vTgItem.add(logItem(vmLog, vTgItem.length + 1));
             }
           });
 
-  static Text vmstatLogItem(DebugLog e, int index) =>
-      Text("${e.time.toDate()} ${e.log}");
+  static Widget logItem(DebugLog e, int index) =>
+      Text("$index: ${e.time.toDate()} [${e.kind}] ${e.log}");
 }
 
 // Firestoreで大きなリストを使う際のテンプレ(Widgetをリストに保持)

@@ -3,6 +3,7 @@ import 'package:console_ft/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'document_editor.dart';
+import 'fss_chart.dart';
 import 'main.dart';
 
 // SNMP検索条件設定Widget
@@ -72,7 +73,7 @@ Widget fssControlerField(BuildContext context1, DocumentReference refDev) {
                       onPressed: () {
                         dev["time"] = getServerTime().millisecondsSinceEpoch;
                         refDev.set(dev);
-                      })
+                      }),
                 ]),
                 InkWell(
                     child: Column(
@@ -92,7 +93,9 @@ Widget fssControlerField(BuildContext context1, DocumentReference refDev) {
                     onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => DocumentPage(refFssStorage))))
+                            builder: (context) =>
+                                DocumentPage(refFssStorage)))),
+                Expanded(child: RealtimeMericsWidget(refDev)),
               ],
             );
           });

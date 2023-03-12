@@ -99,6 +99,7 @@ class DebugLog {
 
   Timestamp get time => raw["time"] as Timestamp;
   String get log => raw["log"] as String;
+  String get kind => raw["kind"] as String;
 }
 
 class SnmpScanner {

@@ -71,94 +71,82 @@ class RealtimeMericsWidget extends StatelessWidget {
             //charts.SeriesLegend(position: BehaviorPosition.bottom)
           ];
 
-          chartVmstatCpu(List<VmLog> vmlogs) => charts.TimeSeriesChart(
-                [
-                  chartSeriesVmstat(vmlogs, "user%", (v) => v.cpuUser),
-                  chartSeriesVmstat(vmlogs, "sys%", (v) => v.cpuSys),
-                  chartSeriesVmstat(vmlogs, "wait%", (v) => v.cpuWait),
-                  chartSeriesVmstat(vmlogs, "stolen%", (v) => v.cpuStolen),
-                  chartSeriesVmstat(vmlogs, "idle%", (v) => v.cpuIdle),
-                ],
-                domainAxis: domainAxis,
-                layoutConfig: layout,
-                animate: false,
-                behaviors: commonBehaviors,
-                defaultRenderer:
-                    LineRendererConfig(includeArea: true, stacked: true),
-              );
-          chartVmstatQueue(List<VmLog> vmlogs) => charts.TimeSeriesChart(
-                [
-                  chartSeriesVmstat(vmlogs, "proc", (v) => v.procWaitRun),
-                  chartSeriesVmstat(vmlogs, "io", (v) => v.procIoBlocked),
-                ],
-                domainAxis: domainAxis,
-                layoutConfig: layout,
-                animate: false,
-                behaviors: commonBehaviors,
-              );
-          chartVmstatMemory(List<VmLog> vmlogs) => charts.TimeSeriesChart(
-                [
-                  chartSeriesVmstat(vmlogs, "swap", (v) => v.memSwap),
-                  chartSeriesVmstat(vmlogs, "buff", (v) => v.memBuff),
-                  chartSeriesVmstat(vmlogs, "cache", (v) => v.memCache),
-                  chartSeriesVmstat(vmlogs, "free", (v) => v.memFree),
-                ],
-                domainAxis: domainAxis,
-                layoutConfig: layout,
-                animate: false,
-                behaviors: commonBehaviors,
-                defaultRenderer:
-                    LineRendererConfig(includeArea: true, stacked: true),
-              );
-          chartVmstatSwapIo(List<VmLog> vmlogs) => charts.TimeSeriesChart(
-                [
-                  chartSeriesVmstat(vmlogs, "sw-in", (v) => v.swapIn),
-                  chartSeriesVmstat(vmlogs, "sw-out", (v) => v.swapOut),
-                  chartSeriesVmstat(vmlogs, "io-in", (v) => v.ioIn),
-                  chartSeriesVmstat(vmlogs, "io-out", (v) => v.ioOut),
-                ],
-                domainAxis: domainAxis,
-                layoutConfig: layout,
-                animate: false,
-                behaviors: commonBehaviors,
-              );
-          chartSnmpScan(List<SnmpLog> snmpLogs) => charts.TimeSeriesChart(
-                [
-                  charts.Series<SnmpLog, DateTime>(
-                    id: "scan/min",
-                    domainFn: (e, _) => e.time.toDate(),
-                    measureFn: (_, i) {
-                      if (i == snmpLogs.length - 1) return null;
-                      return (snmpLogs[i as int].scanCount -
-                          snmpLogs[i + 1].scanCount);
-                    },
-                    data: snmpLogs,
-                  ),
-                ],
-                domainAxis: domainAxis,
-                layoutConfig: layout,
-                animate: false,
-                behaviors: commonBehaviors,
-              );
-          chartSnmpDetect(List<SnmpLog> snmpLogs) => charts.TimeSeriesChart(
-                [
-                  charts.Series<SnmpLog, DateTime>(
-                    id: "detected/min",
-                    domainFn: (e, _) => e.time.toDate(),
-                    measureFn: (_, i) {
-                      if (i == snmpLogs.length - 1) return null;
-                      return (snmpLogs[i as int].detectCount -
-                              snmpLogs[i + 1].detectCount) /
-                          1;
-                    },
-                    data: snmpLogs,
-                  ),
-                ],
-                domainAxis: domainAxis,
-                layoutConfig: layout,
-                animate: false,
-                behaviors: commonBehaviors,
-              );
+          chartVmstatCpu(List<VmLog> vmlogs) => charts.TimeSeriesChart([
+                chartSeriesVmstat(vmlogs, "user%", (v) => v.cpuUser),
+                chartSeriesVmstat(vmlogs, "sys%", (v) => v.cpuSys),
+                chartSeriesVmstat(vmlogs, "wait%", (v) => v.cpuWait),
+                chartSeriesVmstat(vmlogs, "stolen%", (v) => v.cpuStolen),
+                chartSeriesVmstat(vmlogs, "idle%", (v) => v.cpuIdle)
+              ],
+                  domainAxis: domainAxis,
+                  layoutConfig: layout,
+                  animate: false,
+                  behaviors: commonBehaviors,
+                  defaultRenderer:
+                      LineRendererConfig(includeArea: true, stacked: true));
+          chartVmstatQueue(List<VmLog> vmlogs) => charts.TimeSeriesChart([
+                chartSeriesVmstat(vmlogs, "proc", (v) => v.procWaitRun),
+                chartSeriesVmstat(vmlogs, "io", (v) => v.procIoBlocked)
+              ],
+                  domainAxis: domainAxis,
+                  layoutConfig: layout,
+                  animate: false,
+                  behaviors: commonBehaviors);
+          chartVmstatMemory(List<VmLog> vmlogs) => charts.TimeSeriesChart([
+                chartSeriesVmstat(vmlogs, "swap", (v) => v.memSwap),
+                chartSeriesVmstat(vmlogs, "buff", (v) => v.memBuff),
+                chartSeriesVmstat(vmlogs, "cache", (v) => v.memCache),
+                chartSeriesVmstat(vmlogs, "free", (v) => v.memFree)
+              ],
+                  domainAxis: domainAxis,
+                  layoutConfig: layout,
+                  animate: false,
+                  behaviors: commonBehaviors,
+                  defaultRenderer:
+                      LineRendererConfig(includeArea: true, stacked: true));
+          chartVmstatSwapIo(List<VmLog> vmlogs) => charts.TimeSeriesChart([
+                chartSeriesVmstat(vmlogs, "sw-in", (v) => v.swapIn),
+                chartSeriesVmstat(vmlogs, "sw-out", (v) => v.swapOut),
+                chartSeriesVmstat(vmlogs, "io-in", (v) => v.ioIn),
+                chartSeriesVmstat(vmlogs, "io-out", (v) => v.ioOut)
+              ],
+                  domainAxis: domainAxis,
+                  layoutConfig: layout,
+                  animate: false,
+                  behaviors: commonBehaviors);
+          chartSnmpScan(List<SnmpLog> snmpLogs) => charts.TimeSeriesChart([
+                charts.Series<SnmpLog, DateTime>(
+                  id: "scan/min",
+                  domainFn: (e, _) => e.time.toDate(),
+                  measureFn: (_, i) {
+                    if (i == snmpLogs.length - 1) return null;
+                    return (snmpLogs[i as int].scanCount -
+                        snmpLogs[i + 1].scanCount);
+                  },
+                  data: snmpLogs,
+                )
+              ],
+                  domainAxis: domainAxis,
+                  layoutConfig: layout,
+                  animate: false,
+                  behaviors: commonBehaviors);
+          chartSnmpDetect(List<SnmpLog> snmpLogs) => charts.TimeSeriesChart([
+                charts.Series<SnmpLog, DateTime>(
+                  id: "detected/min",
+                  domainFn: (e, _) => e.time.toDate(),
+                  measureFn: (_, i) {
+                    if (i == snmpLogs.length - 1) return null;
+                    return (snmpLogs[i as int].detectCount -
+                            snmpLogs[i + 1].detectCount) /
+                        1;
+                  },
+                  data: snmpLogs,
+                )
+              ],
+                  domainAxis: domainAxis,
+                  layoutConfig: layout,
+                  animate: false,
+                  behaviors: commonBehaviors);
 
           if (ssLogs.hasError) return noItem();
           final vLog = ssLogs.data?.docs.map((e) => Log(e));
@@ -171,7 +159,7 @@ class RealtimeMericsWidget extends StatelessWidget {
             Expanded(child: chartVmstatCpu(vmlogList)),
             Expanded(child: chartVmstatQueue(vmlogList)),
             Expanded(child: chartVmstatMemory(vmlogList)),
-            Expanded(child: chartVmstatSwapIo(vmlogList)),
+            Expanded(child: chartVmstatSwapIo(vmlogList))
           ]);
         });
   }
