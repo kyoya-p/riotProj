@@ -111,12 +111,8 @@ Widget discResultItemMaker(BuildContext context, QueryDocumentSnapshot e) {
           child: Text(
               DateTime.fromMillisecondsSinceEpoch(d.time).toLocal().toString(),
               maxLines: 1)),
-      if (d.id != null)
-        SizedBox(width: 240, child: Text("${d.id}", maxLines: 1)),
-      if (d.ip != null)
-        SizedBox(width: 120, child: Text("${d.ip}", maxLines: 1)),
+      SizedBox(width: 120, child: Text("${d.id ?? '-'}", maxLines: 1)),
       FssLaunchButton(context, e),
-      //if (e.vbs != null) Expanded(child: Text("${e.vbs![0]}", maxLines: 1)),
       if (false)
         SizedBox(
           //width: 180,
@@ -157,12 +153,14 @@ FssLaunchButton(BuildContext context, QueryDocumentSnapshot ssDiscRes) {
       stream: qrLog.snapshots(),
       builder: (_, snapshots) {
         final docsLog = snapshots.data?.docs;
-        Widget btnFace;
+        TextStyle bstyle;
         if (docsLog == null || docsLog.length == 0) {
-          btnFace = Text("FSS", style: TextStyle(color: Colors.black));
+          bstyle = const TextStyle(color: Colors.black);
         } else {
-          btnFace = Text("FSS", style: TextStyle(color: Colors.green));
+          bstyle = const TextStyle(color: Colors.green);
         }
+        Widget btnFace = Text(refTgDev.id, style: bstyle);
+
         return TextButton(
           child: btnFace,
           onPressed: () {
@@ -172,11 +170,11 @@ FssLaunchButton(BuildContext context, QueryDocumentSnapshot ssDiscRes) {
           onLongPress: () => showDialog(
               context: context,
               builder: (BuildContext context) => AlertDialog(
-                      title: Text('Alert Dialog'),
+                      title: const Text('Alert Dialog'),
                       content: Text("Launch as FSS Device\n${refTgDev.id}"),
                       actions: <Widget>[
                         SimpleDialogOption(
-                            child: Text('Close'),
+                            child: const Text('Close'),
                             onPressed: () => Navigator.pop(context)),
                       ])),
         );
