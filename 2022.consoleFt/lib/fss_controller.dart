@@ -63,10 +63,10 @@ Widget fssControlerField(BuildContext context1, DocumentReference refDev) {
                       child: const Text("Polling"),
                       onPressed: () => manualPolling(refDev)),
                   FilledButton(
-                      child: const Text("Load Setting"),
+                      child: const Text("GetConf"),
                       onPressed: () => downloadDeviceSetting(refDev)),
                   FilledButton(
-                      child: const Text("Mem Clear"),
+                      child: const Text("DelConf"),
                       onPressed: () => refFssStorage.delete()),
                   FilledButton(
                       child: const Text("Reboot"),
