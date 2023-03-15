@@ -4,11 +4,12 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 
+import 'gpt.dart';
 import 'main.dart';
 import 'types.dart';
 
-class RealtimeMericsWidget extends StatelessWidget {
-  const RealtimeMericsWidget(this.refDev, {Key? key}) : super(key: key);
+class RealtimeMetricsWidget extends StatelessWidget {
+  const RealtimeMetricsWidget(this.refDev, {Key? key}) : super(key: key);
   final DocumentReference refDev;
 
   @override
@@ -94,6 +95,8 @@ class RealtimeMericsWidget extends StatelessWidget {
 
           return Column(children: [
             SizedBox.fromSize(size: Size.fromHeight(100), child: chartFSS()),
+            // SizedBox.fromSize(size: Size.fromHeight(100), child: SnmpCountChart(refLogs)),
+
           ]);
         });
   }

@@ -29,19 +29,19 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  collection: ^1.17.0        # https://pub.dev/packages/collection
+  collection: 1.17.0        # https://pub.dev/packages/collection
   google_fonts: ^4.0.3       # https://fonts.google.com/?query=mono
 
-  firebase_core: ^2.6.1     # https://pub.dev/packages/firebase_core
-  cloud_firestore: ^4.4.1   # https://pub.dev/packages/cloud_firestore
-  firebase_auth: ^4.2.7     # https://pub.dev/packages/firebase_auth
+  firebase_core: 2.7.1    # https://pub.dev/packages/firebase_core
+  cloud_firestore: 4.4.4   # https://pub.dev/packages/cloud_firestore
+  firebase_auth: 4.2.10     # https://pub.dev/packages/firebase_auth
   charts_flutter: 0.12.0    # https://pub.dev/packages/charts_flutter
+  fl_chart: 0.61.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.2
-  freezed_annotation: ^2.0.3
-  
+  cupertino_icons: 1.0.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -52,7 +52,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.1
-  freezed: ^2.3.2
+  freezed: 2.3.2
+  freezed_annotation: 2.2.0
   build_runner: ^2.3.3
   json_serializable: ^6.6.1 # https://pub.dev/packages/json_serializable
 

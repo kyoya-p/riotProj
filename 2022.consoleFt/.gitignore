@@ -4,9 +4,10 @@
 /.idea/
 /.dart_tool/
 /node_modules/
+/pubspec.lock
 
 # Miscellaneous
-*.class]
+*.class
 *.log
 *.pyc
 *.swp

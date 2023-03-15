@@ -95,7 +95,7 @@ Widget fssControlerField(BuildContext context1, DocumentReference refDev) {
                         MaterialPageRoute(
                             builder: (context) =>
                                 DocumentPage(refFssStorage)))),
-                Expanded(child: RealtimeMericsWidget(refDev)),
+                Expanded(child: RealtimeMetricsWidget(refDev)),
               ],
             );
           });
