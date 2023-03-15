@@ -3,6 +3,32 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:console_ft/main.dart';
 import 'package:flutter/material.dart';
 
+/*
+CharGPT指示
+
+コードを作って
+
+flutterでfiresoreの下記のレコードのドキュメントをグラフ表示する
+
+{"snmpLogs":[{"reqCount":1,"resCount":10,"time":12345}] }
+
+横軸時系列の折れ線グラフ
+
+上記をStreamBuilderを使ってリアルタイムに更新するようにして
+
+複数のドキュメントのカウンタ情報を結合して一つのグラフにします
+
+ページではなくグラフWidgetを生成して。既存ページに埋め込むので
+
+Queryをコンストラクタで与えるように変更
+
+@required は現在のflutterでは required キーワードでは?
+
+上のfl_chartを使ったプログラムを、chart_flutterパッケージ使って書き換えて
+
+
+* */
+
 class SnmpCountChart extends StatefulWidget {
   final Query query;
 
