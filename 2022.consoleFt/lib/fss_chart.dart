@@ -79,24 +79,29 @@ class RealtimeMetricsWidget extends StatelessWidget {
           Iterable<DebugLog> mibReqLogs = logs("RMM:MIB_INFO_REQUEST");
           Iterable<DebugLog> mibResLogs = logs("RMM:MIB_INFO_RESULT");
           chartFSS() => charts.TimeSeriesChart([
-                chartSeriesDebug(allLogs, "All logs", (v) => 1),
-                chartSeriesDebug(initLogs, "Initialize", (v) => 1),
-                chartSeriesDebug(poll1Logs, "Polling1", (v) => 1),
-                chartSeriesDebug(poll2lLgs, "Polling2", (v) => 1),
-                chartSeriesDebug(mibReqLogs, "MIB request", (v) => 1),
-                chartSeriesDebug(mibResLogs, "MIB result", (v) => 1),
+                // chartSeriesDebug(allLogs, "All logs", (v) => 0.2),
+                chartSeriesDebug(initLogs, "Initialize", (v) => 10),
+                chartSeriesDebug(poll1Logs, "Polling1", (v) => 5),
+                chartSeriesDebug(poll2lLgs, "Polling2", (v) => 10),
+                chartSeriesDebug(mibReqLogs, "MIB request", (v) => 10),
+                chartSeriesDebug(mibResLogs, "MIB result", (v) => 10),
               ],
                   domainAxis: domainAxis,
                   layoutConfig: layout,
                   animate: false,
                   behaviors: commonBehaviors,
+                  primaryMeasureAxis: charts.NumericAxisSpec(
+                      renderSpec: charts.NoneRenderSpec()),
                   defaultRenderer: BarRendererConfig(maxBarWidthPx: 1));
 //                      LineRendererConfig(includeArea: true, stacked: true));
 
           return Column(children: [
             SizedBox.fromSize(size: Size.fromHeight(100), child: chartFSS()),
-            SizedBox.fromSize(
-                size: Size.fromHeight(100), child: SnmpChart(query: refLogs)),
+            Expanded(
+                child: SnmpChart(
+              query: refLogs,
+              chart: "line",
+            )),
           ]);
         });
   }
