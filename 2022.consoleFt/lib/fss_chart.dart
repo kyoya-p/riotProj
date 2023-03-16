@@ -97,11 +97,7 @@ class RealtimeMetricsWidget extends StatelessWidget {
 
           return Column(children: [
             SizedBox.fromSize(size: Size.fromHeight(100), child: chartFSS()),
-            Expanded(
-                child: SnmpChart(
-              query: refLogs,
-              chart: "line",
-            )),
+            Expanded(child: SnmpChart(query: refLogs, chart: "line")),
           ]);
         });
   }
