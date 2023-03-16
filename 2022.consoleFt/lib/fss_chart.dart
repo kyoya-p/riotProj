@@ -4,7 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 
-import 'gpt.dart';
+import 'snmp_chart2_gpt.dart';
 import 'main.dart';
 import 'types.dart';
 
@@ -95,8 +95,8 @@ class RealtimeMetricsWidget extends StatelessWidget {
 
           return Column(children: [
             SizedBox.fromSize(size: Size.fromHeight(100), child: chartFSS()),
-            // SizedBox.fromSize(size: Size.fromHeight(100), child: SnmpCountChart(refLogs)),
-
+            SizedBox.fromSize(
+                size: Size.fromHeight(100), child: SnmpChart(query: refLogs)),
           ]);
         });
   }
