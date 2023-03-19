@@ -120,8 +120,8 @@ class RealtimeMericsWidget extends StatelessWidget {
                   domainFn: (e, _) => e.time.toDate(),
                   measureFn: (_, i) {
                     if (i == snmpLogs.length - 1) return null;
-                    return (snmpLogs[i as int].scanCount -
-                        snmpLogs[i + 1].scanCount);
+                    return (snmpLogs[i as int].reqCount -
+                        snmpLogs[i + 1].reqCount);
                   },
                   data: snmpLogs,
                 )
@@ -136,8 +136,8 @@ class RealtimeMericsWidget extends StatelessWidget {
                   domainFn: (e, _) => e.time.toDate(),
                   measureFn: (_, i) {
                     if (i == snmpLogs.length - 1) return null;
-                    return (snmpLogs[i as int].detectCount -
-                            snmpLogs[i + 1].detectCount) /
+                    return (snmpLogs[i as int].resCount -
+                            snmpLogs[i + 1].resCount) /
                         1;
                   },
                   data: snmpLogs,

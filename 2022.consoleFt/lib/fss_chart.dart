@@ -1,10 +1,11 @@
 import 'package:charts_flutter/flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
+import 'package:console_ft/snmp_chart4_gpt.dart';
 import 'package:flutter/material.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 
-import 'snmp_chart2_gpt.dart';
+import 'snmp_chart3_gpt.dart';
 import 'main.dart';
 import 'types.dart';
 
@@ -31,10 +32,7 @@ class RealtimeMetricsWidget extends StatelessWidget {
               end.millisecondsSinceEpoch - dataRange);
           refLogs = refLogs.where("time", isGreaterThanOrEqualTo: start);
           final domainAxis = charts.DateTimeAxisSpec(
-              viewport: DateTimeExtents(
-                start: start,
-                end: end,
-              ),
+              viewport: DateTimeExtents(start: start, end: end),
               tickFormatterSpec: BasicDateTimeTickFormatterSpec(
                 (t) => '${t.hour}:${t.minute.toString().padLeft(2, "0")}',
               ));
@@ -95,9 +93,21 @@ class RealtimeMetricsWidget extends StatelessWidget {
                   defaultRenderer: BarRendererConfig(maxBarWidthPx: 1));
 //                      LineRendererConfig(includeArea: true, stacked: true));
 
+          List<DebugLog> debugLogs = vLog
+              .expand((e) => e.debugLogs.toList().sorted((a, b) =>
+                  b.time.millisecondsSinceEpoch -
+                  a.time.millisecondsSinceEpoch))
+              .toList();
+          List<SnmpLog> snmpLogs = vLog
+              .expand((e) => e.snmpLogs.toList().sorted((a, b) =>
+                  b.time.millisecondsSinceEpoch -
+                  a.time.millisecondsSinceEpoch))
+              .toList();
+
           return Column(children: [
-            SizedBox.fromSize(size: Size.fromHeight(100), child: chartFSS()),
-            Expanded(child: SnmpChart(query: refLogs, chart: "line")),
+            SizedBox.fromSize(
+                size: Size.fromHeight(100), child: DebugLogChart(debugLogs)),
+            Expanded(child: SnmpChart(snmpLogs)),
           ]);
         });
   }
