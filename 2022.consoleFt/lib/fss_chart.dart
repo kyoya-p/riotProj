@@ -27,7 +27,7 @@ class RealtimeMetricsWidget extends StatelessWidget {
     return StreamBuilder<QuerySnapshot>(
         stream: refLogs.snapshots(),
         builder: (context, ssLogs) {
-          if(!cmdssLogs.hasData) return loadingIcon();
+          if(!ssLogs.hasData) return loadingIcon();
           final DateTime end = DateTime.now();
           final DateTime start = DateTime.fromMillisecondsSinceEpoch(
               end.millisecondsSinceEpoch - dataRange);
@@ -77,22 +77,22 @@ class RealtimeMetricsWidget extends StatelessWidget {
           Iterable<DebugLog> poll2lLgs = logs("RMM:POLLING2");
           Iterable<DebugLog> mibReqLogs = logs("RMM:MIB_INFO_REQUEST");
           Iterable<DebugLog> mibResLogs = logs("RMM:MIB_INFO_RESULT");
-          chartFSS() => charts.TimeSeriesChart([
-                // chartSeriesDebug(allLogs, "All logs", (v) => 0.2),
-                chartSeriesDebug(initLogs, "Initialize", (v) => 10),
-                chartSeriesDebug(poll1Logs, "Polling1", (v) => 5),
-                chartSeriesDebug(poll2lLgs, "Polling2", (v) => 10),
-                chartSeriesDebug(mibReqLogs, "MIB request", (v) => 10),
-                chartSeriesDebug(mibResLogs, "MIB result", (v) => 10),
-              ],
-                  domainAxis: domainAxis,
-                  layoutConfig: layout,
-                  animate: false,
-                  behaviors: commonBehaviors,
-                  primaryMeasureAxis: charts.NumericAxisSpec(
-                      renderSpec: charts.NoneRenderSpec()),
-                  defaultRenderer: BarRendererConfig(maxBarWidthPx: 1));
-//                      LineRendererConfig(includeArea: true, stacked: true));
+//           chartFSS() => charts.TimeSeriesChart([
+//                 // chartSeriesDebug(allLogs, "All logs", (v) => 0.2),
+//                 chartSeriesDebug(initLogs, "Initialize", (v) => 10),
+//                 chartSeriesDebug(poll1Logs, "Polling1", (v) => 5),
+//                 chartSeriesDebug(poll2lLgs, "Polling2", (v) => 10),
+//                 chartSeriesDebug(mibReqLogs, "MIB request", (v) => 10),
+//                 chartSeriesDebug(mibResLogs, "MIB result", (v) => 10),
+//               ],
+//                   domainAxis: domainAxis,
+//                   layoutConfig: layout,
+//                   animate: false,
+//                   behaviors: commonBehaviors,
+//                   primaryMeasureAxis: charts.NumericAxisSpec(
+//                       renderSpec: charts.NoneRenderSpec()),
+//                   defaultRenderer: BarRendererConfig(maxBarWidthPx: 1));
+// //                      LineRendererConfig(includeArea: true, stacked: true));
 
           List<DebugLog> debugLogs = vLog
               .expand((e) => e.debugLogs.toList().sorted((a, b) =>

@@ -37,7 +37,7 @@ firebase emulators:start
 ```
 `http://localhost:4000/firestore ` を開き、Hostingなら、`http://localhost:5000/`をクリック
 
-## Firebas Hostingでインターネットにデプロイ
+## Firebase Hostingでインターネットにデプロイ
 ```
 flutter build web
 firebase deploy
