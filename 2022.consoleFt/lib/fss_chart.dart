@@ -27,6 +27,7 @@ class RealtimeMetricsWidget extends StatelessWidget {
     return StreamBuilder<QuerySnapshot>(
         stream: refLogs.snapshots(),
         builder: (context, ssLogs) {
+          if(!cmdssLogs.hasData) return loadingIcon();
           final DateTime end = DateTime.now();
           final DateTime start = DateTime.fromMillisecondsSinceEpoch(
               end.millisecondsSinceEpoch - dataRange);

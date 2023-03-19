@@ -95,6 +95,8 @@ Widget fssControlerField(BuildContext context1, DocumentReference refDev) {
                         MaterialPageRoute(
                             builder: (context) =>
                                 DocumentPage(refFssStorage)))),
+                mibReportScheduleControl(context, refFssStorage, fssStorage),
+                //periodicMibReport(refDev),
                 Expanded(child: RealtimeMetricsWidget(refDev)),
               ],
             );
@@ -102,6 +104,97 @@ Widget fssControlerField(BuildContext context1, DocumentReference refDev) {
     },
   );
 }
+
+/*
+schedulesの要素の数だけボタンをRow方向に配置するWidgetを生成する関数
+ドキュメントstorageの構造 {schedules: [{id:String, interval:int,oidList:[{oid:String,snmp:String}]}] }
+intervalはミリ秒
+schedulesの要素の数だけボタンをRow方向に配置
+ボタンのラベルは、スケジュールのインデクス番号、intervalを秒単位で、oidListの要素数、それぞれの文字列を結合して"%{d}:%{d}sec[%{d}]"形式で表示
+最新flutterのコード、null安全、@requiredではなくrequired
+
+ボタンが押されたとき下記ダイアログを表示:
+スケジュールの番号に対応する、インターバルを変更するダイアログを表示
+数値フィールドの初期値はボタンに対応するスケジュールのinterval
+OKをクリックした場合、ダイアログで設定した構造体のintervalを上書きし、ダイアログを閉じる
+Cancelの場合は何もせずダイアログをクローズ
+
+*/
+
+Widget mibReportScheduleControl(
+    BuildContext context, DocumentReference refFssStorage, dynamic fssStorage) {
+  final scheds = fssStorage["schedules"] as List<dynamic>? ?? [];
+  return Row(
+    children: scheds.map((sched) {
+      final ix = scheds.indexOf(sched);
+      final d = Duration(milliseconds: sched['interval']);
+      String label =
+          "#${ix} ${d.inMilliseconds / 1000.0}s / ${sched['oidList'].length} mibs";
+      return ElevatedButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) {
+              // 初期値はスケジュールのinterval
+              int interval = sched['interval'];
+              return AlertDialog(
+                title: Text("Interval of MIB schedule #$ix [ms]"),
+                content: TextFormField(
+                    initialValue: "$interval",
+                    keyboardType: TextInputType.number,
+                    onChanged: (value) => interval = int.parse(value)),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        fssStorage["schedules"][ix]["interval"] = interval;
+                        refFssStorage.set(fssStorage);
+                        Navigator.pop(context);
+                      },
+                      child: Text("OK")),
+                  TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text("Cancel")),
+                ],
+              );
+            },
+          );
+        },
+        child: Text(label),
+      );
+    }).toList(),
+  );
+}
+
+/*
+トグルスイッチWidgetを生成する関数
+firestoreのドキュメント refFssSpec を参照し、periodicMibReport の値を反映させる。
+refFssSpecが格納するドキュメント: {fssSpec:{periodicMibReport:boolean}}
+periodicMibReport==trueの場合off, そうでない場合はon
+ラベルは「変更ある場合のみMIBレポートを送信」
+Dartはnull安全
+*/
+  Widget periodicMibReport(DocumentReference refFssSpec) {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: refFssSpec.snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          bool value = snapshot.data?.get('fssSpec.periodicMibReport');
+          return Switch(
+            value: value,
+            onChanged: (newValue) {
+              refFssSpec.update({'fssSpec.periodicMibReport': newValue});
+            },
+            activeTrackColor: Colors.lightGreenAccent,
+            activeColor: Colors.green,
+          );
+        } else {
+          return CircularProgressIndicator();
+        }
+      },
+    );
+  }
+
+
 
 manualPolling(DocumentReference refDev) {
   final refMachine = refDev.collection("ctrl").doc("machine");
