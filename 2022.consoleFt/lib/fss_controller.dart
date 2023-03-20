@@ -25,49 +25,57 @@ Widget fssControlerField(BuildContext context1, DocumentReference refDev) {
             final adr = TextEditingController(text: dev["fssSpec"]["adr"]);
             final pollItvl = TextEditingController(
                 text: dev["fssSpec"]["pollInterval"].toString());
+
+            final initUrlFiled = TextField(
+                controller: initUrl,
+                decoration: const InputDecoration(
+                    label: Text("Initialize URL:"),
+                    hintText: "Log in to the RMM site to obtain"),
+                onSubmitted: (_) {
+                  dev["fssSpec"]["initUrl"] = initUrl.text;
+                  refDev.set(dev);
+                });
+            final targetSnmpAdrField = TextField(
+                controller: adr,
+                decoration: const InputDecoration(
+                    label: Text("Target SNMP address:"),
+                    hintText: "Basically enter the IP address of the MFP"),
+                onSubmitted: (_) {
+                  dev["fssSpec"]["adr"] = adr.text;
+                  refDev.set(dev);
+                });
+            final pollItvlField = TextField(
+                controller: pollItvl,
+                decoration: const InputDecoration(
+                    label: Text("Polling Interval[ms]:"),
+                    hintText: "FSS default is 3600000[ms] (60[min])."),
+                onSubmitted: (_) {
+                  dev["fssSpec"]["pollInterval"] = int.parse(pollItvl.text);
+                  refDev.set(dev);
+                });
             return Column(
+              mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextField(
-                    controller: initUrl,
-                    decoration: const InputDecoration(
-                        label: Text("Initialize URL:"),
-                        hintText: "Log in to the RMM site to obtain"),
-                    onSubmitted: (_) {
-                      dev["fssSpec"]["initUrl"] = initUrl.text;
-                      refDev.set(dev);
-                    }),
+                initUrlFiled,
                 Row(
                   children: [
-                    Expanded(
-                      child: TextField(
-                          controller: adr,
-                          decoration: const InputDecoration(
-                              label: Text("Target SNMP address:"),
-                              hintText:
-                                  "Basically enter the IP address of the MFP"),
-                          onSubmitted: (_) {
-                            dev["fssSpec"]["adr"] = adr.text;
-                            refDev.set(dev);
-                          }),
-                    ),
+                    Expanded(child: targetSnmpAdrField),
                     Text("MIB report Periodical "),
-                    periodicMibReportSwitch(refDev),
+                    // periodicMibReportSwitch(refDev),
+                    Switch(
+                      value: dev["fssSpec"]["periodicMibReport"]??false,
+                      onChanged: (newValue) {
+                        refDev.update({'fssSpec.periodicMibReport': newValue});
+                      },
+                      activeTrackColor: Colors.red[100],
+                      activeColor: Colors.red,
+                    )
                   ],
+                  mainAxisAlignment: MainAxisAlignment.start,
                 ),
                 Row(children: [
-                  Expanded(
-                    child: TextField(
-                        controller: pollItvl,
-                        decoration: const InputDecoration(
-                            label: Text("Polling Interval[ms]:"),
-                            hintText: "FSS default is 3600000[ms] (60[min])."),
-                        onSubmitted: (_) {
-                          dev["fssSpec"]["pollInterval"] =
-                              int.parse(pollItvl.text);
-                          refDev.set(dev);
-                        }),
-                  ),
+                  Expanded(child: pollItvlField),
                   FilledButton(
                       child: const Text("Polling"),
                       onPressed: () => manualPolling(refDev)),
@@ -82,7 +90,7 @@ Widget fssControlerField(BuildContext context1, DocumentReference refDev) {
                       onPressed: () {
                         dev["time"] = getServerTime().millisecondsSinceEpoch;
                         refDev.set(dev);
-                      }),
+                      })
                 ]),
                 InkWell(
                     child: Column(
@@ -105,7 +113,7 @@ Widget fssControlerField(BuildContext context1, DocumentReference refDev) {
                             builder: (context) =>
                                 DocumentPage(refFssStorage)))),
                 mibReportScheduleControl(context, refFssStorage, fssStorage),
-                Expanded(child: RealtimeMetricsWidget(refDev)),
+                // Expanded(child: RealtimeMetricsWidget(refDev)),
               ],
             );
           });
@@ -196,7 +204,8 @@ Widget periodicMibReportSwitch(DocumentReference refFssSpec) {
           activeColor: Colors.red,
         );
       } else {
-        return CircularProgressIndicator();
+        // return CircularProgressIndicator();
+        return noItem();
       }
     },
   );
