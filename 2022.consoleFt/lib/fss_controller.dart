@@ -37,15 +37,24 @@ Widget fssControlerField(BuildContext context1, DocumentReference refDev) {
                       dev["fssSpec"]["initUrl"] = initUrl.text;
                       refDev.set(dev);
                     }),
-                TextField(
-                    controller: adr,
-                    decoration: const InputDecoration(
-                        label: Text("Target SNMP address:"),
-                        hintText: "Basically enter the IP address of the MFP"),
-                    onSubmitted: (_) {
-                      dev["fssSpec"]["adr"] = adr.text;
-                      refDev.set(dev);
-                    }),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                          controller: adr,
+                          decoration: const InputDecoration(
+                              label: Text("Target SNMP address:"),
+                              hintText:
+                                  "Basically enter the IP address of the MFP"),
+                          onSubmitted: (_) {
+                            dev["fssSpec"]["adr"] = adr.text;
+                            refDev.set(dev);
+                          }),
+                    ),
+                    Text("MIB report Periodical "),
+                    periodicMibReportSwitch(refDev),
+                  ],
+                ),
                 Row(children: [
                   Expanded(
                     child: TextField(
@@ -96,7 +105,6 @@ Widget fssControlerField(BuildContext context1, DocumentReference refDev) {
                             builder: (context) =>
                                 DocumentPage(refFssStorage)))),
                 mibReportScheduleControl(context, refFssStorage, fssStorage),
-                //periodicMibReport(refDev),
                 Expanded(child: RealtimeMetricsWidget(refDev)),
               ],
             );
@@ -173,28 +181,26 @@ periodicMibReport==trueの場合off, そうでない場合はon
 ラベルは「変更ある場合のみMIBレポートを送信」
 Dartはnull安全
 */
-  Widget periodicMibReport(DocumentReference refFssSpec) {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: refFssSpec.snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          bool value = snapshot.data?.get('fssSpec.periodicMibReport');
-          return Switch(
-            value: value,
-            onChanged: (newValue) {
-              refFssSpec.update({'fssSpec.periodicMibReport': newValue});
-            },
-            activeTrackColor: Colors.lightGreenAccent,
-            activeColor: Colors.green,
-          );
-        } else {
-          return CircularProgressIndicator();
-        }
-      },
-    );
-  }
-
-
+Widget periodicMibReportSwitch(DocumentReference refFssSpec) {
+  return StreamBuilder<DocumentSnapshot>(
+    stream: refFssSpec.snapshots(),
+    builder: (context, snapshot) {
+      if (snapshot.hasData) {
+        bool value = snapshot.data?.get('fssSpec.periodicMibReport');
+        return Switch(
+          value: value,
+          onChanged: (newValue) {
+            refFssSpec.update({'fssSpec.periodicMibReport': newValue});
+          },
+          activeTrackColor: Colors.red[100],
+          activeColor: Colors.red,
+        );
+      } else {
+        return CircularProgressIndicator();
+      }
+    },
+  );
+}
 
 manualPolling(DocumentReference refDev) {
   final refMachine = refDev.collection("ctrl").doc("machine");
