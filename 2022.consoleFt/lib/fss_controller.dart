@@ -3,7 +3,6 @@ import 'package:console_ft/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'document_editor.dart';
-import 'fss_chart.dart';
 import 'main.dart';
 
 // SNMP検索条件設定Widget
@@ -63,14 +62,25 @@ Widget fssControlerField(BuildContext context1, DocumentReference refDev) {
                     Expanded(child: targetSnmpAdrField),
                     Text("MIB report Periodical "),
                     // periodicMibReportSwitch(refDev),
+
                     Switch(
-                      value: dev["fssSpec"]["periodicMibReport"]??false,
+                      value:
+                          (dev['fssSpec']['periodicMibReport'] as int? ?? 0) >
+                              DateTime.now().millisecondsSinceEpoch,
                       onChanged: (newValue) {
-                        refDev.update({'fssSpec.periodicMibReport': newValue});
+                        if (newValue) {
+                          refDev.update({
+                            'fssSpec.periodicMibReport':
+                                DateTime.now().millisecondsSinceEpoch +
+                                    60 * 60 * 1000
+                          });
+                        } else {
+                          refDev.update({'fssSpec.periodicMibReport': 0});
+                        }
                       },
                       activeTrackColor: Colors.red[100],
                       activeColor: Colors.red,
-                    )
+                    ),
                   ],
                   mainAxisAlignment: MainAxisAlignment.start,
                 ),
@@ -194,11 +204,19 @@ Widget periodicMibReportSwitch(DocumentReference refFssSpec) {
     stream: refFssSpec.snapshots(),
     builder: (context, snapshot) {
       if (snapshot.hasData) {
-        bool value = snapshot.data?.get('fssSpec.periodicMibReport');
+        int value =
+            snapshot.data?.get('fssSpec.periodicMibReport') as int? ?? 0;
         return Switch(
-          value: value,
+          value: value > DateTime.now().millisecondsSinceEpoch,
           onChanged: (newValue) {
-            refFssSpec.update({'fssSpec.periodicMibReport': newValue});
+            if (newValue) {
+              refFssSpec.update({
+                'fssSpec.periodicMibReport':
+                    DateTime.now().millisecondsSinceEpoch
+              });
+            } else {
+              refFssSpec.update({'fssSpec.periodicMibReport': 0});
+            }
           },
           activeTrackColor: Colors.red[100],
           activeColor: Colors.red,
