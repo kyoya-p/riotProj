@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'package:collection/collection.dart';
 import 'package:console_ft/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -86,14 +87,34 @@ Widget fssControlerField(BuildContext context1, DocumentReference refDev) {
                 ),
                 Row(children: [
                   Expanded(child: pollItvlField),
+                  PopupMenuButton<Function()>(
+                    // icon: Icon(Icons.more_vert),
+                    child: Row(children: [
+                      Text("eFSS Actions"),
+                      Icon(Icons.more_vert)
+                    ]),
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                          child: Text('FSS: Manual Polling'),
+                          value: () => manualPolling(refDev)),
+                      PopupMenuItem(
+                          child: Text('eFSS: Request MIB Notify Schedules'),
+                          value: () => downloadDeviceSetting(refDev)),
+                      PopupMenuItem(
+                          child: Text('eFSS: Upload Device Capability'),
+                          value: () {}),
+                    ],
+                    onSelected: (value) => value(),
+                  ),
+                  // items: {"Polling": () => manualPolling(refDev)}),
+                  // FilledButton(
+                  //     child: const Text("Polling"),
+                  //     onPressed: () => manualPolling(refDev)),
+                  // FilledButton(
+                  //     child: const Text("GetConf"),
+                  //     onPressed: () => downloadDeviceSetting(refDev)),
                   FilledButton(
-                      child: const Text("Polling"),
-                      onPressed: () => manualPolling(refDev)),
-                  FilledButton(
-                      child: const Text("GetConf"),
-                      onPressed: () => downloadDeviceSetting(refDev)),
-                  FilledButton(
-                      child: const Text("DelConf"),
+                      child: const Text("Clear Work Memory"),
                       onPressed: () => refFssStorage.delete()),
                   FilledButton(
                       child: const Text("Reboot"),
@@ -130,6 +151,17 @@ Widget fssControlerField(BuildContext context1, DocumentReference refDev) {
     },
   );
 }
+
+fssMenu() => PopupMenuButton<Function()>(
+      // icon: Icon(Icons.more_vert),
+      child: Row(children: [Text("eFSS Actions"), Icon(Icons.more_vert)]),
+      itemBuilder: (context) => [
+        PopupMenuItem(child: Text('Item 1'), value: () {}),
+        PopupMenuItem(child: Text('Item 2'), value: () {}),
+        PopupMenuItem(child: Text('Item 3'), value: () {}),
+      ],
+      onSelected: (value) => value(),
+    );
 
 /*
 schedulesの要素の数だけボタンをRow方向に配置するWidgetを生成する関数
