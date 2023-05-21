@@ -7,8 +7,8 @@
 - [Flutter SDK - Install](https://docs.flutter.dev/get-started/install)
 - [Firebase Tools](https://firebase.google.com/docs/cli?hl=ja)
 - VSCode
-  - Plugin > Flutter plugin - Install
-  - Dart plugin > 拡張機能の設定 > Flutter SDK path/ Dart SDK path - setup 
+  - Plugin > Flutter plugin - Install (Dart Pluginも同時にインストールされる) > F1 > Run Flutter Upgrade
+  - Dart plugin > 拡張機能の設定 > Flutter SDK path Dart SDK path - setup 
   - 実行 > 構成の追加 > Flutter:launch  //commit済
 
 
@@ -19,7 +19,7 @@ flutter pub run build_runner build // freezed等でコード生成が必要な�
 or
 flutter build web
 ```
-or VSCodeのFlutterプラグインなら「ビルドタスクの実行」 (Ctrl+Shift+B)
+or VSCodeのFlutterプラグインなら Terminal > Run Build Task (Ctrl+Shift+B)
 
 `build/web` 以下に生成される
 
