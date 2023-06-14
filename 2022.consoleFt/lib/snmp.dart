@@ -103,31 +103,28 @@ Widget errorList(Map<String, String> vbm) {
 
 Widget discResultItemMaker(BuildContext context, QueryDocumentSnapshot e) {
   final d = DiscoveryRes(e.data());
+  final vbm = makeVBM(d.vbm ?? Map());
+  Widget wTime() =>
+      Text(DateTime.fromMillisecondsSinceEpoch(d.time).toLocal().toString(),
+          maxLines: 1);
+  Widget wSysDescr() =>
+      Text(vbm.firstDescendant(oidToList(sysDescr))?.value ?? "-", maxLines: 1);
+  Widget wStatus() => InkWell(
+      onTap: () => showDialog(
+          context: context,
+          builder: (buildContext) => AlertDialog(
+              title: Text("SNMP Status"),
+              content:
+                  Text(snmpStatusInfo, style: GoogleFonts.courierPrime()))),
+      child: errorList(d.vbm ?? {}));
   return InkWell(
     child: Card(
         child: Row(children: [
-      SizedBox(
-          width: 180,
-          child: Text(
-              DateTime.fromMillisecondsSinceEpoch(d.time).toLocal().toString(),
-              maxLines: 1)),
+      SizedBox(width: 180, child: wTime()),
       SizedBox(width: 120, child: Text("${d.id ?? '-'}", maxLines: 1)),
-      FssLaunchButton(context, e),
-      if (false)
-        SizedBox(
-          //width: 180,
-          child: InkWell(
-              onTap: () => showDialog(
-                  context: context,
-                  builder: (buildContext) => AlertDialog(
-                        title: Text("SNMP Status"),
-                        content: Text(
-                          snmpStatusInfo,
-                          style: GoogleFonts.courierPrime(),
-                        ),
-                      )),
-              child: errorList(d.vbm ?? {})),
-        ),
+      if (true) SizedBox(width: 160, child: wSysDescr()),
+      if (true) SizedBox(width: 180, child: wStatus()),
+      SizedBox(width: 160, child: FssLaunchButton(context, e)),
     ])),
     onTap: () {
       Navigator.push(context,
@@ -160,7 +157,6 @@ FssLaunchButton(BuildContext context, QueryDocumentSnapshot ssDiscRes) {
           bstyle = const TextStyle(color: Colors.green);
         }
         Widget btnFace = Text(refTgDev.id, style: bstyle);
-
         return TextButton(
           child: btnFace,
           onPressed: () {
@@ -241,6 +237,7 @@ hrPrinterDetectedErrorState:
 class DetectedDevicesPage extends StatelessWidget {
   const DetectedDevicesPage(this.refDev, {Key? key}) : super(key: key);
   final DocumentReference refDev;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -252,7 +249,9 @@ class DetectedDevicesPage extends StatelessWidget {
 
 class DetectedDevicesWidget extends StatelessWidget {
   final DocumentReference refDev;
+
   const DetectedDevicesWidget(this.refDev, {Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     final refvRes = refDev
@@ -308,10 +307,12 @@ Map<int, dynamic> addVbmToMap(Map<int, dynamic> map, Map<String, String> vbm) {
 }
 
 Iterable<int> oidToSeq(String oid) => oid.split(".").map((e) => int.parse(e));
+
 List<int> oidToList(String oid) => oidToSeq(oid).toList();
 
 extension VBMExt on SplayTreeMap<List<int>, String> {
   String? get(List<int> oid) => this[oid];
+
   MapEntry<List<int>, String>? getNext(List<int> oid) {
     final nextOid = firstKeyAfter(oid);
     if (nextOid == null) return null;
