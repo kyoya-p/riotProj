@@ -15,8 +15,6 @@
 ## ビルド
 ```
 flutter pub get                     
-flutter pub run build_runner build // freezed等でコード生成が必要な場合。常時チェックなら build=>watch
-or
 flutter build web
 ```
 or VSCodeのFlutterプラグインなら Terminal > Run Build Task (Ctrl+Shift+B)
